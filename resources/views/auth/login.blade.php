@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Log ind — SlopHub</title>
+<title>Log ind — Simbuktu</title>
+<link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
