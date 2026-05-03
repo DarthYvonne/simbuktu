@@ -47,6 +47,11 @@ class Course extends Model
         return $this->belongsTo(Population::class);
     }
 
+    public function blueprint(): BelongsTo
+    {
+        return $this->belongsTo(Blueprint::class);
+    }
+
     public function inviteUrl(): string
     {
         return url("/simulation/invite/{$this->invite_token}");

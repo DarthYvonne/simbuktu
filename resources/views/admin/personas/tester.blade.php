@@ -85,7 +85,7 @@
         @foreach ($personas as $p)
           <label style="display: flex; gap: 8px; align-items: center; padding: 6px 8px; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px;">
             <input type="checkbox" name="persona_ids[]" value="{{ $p['id'] }}" {{ ($selectedId ?? null) === $p['id'] ? 'checked' : '' }}>
-            <span><strong>{{ $p['name'] }}</strong>, {{ $p['demographics']['age'] }}<br><span style="color: #65676b; font-size: 11px;">{{ implode(', ', $p['subcultures']) }}</span></span>
+            <span><strong>{{ $p['name'] }}</strong>, {{ $p['demographics']['age'] ?? '' }}<br><span style="color: #65676b; font-size: 11px;">{{ collect($p['dimensions'] ?? [])->take(3)->pluck('facet')->implode(', ') }}</span></span>
           </label>
         @endforeach
       </div>
@@ -213,7 +213,7 @@ const renderedIds = new Set();
 
 function renderReaction(r) {
   const p = r.persona;
-  const subs = (p.subcultures || []).map(s => `<span class="tag sub" style="font-size: 10px; padding: 1px 6px;">${escapeHtml(s)}</span>`).join('');
+  const dims = (p.dimensions || []).slice(0, 3).map(d => `<span class="tag sub" style="font-size: 10px; padding: 1px 6px;">${escapeHtml(d.facet || '')}</span>`).join('');
   const initials = (p.name || '?').substring(0, 2).toUpperCase();
   const img = p.image_file
     ? `<img src="${PERSONA_URL}/${p.id}/image" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
@@ -224,9 +224,9 @@ function renderReaction(r) {
   return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5;">${img}<div style="flex:1;">
     <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
       <a href="${PERSONA_URL}/${p.id}" style="font-weight:600;color:#050505;">${escapeHtml(p.name)}</a>
-      <span style="color:#65676b;font-size:12px;">${p.demographics.age} · ${escapeHtml(p.demographics.occupation_hint)} · ${escapeHtml(p.politics.party)}</span>
+      <span style="color:#65676b;font-size:12px;">${p.demographics?.age || ''} · ${escapeHtml(p.demographics?.occupation_hint || '')} · ${escapeHtml(p.demographics?.region || '')}</span>
     </div>
-    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">${subs}</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">${dims}</div>
     ${body}
   </div></div>`;
 }

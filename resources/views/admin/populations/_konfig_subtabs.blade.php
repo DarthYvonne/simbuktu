@@ -5,8 +5,6 @@ $path = request()->path();
 $subtabs = [
   ['Indstillinger', url($base),                $path === ltrim($base, '/')],
   ['Demografi',     url("$base/demografi"),    str_starts_with($path, ltrim("$base/demografi", '/'))],
-  ['Subkultur',     url("$base/subkultur"),    str_starts_with($path, ltrim("$base/subkultur", '/'))],
-  ['Personlighed',  url("$base/personlighed"), str_starts_with($path, ltrim("$base/personlighed", '/'))],
   ['Prompts',       url("$base/prompts"),      str_starts_with($path, ltrim("$base/prompts", '/'))],
 ];
 @endphp

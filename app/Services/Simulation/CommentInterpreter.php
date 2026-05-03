@@ -27,19 +27,18 @@ class CommentInterpreter
         $current = $course ? app(NewsContextService::class)->current($course) : '';
 
         $prompt = $this->prompts->render('comment.interpret', [
-            'persona_name' => $persona['name'],
-            'age' => $persona['demographics']['age'],
-            'occupation_hint' => $persona['demographics']['occupation_hint'],
-            'narrative' => $persona['narrative'] ?? '',
+            'persona_name'        => $persona['name'] ?? '',
+            'age'                 => $persona['demographics']['age']             ?? '',
+            'occupation_hint'     => $persona['demographics']['occupation_hint'] ?? '',
+            'narrative'           => $persona['narrative'] ?? '',
             'inner_contradiction' => $persona['inner_contradiction'] ?? '',
-            'conflict_style' => $persona['personality']['conflict_style'],
-            'tone' => $persona['some_behavior']['tone'],
-            'original_comment' => $original->body,
-            'replier_name' => $reply->persona_name,
-            'replier_is_student' => $reply->user_id !== null ? ' [STUDERENDE]' : '',
-            'reply_text' => $reply->body,
-            'post_text' => $post->body,
-            'current_context' => $current,
+            'personality_block'   => $persona['personality_block'] ?? '',
+            'original_comment'    => $original->body,
+            'replier_name'        => $reply->persona_name,
+            'replier_is_student'  => $reply->user_id !== null ? ' [STUDERENDE]' : '',
+            'reply_text'          => $reply->body,
+            'post_text'           => $post->body,
+            'current_context'     => $current,
         ]);
 
         try {

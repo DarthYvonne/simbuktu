@@ -13,8 +13,7 @@ class CommentPromptBuilder
 
     public function build(array $persona, string $postText, array $existingComments = [], ?array $replyTo = null, ?string $imageDescription = null, ?array $linkPreview = null, ?\App\Models\Course $course = null): string
     {
-        $d = $persona['demographics'];
-        $bf = $persona['personality']['big_five'];
+        $d = $persona['demographics'] ?? [];
 
         $existingContext = '';
         if (!empty($existingComments)) {
@@ -41,60 +40,43 @@ class CommentPromptBuilder
         }
 
         return $this->prompts->render('comment.compose', [
-            'persona_name' => $persona['name'],
-            'age' => $d['age'],
-            'occupation_hint' => $d['occupation_hint'],
-            'region' => $d['region'],
-            'narrative' => $persona['narrative'] ?? '',
+            'persona_name'        => $persona['name'] ?? '',
+            'age'                 => $d['age']             ?? '',
+            'occupation_hint'     => $d['occupation_hint'] ?? '',
+            'region'              => $d['region']          ?? '',
+            'narrative'           => $persona['narrative'] ?? '',
             'inner_contradiction' => $persona['inner_contradiction'] ?? '',
-            'party' => $persona['politics']['party'],
-            'value_axis' => $persona['politics']['value_axis'],
-            'economic_axis' => $persona['politics']['economic_axis'],
-            'big_five_O' => $bf['O'],
-            'big_five_C' => $bf['C'],
-            'big_five_E' => $bf['E'],
-            'big_five_A' => $bf['A'],
-            'big_five_N' => $bf['N'],
-            'conflict_style' => $persona['personality']['conflict_style'],
-            'subcultures' => implode(', ', $persona['subcultures']),
-            'triggers' => implode(', ', $persona['triggers']),
-            'register' => $persona['language']['register'],
-            'spelling_quality' => $persona['language']['spelling_quality'],
-            'tone' => $persona['some_behavior']['tone'],
-            'post_text' => $postText,
-            'media_context' => $mediaContext,
-            'existing_context' => $existingContext,
-            'reply_context' => $replyContext,
-            'length_target' => $this->targetLength($persona, $replyTo !== null),
-            'current_context' => $course ? app(\App\Services\News\NewsContextService::class)->current($course) : '',
+            'personality_block'   => $persona['personality_block'] ?? '',
+            'post_text'           => $postText,
+            'media_context'       => $mediaContext,
+            'existing_context'    => $existingContext,
+            'reply_context'       => $replyContext,
+            'length_target'       => $this->targetLength($persona, $replyTo !== null),
+            'current_context'     => $course ? app(\App\Services\News\NewsContextService::class)->current($course) : '',
         ]);
     }
 
     private function targetLength(array $persona, bool $isReply): string
     {
-        $style = $persona['personality']['conflict_style'] ?? 'undvigende';
-        $tone = $persona['some_behavior']['tone'] ?? 'kommenterer pænt';
-        $register = $persona['language']['register'] ?? 'dagligdags';
+        // Length target derived from coarse cues in the personality block. Without typed
+        // fields, we read keywords from the rendered text to bias toward shorter or longer
+        // comments. Falls back to a moderate range.
+        $block = mb_strtolower($persona['personality_block'] ?? '');
 
-        [$min, $max] = match ($style) {
-            'trollende' => [3, 18],
-            'undvigende' => [4, 20],
-            'passiv-aggressiv' => [8, 35],
-            'direkte konfronterende' => [12, 50],
-            'saglig-insisterende' => [40, 180],
-            default => [10, 40],
-        };
+        [$min, $max] = [10, 40];
+        if (str_contains($block, 'troll'))                                { $min = 2;  $max = 18;  }
+        if (str_contains($block, 'undvigende'))                           { $min = 4;  $max = 20;  }
+        if (str_contains($block, 'passiv-aggressiv'))                     { $min = 8;  $max = 35;  }
+        if (str_contains($block, 'direkte konfronterende'))               { $min = 12; $max = 50;  }
+        if (str_contains($block, 'saglig-insisterende'))                  { $min = 40; $max = 180; }
+        if (str_contains($block, 'shitstorm'))                            { $max = (int) ($max * 1.4); }
 
-        if ($tone === 'liker' || $tone === 'kommenterer pænt') { $min = max(2, (int)($min * 0.4)); $max = (int)($max * 0.5); }
-        if ($tone === 'troll') { $min = 2; $max = min($max, 15); }
-        if ($tone === 'shitstorm-deltager') { $max = (int)($max * 1.4); }
-
-        if ($register === 'akademisk') { $max = (int)($max * 1.3); }
-        if ($register === 'emoji-rigt' || $register === 'VERSALER' || $register === 'slang-tungt') {
-            $max = (int)($max * 0.6);
+        if (str_contains($block, 'akademisk'))                            { $max = (int) ($max * 1.3); }
+        if (str_contains($block, 'emoji') || str_contains($block, 'versaler') || str_contains($block, 'slang')) {
+            $max = (int) ($max * 0.6);
         }
 
-        if ($isReply) { $max = max($min + 2, (int)($max * 0.7)); }
+        if ($isReply) { $max = max($min + 2, (int) ($max * 0.7)); }
 
         $target = random_int($min, max($min, $max));
         return $target <= 5 ? "{$target} (meget kort)" : (string) $target;

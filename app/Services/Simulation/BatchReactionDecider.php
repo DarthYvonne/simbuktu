@@ -4,7 +4,6 @@ namespace App\Services\Simulation;
 
 use App\Models\Post;
 use App\Services\Llm\LlmRouter;
-use App\Services\Personas\PersonalityRuleRenderer;
 use App\Services\PromptRepository;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +12,6 @@ class BatchReactionDecider
     public function __construct(
         private LlmRouter $llm,
         private PromptRepository $prompts,
-        private PersonalityRuleRenderer $personality,
     ) {
     }
 
@@ -25,16 +23,15 @@ class BatchReactionDecider
     {
         if (empty($personas)) return [];
 
-        // Build persona summaries: identity + personality rules as prose + topic triggers
+        // Build persona summaries: identity + personality block from blueprint
         $personaList = [];
         foreach ($personas as $p) {
             $personaList[] = [
-                'id' => $p['id'],
-                'name' => $p['name'],
-                'age' => $p['demographics']['age'],
-                'job' => $p['demographics']['occupation_hint'],
-                'personlighed' => $this->personality->render($p),
-                'triggers' => $p['triggers'],
+                'id'                  => $p['id'],
+                'name'                => $p['name'] ?? '',
+                'age'                 => $p['demographics']['age']             ?? '',
+                'job'                 => $p['demographics']['occupation_hint'] ?? '',
+                'personlighed'        => $p['personality_block'] ?? '',
                 'inner_contradiction' => $p['inner_contradiction'] ?? '',
             ];
         }

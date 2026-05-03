@@ -31,11 +31,6 @@ class Population extends Model
         $overrides = $this->config_overrides ?? [];
         $merged    = array_replace_recursive(config('personas'), $overrides);
 
-        foreach (['subcultures', 'parties', 'trigger_topics', 'conflict_styles', 'language_registers'] as $k) {
-            if (array_key_exists($k, $overrides)) {
-                $merged[$k] = $overrides[$k];
-            }
-        }
         if (isset($overrides['demographics']['age_brackets'])) {
             $merged['demographics']['age_brackets'] = $overrides['demographics']['age_brackets'];
         }

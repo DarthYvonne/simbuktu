@@ -12,13 +12,17 @@ class Persona extends Model
     public $incrementing = false;
 
     protected $casts = [
-        'subcultures' => 'array',
         'persona_data' => 'array',
     ];
 
     public function population(): BelongsTo
     {
         return $this->belongsTo(Population::class);
+    }
+
+    public function blueprint(): BelongsTo
+    {
+        return $this->belongsTo(Blueprint::class);
     }
 
     public function toFullArray(): array

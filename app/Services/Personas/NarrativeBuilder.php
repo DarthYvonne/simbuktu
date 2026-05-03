@@ -43,36 +43,18 @@ class NarrativeBuilder
 
     private function prompt(array $p): string
     {
-        $d = $p['demographics'];
-        $pol = $p['politics'];
-        $bf = $p['personality']['big_five'];
-
+        $d = $p['demographics'] ?? [];
         return $this->prompts->render('persona.narrative', [
-            'age' => $d['age'],
-            'gender' => $d['gender'],
-            'region' => $d['region'],
-            'city_type' => $d['city_type'],
-            'education' => $d['education'],
-            'occupation_hint' => $d['occupation_hint'],
-            'income_bracket' => $d['income_bracket'],
-            'family' => $d['family'],
-            'heritage' => $d['heritage'],
-            'party' => $pol['party'],
-            'value_axis' => $pol['value_axis'],
-            'economic_axis' => $pol['economic_axis'],
-            'engagement_level' => $pol['engagement_level'],
-            'big_five_O' => $bf['O'],
-            'big_five_C' => $bf['C'],
-            'big_five_E' => $bf['E'],
-            'big_five_A' => $bf['A'],
-            'big_five_N' => $bf['N'],
-            'authoritarianism' => $p['personality']['authoritarianism'],
-            'conflict_style' => $p['personality']['conflict_style'],
-            'subcultures' => implode(', ', $p['subcultures']),
-            'triggers' => implode(', ', $p['triggers']),
-            'register' => $p['language']['register'],
-            'spelling_quality' => $p['language']['spelling_quality'],
-            'tone' => $p['some_behavior']['tone'],
+            'age'               => $d['age']             ?? '',
+            'gender'            => $d['gender']          ?? '',
+            'region'            => $d['region']          ?? '',
+            'city_type'         => $d['city_type']       ?? '',
+            'education'         => $d['education']       ?? '',
+            'occupation_hint'   => $d['occupation_hint'] ?? '',
+            'income_bracket'    => $d['income_bracket']  ?? '',
+            'family'            => $d['family']          ?? '',
+            'heritage'          => $d['heritage']        ?? '',
+            'personality_block' => $p['personality_block'] ?? '',
         ]);
     }
 }

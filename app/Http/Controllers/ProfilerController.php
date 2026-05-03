@@ -15,29 +15,21 @@ class ProfilerController extends Controller
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
-        $sub = $request->query('subculture');
-        $party = $request->query('party');
         $region = $request->query('region');
         $ageBucket = $request->query('age');
 
-        $personas = $this->repo->filter($q, $sub, $party, $region, $ageBucket);
+        $personas = $this->repo->filter($q, $region, $ageBucket);
 
         $all = $this->repo->all();
-        $subcultures = collect($all)->flatMap(fn ($p) => $p['subcultures'] ?? [])->unique()->sort()->values();
-        $parties = collect($all)->pluck('politics.party')->unique()->filter()->sort()->values();
         $regions = collect($all)->pluck('demographics.region')->unique()->filter()->sort()->values();
 
         return view('profiler.index', [
             'personas' => $personas,
-            'total' => count($all),
-            'q' => $q,
-            'subculture' => $sub,
-            'party' => $party,
-            'region' => $region,
-            'age' => $ageBucket,
-            'subcultures' => $subcultures,
-            'parties' => $parties,
-            'regions' => $regions,
+            'total'    => count($all),
+            'q'        => $q,
+            'region'   => $region,
+            'age'      => $ageBucket,
+            'regions'  => $regions,
         ]);
     }
 
@@ -80,7 +72,7 @@ class ProfilerController extends Controller
     {
         return view('profiler.graph', [
             'personaCount' => count($this->repo->all()),
-            'edgeCount' => \App\Models\Friendship::count(),
+            'edgeCount'    => \App\Models\Friendship::count(),
         ]);
     }
 
@@ -89,24 +81,22 @@ class ProfilerController extends Controller
         $personas = $this->repo->all();
         $friendships = \App\Models\Friendship::select(['persona_id_1', 'persona_id_2'])->get();
 
+        // Color personas by their region (simple, demographic-based grouping).
         $colorMap = [];
         $palette = ['#1877f2','#22c55e','#e11d48','#f59e0b','#7c3aed','#06b6d4','#ec4899','#10b981','#f97316','#8b5cf6','#64748b','#eab308','#3b82f6','#ef4444','#14b8a6'];
-        foreach ($personas as $p) {
-            $sub = $p['subcultures'][0] ?? 'mainstream';
-            if (!isset($colorMap[$sub])) $colorMap[$sub] = $palette[count($colorMap) % count($palette)];
-        }
 
         $nodes = [];
         foreach ($personas as $p) {
-            $sub = $p['subcultures'][0] ?? 'mainstream';
+            $region = $p['demographics']['region'] ?? 'Ukendt';
+            if (!isset($colorMap[$region])) $colorMap[$region] = $palette[count($colorMap) % count($palette)];
             $nodes[] = [
-                'id' => $p['id'],
-                'label' => $p['name'] ?? 'Ukendt',
-                'image' => !empty($p['image_file']) ? url('/simulation/profiler/'.$p['id'].'/thumb') : null,
-                'color' => $colorMap[$sub],
-                'subculture' => $sub,
-                'age' => $p['demographics']['age'] ?? null,
-                'url' => url('/simulation/profiler/'.$p['id']),
+                'id'     => $p['id'],
+                'label'  => $p['name'] ?? 'Ukendt',
+                'image'  => !empty($p['image_file']) ? url('/simulation/profiler/'.$p['id'].'/thumb') : null,
+                'color'  => $colorMap[$region],
+                'region' => $region,
+                'age'    => $p['demographics']['age'] ?? null,
+                'url'    => url('/simulation/profiler/'.$p['id']),
             ];
         }
 

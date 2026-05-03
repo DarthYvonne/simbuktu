@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\BlueprintLibraryController;
 use App\Http\Controllers\Admin\ContextController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\PersonaController;
-use App\Http\Controllers\Admin\PersonalityController;
 use App\Http\Controllers\Admin\PersonaTesterController;
 use App\Http\Controllers\Admin\PopulationController;
 use App\Http\Controllers\Admin\PromptController;
@@ -21,7 +20,7 @@ use App\Http\Controllers\ProfilerController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 
-Route::get('/', fn () => view('coming-soon'));
+Route::get('/', fn () => view('landing'));
 Route::get('/lovestormlab', fn () => view('lovestormlab'));
 
 Route::post('/booking', function (\Illuminate\Http\Request $request) {
@@ -116,6 +115,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
         Route::post('/courses/{course}/switch', [CourseController::class, 'switch']);
         Route::patch('/courses/{course}/population', [CourseController::class, 'setPopulation']);
+        Route::patch('/courses/{course}/blueprint',  [CourseController::class, 'setBlueprint']);
 
         Route::get('/populations', [PopulationController::class, 'index']);
         Route::post('/populations', [PopulationController::class, 'store']);
@@ -148,17 +148,8 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
             Route::patch('/demografi',                     [PopulationController::class, 'saveDemografi']);
             Route::post('/demografi/{dim}/reset',          [PopulationController::class, 'resetDemografiDimension']);
 
-            Route::get('/subkultur',                       [PopulationController::class, 'subkultur']);
-            Route::patch('/subkultur',                     [PopulationController::class, 'saveSubkultur']);
-            Route::post('/subkultur/reset',                [PopulationController::class, 'resetSubkultur']);
-
             Route::get('/prompts',                     [PopulationController::class, 'prompts']);
             Route::patch('/prompts',                   [PopulationController::class, 'savePrompt']);
-
-            Route::get('/personlighed',                [PersonalityController::class, 'index']);
-            Route::patch('/personlighed/{rule}',       [PersonalityController::class, 'update']);
-            Route::post('/personlighed/{rule}/reset',  [PersonalityController::class, 'reset']);
-            Route::post('/personlighed/reset-all',     [PersonalityController::class, 'resetAll']);
         });
 
         Route::get('/blueprint-library',                      [BlueprintLibraryController::class, 'index']);

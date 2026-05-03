@@ -3,12 +3,10 @@
 
 @php
   $base = '/simulation/admin/populations/'.$population->id;
-  $activeFilters = array_filter(['subculture' => $subculture, 'party' => $party, 'region' => $region, 'age' => $age]);
+  $activeFilters = array_filter(['region' => $region, 'age' => $age]);
   $maxAge = max(array_values($ageDist) ?: [0]);
   $regionTop = array_slice($regionDist, 0, 6, true);
   $maxRegion = max(array_values($regionTop) ?: [0]);
-  $partyTop = array_slice($partyDist, 0, 8, true);
-  $maxParty = max(array_values($partyTop) ?: [0]);
 @endphp
 
 <style>
@@ -16,7 +14,7 @@
 .pop-switch { padding: 8px 12px; border: 1px solid #dadde1; border-radius: 8px; font-size: 15px; font-weight: 700; font-family: inherit; background: #fff; cursor: pointer; min-width: 220px; max-width: 320px; color: #1c1e21; }
 .pop-count { color: #65676b; font-size: 13px; font-weight: 500; }
 
-.demo-strip { display: grid; grid-template-columns: 1.4fr 1fr 1.2fr; gap: 14px; margin-bottom: 14px; }
+.demo-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 @media (max-width: 900px) { .demo-strip { grid-template-columns: 1fr; } }
 .demo-block { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 12px 14px; }
 .demo-title { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
@@ -102,16 +100,6 @@
       </div>
     @endforeach
   </div>
-  <div class="demo-block">
-    <div class="demo-title">Parti</div>
-    @foreach ($partyTop as $name => $n)
-      <div class="demo-row r">
-        <span class="lbl" title="{{ $name }}">{{ $name }}</span>
-        <span class="bar-wrap"><span class="bar" style="width: {{ $maxParty ? round($n / $maxParty * 100) : 0 }}%"></span></span>
-        <span class="num">{{ $n }}</span>
-      </div>
-    @endforeach
-  </div>
 </div>
 @endif
 
@@ -173,8 +161,6 @@
       @if (count($activeFilters)) <span class="badge">{{ count($activeFilters) }}</span> @endif
       <i class="fa-solid fa-caret-down" style="font-size: 11px;"></i>
     </button>
-    <input type="hidden" name="subculture" value="{{ $subculture }}">
-    <input type="hidden" name="party" value="{{ $party }}">
     <input type="hidden" name="region" value="{{ $region }}">
     <input type="hidden" name="age" value="{{ $age }}">
 
@@ -183,24 +169,6 @@
     @endforeach
 
     <div id="filterPopover" class="popover" style="display: none; top: 50px; right: 0; min-width: 320px;">
-      <div style="margin-bottom: 10px;">
-        <label>Subkultur</label>
-        <select onchange="updateFilter('subculture', this.value)">
-          <option value="">Alle</option>
-          @foreach ($subcultures as $s)
-            <option value="{{ $s }}" {{ $subculture === $s ? 'selected' : '' }}>{{ $s }}</option>
-          @endforeach
-        </select>
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>Parti</label>
-        <select onchange="updateFilter('party', this.value)">
-          <option value="">Alle</option>
-          @foreach ($parties as $p)
-            <option value="{{ $p }}" {{ $party === $p ? 'selected' : '' }}>{{ $p }}</option>
-          @endforeach
-        </select>
-      </div>
       <div style="margin-bottom: 10px;">
         <label>Region</label>
         <select onchange="updateFilter('region', this.value)">

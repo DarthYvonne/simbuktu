@@ -36,29 +36,17 @@ class PersonaRepository
         return Persona::find($id)?->toFullArray();
     }
 
-    public function filter(string $q = '', ?string $subculture = null, ?string $party = null, ?string $region = null, ?string $ageBucket = null): Collection
+    public function filter(string $q = '', ?string $region = null, ?string $ageBucket = null): Collection
     {
         $query = $this->query();
 
         if ($q !== '') $query->where('name', 'like', "%{$q}%");
-        if ($party)    $query->where('party', $party);
         if ($region)   $query->where('region', $region);
         if ($ageBucket) {
             [$min, $max] = array_map('intval', explode('-', $ageBucket));
             $query->whereBetween('age', [$min, $max]);
         }
-        if ($subculture) $query->whereJsonContains('subcultures', $subculture);
 
         return $query->get()->map->toFullArray();
-    }
-
-    public function bySubcultures(array $subcultures): array
-    {
-        if (empty($subcultures)) return [];
-        $query = $this->query();
-        foreach ($subcultures as $s) {
-            $query->orWhereJsonContains('subcultures', $s);
-        }
-        return $query->get()->map->toFullArray()->all();
     }
 }

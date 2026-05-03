@@ -19,16 +19,18 @@ class CoverPicker
     }
 
     /**
-     * Pick a deterministic cover for a persona based on their subcultures.
-     * Returns ['url' => ..., 'thumb' => ..., 'author' => ..., 'author_url' => ...] or null.
+     * Pick a deterministic cover for a persona. Looks for matches against any sampled facet
+     * name in the blueprint dimensions; falls back to _fallback list otherwise. Keyed by the
+     * persona's id so the same persona always sees the same cover.
      */
     public function pickFor(array $persona): ?array
     {
         $data = $this->load();
         $candidates = [];
-        foreach ($persona['subcultures'] ?? [] as $s) {
-            if (!empty($data[$s])) {
-                foreach ($data[$s] as $c) $candidates[] = $c;
+        foreach ($persona['dimensions'] ?? [] as $d) {
+            $facet = $d['facet'] ?? null;
+            if ($facet && !empty($data[$facet])) {
+                foreach ($data[$facet] as $c) $candidates[] = $c;
             }
         }
         if (empty($candidates) && !empty($data['_fallback'])) {

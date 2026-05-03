@@ -64,24 +64,15 @@ class AnalyseController extends Controller
 
         $engagers = $engagerIds->map(fn ($pid) => $this->repo->find($pid))->filter()->values();
 
-        // Subculture distribution across all engagers
-        $subCounts = [];
+        // Facet distribution across engagers — group sampled facets per dimension.
+        $facetCounts = [];
         foreach ($engagers as $persona) {
-            foreach ($persona['subcultures'] ?? [] as $s) $subCounts[$s] = ($subCounts[$s] ?? 0) + 1;
-        }
-        arsort($subCounts);
-
-        // Trigger-emner: only count if the trigger is actually mentioned in the post content
-        $postContent = mb_strtolower($post->body . ' ' . ($post->image_description ?? '') . ' ' . ($post->link_title ?? '') . ' ' . ($post->link_description ?? ''));
-        $triggerCounts = [];
-        foreach ($engagers as $persona) {
-            foreach ($persona['triggers'] ?? [] as $t) {
-                if (str_contains($postContent, mb_strtolower($t))) {
-                    $triggerCounts[$t] = ($triggerCounts[$t] ?? 0) + 1;
-                }
+            foreach ($persona['dimensions'] ?? [] as $d) {
+                $key = ($d['dimension'] ?? '') . ' · ' . ($d['facet'] ?? '');
+                $facetCounts[$key] = ($facetCounts[$key] ?? 0) + 1;
             }
         }
-        arsort($triggerCounts);
+        arsort($facetCounts);
 
         // Reaction breakdown (from post.reactions JSON aggregation)
         $reactions = $post->reactions ?? [];
@@ -90,26 +81,27 @@ class AnalyseController extends Controller
         // Demographics across all engagers
         $ageBuckets = ['16-24'=>0,'25-34'=>0,'35-44'=>0,'45-54'=>0,'55-64'=>0,'65+'=>0];
         $genders = [];
-        $partyCounts = [];
+        $regionCounts = [];
         foreach ($engagers as $p) {
-            $age = $p['demographics']['age'];
-            $bucket = $age < 25 ? '16-24' : ($age < 35 ? '25-34' : ($age < 45 ? '35-44' : ($age < 55 ? '45-54' : ($age < 65 ? '55-64' : '65+'))));
-            $ageBuckets[$bucket]++;
-            $g = $p['demographics']['gender'];
-            $genders[$g] = ($genders[$g] ?? 0) + 1;
-            $party = $p['politics']['party'];
-            $partyCounts[$party] = ($partyCounts[$party] ?? 0) + 1;
+            $age = $p['demographics']['age'] ?? null;
+            if (is_numeric($age)) {
+                $bucket = $age < 25 ? '16-24' : ($age < 35 ? '25-34' : ($age < 45 ? '35-44' : ($age < 55 ? '45-54' : ($age < 65 ? '55-64' : '65+'))));
+                $ageBuckets[$bucket]++;
+            }
+            $g = $p['demographics']['gender'] ?? null;
+            if ($g) $genders[$g] = ($genders[$g] ?? 0) + 1;
+            $r = $p['demographics']['region'] ?? null;
+            if ($r) $regionCounts[$r] = ($regionCounts[$r] ?? 0) + 1;
         }
-        arsort($partyCounts);
+        arsort($regionCounts);
 
         return [
             'rounds' => $byRound,
-            'subcultures' => $subCounts,
-            'triggers' => array_slice($triggerCounts, 0, 10, true),
+            'facets' => array_slice($facetCounts, 0, 12, true),
             'reactions' => $reactions,
             'age_buckets' => $ageBuckets,
             'genders' => $genders,
-            'parties' => $partyCounts,
+            'regions' => $regionCounts,
             'totals' => [
                 'exposures' => $exposures->count(),
                 'comments' => $comments->count(),

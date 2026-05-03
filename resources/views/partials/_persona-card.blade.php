@@ -74,9 +74,8 @@
 
 @php
   $_cover = app(\App\Services\CoverPicker::class)->pickFor($p);
-  $_trigs = array_slice($p['triggers'] ?? [], 0, 2);
-  $_subs  = array_slice($p['subcultures'] ?? [], 0, 2);
-  $_hasFooter = !empty($_trigs) || !empty($_subs);
+  $_dims = array_slice($p['dimensions'] ?? [], 0, 3);
+  $_hasFooter = !empty($_dims);
 @endphp
 
 <a href="{{ $href }}" class="pc">
@@ -101,11 +100,8 @@
 
   @if ($_hasFooter)
   <div class="pc-footer">
-    @foreach ($_subs as $_s)
-      <span class="pc-footer-tag sub">{{ $_s }}</span>
-    @endforeach
-    @foreach ($_trigs as $_t)
-      <span class="pc-footer-tag">{{ $_t }}</span>
+    @foreach ($_dims as $_d)
+      <span class="pc-footer-tag sub">{{ $_d['facet'] ?? '' }}</span>
     @endforeach
   </div>
   @endif

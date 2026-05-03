@@ -24,17 +24,14 @@ class PersonaController extends Controller
         $total = count($all);
 
         $q         = trim((string) $request->query('q', ''));
-        $sub       = $request->query('subculture');
-        $party     = $request->query('party');
         $region    = $request->query('region');
         $ageBucket = $request->query('age');
 
-        $personas = $repo->filter($q, $sub, $party, $region, $ageBucket);
+        $personas = $repo->filter($q, $region, $ageBucket);
 
         $ageBuckets = ['16-24','25-34','35-44','45-54','55-64','65-79','80-99'];
         $ageDist    = array_fill_keys($ageBuckets, 0);
         $regionDist = [];
-        $partyDist  = [];
         foreach ($all as $p) {
             $a = $p['demographics']['age'] ?? null;
             if (is_numeric($a)) {
@@ -45,11 +42,8 @@ class PersonaController extends Controller
             }
             $r = $p['demographics']['region'] ?? null;
             if ($r) $regionDist[$r] = ($regionDist[$r] ?? 0) + 1;
-            $pa = $p['politics']['party'] ?? null;
-            if ($pa) $partyDist[$pa] = ($partyDist[$pa] ?? 0) + 1;
         }
         arsort($regionDist);
-        arsort($partyDist);
 
         $course        = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
         $activityCount = 0;
@@ -68,16 +62,11 @@ class PersonaController extends Controller
             'count'          => $personas->count(),
             'total'          => $total,
             'q'              => $q,
-            'subculture'     => $sub,
-            'party'          => $party,
             'region'         => $region,
             'age'            => $ageBucket,
-            'subcultures'    => collect($all)->flatMap(fn ($p) => $p['subcultures'] ?? [])->unique()->sort()->values(),
-            'parties'        => collect($all)->pluck('politics.party')->unique()->filter()->sort()->values(),
             'regions'        => collect($all)->pluck('demographics.region')->unique()->filter()->sort()->values(),
             'ageDist'        => $ageDist,
             'regionDist'     => $regionDist,
-            'partyDist'      => $partyDist,
         ]);
     }
 
@@ -125,6 +114,8 @@ class PersonaController extends Controller
             return back()->with('error', 'GEMINI_API_KEY ikke sat i .env');
         }
 
+        $blueprintId = \Illuminate\Support\Facades\Auth::user()?->currentCourse()?->blueprint_id;
+
         $prefix = "personas:gen:{$population->id}";
         Cache::put("{$prefix}:queued",     $count, 3600);
         Cache::put("{$prefix}:done",       0,      3600);
@@ -132,7 +123,7 @@ class PersonaController extends Controller
         Cache::put("{$prefix}:started_at", now()->toIso8601String(), 3600);
 
         for ($i = 0; $i < $count; $i++) {
-            GeneratePersonaJob::dispatch($skipImages, $population->id);
+            GeneratePersonaJob::dispatch($skipImages, $population->id, $blueprintId);
         }
 
         return back()->with('success', "{$count} personas sat i kø — generering kører i baggrunden. Siden refresher automatisk.");

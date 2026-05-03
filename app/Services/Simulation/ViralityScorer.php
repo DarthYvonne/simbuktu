@@ -12,7 +12,7 @@ class ViralityScorer
         $comments = $post->comments()->count();
         $shares = $post->exposures()->where('action', 'share')->count();
         $maxDepth = $this->maxThreadDepth($post);
-        $subcultureSpread = $this->subcultureSpread($post);
+        $regionSpread = $this->regionSpread($post);
         $rounds = max(1, $post->round);
 
         // Reach speed (0-30): comments per round
@@ -24,8 +24,8 @@ class ViralityScorer
         // Thread depth (0-20): how deep the longest thread goes
         $depth = min(20, $maxDepth * 5);
 
-        // Subculture spread (0-20)
-        $spread = min(20, $subcultureSpread * 4);
+        // Region spread (0-20) — how widely across DK regions the post reached
+        $spread = min(20, $regionSpread * 4);
 
         return (int) round($speed + $engagement + $depth + $spread);
     }
@@ -47,16 +47,12 @@ class ViralityScorer
         return $maxDepth;
     }
 
-    private function subcultureSpread(Post $post): int
+    private function regionSpread(Post $post): int
     {
         $personaIds = $post->comments()->pluck('persona_id')->filter()->unique();
         if ($personaIds->isEmpty()) return 0;
-        $repo = app(\App\Services\Personas\PersonaRepository::class);
-        $subs = collect();
-        foreach ($personaIds as $id) {
-            $p = $repo->find($id);
-            if ($p) $subs = $subs->merge($p['subcultures'] ?? []);
-        }
-        return $subs->unique()->count();
+        return \App\Models\Persona::whereIn('id', $personaIds)
+            ->distinct()
+            ->count('region');
     }
 }

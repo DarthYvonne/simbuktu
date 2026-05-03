@@ -9,19 +9,7 @@
 
 <div class="card">
   <form method="GET" action="{{ url('/simulation/profiler') }}" class="filter-grid">
-    <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn, bio, job, subkultur..." style="padding: 8px 12px;">
-    <select name="subculture" onchange="this.form.submit()">
-      <option value="">Alle subkulturer</option>
-      @foreach ($subcultures as $s)
-        <option value="{{ $s }}" {{ $subculture === $s ? 'selected' : '' }}>{{ $s }}</option>
-      @endforeach
-    </select>
-    <select name="party" onchange="this.form.submit()">
-      <option value="">Alle partier</option>
-      @foreach ($parties as $p)
-        <option value="{{ $p }}" {{ $party === $p ? 'selected' : '' }}>{{ $p }}</option>
-      @endforeach
-    </select>
+    <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn..." style="padding: 8px 12px;">
     <select name="region" onchange="this.form.submit()">
       <option value="">Alle regioner</option>
       @foreach ($regions as $r)
@@ -35,7 +23,7 @@
       @endforeach
     </select>
   </form>
-  @if ($q || $subculture || $party || $region || $age)
+  @if ($q || $region || $age)
     <div style="margin-top: 10px;">
       <a href="{{ url('/simulation/profiler') }}" style="color: #1877f2; font-size: 13px;">Nulstil filtre</a>
     </div>

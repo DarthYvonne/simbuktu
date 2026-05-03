@@ -13,7 +13,8 @@ class BlueprintController extends Controller
     public function index()
     {
         $blueprints = Blueprint::orderBy('name')->get();
-        return view('admin.blueprints.index', compact('blueprints'));
+        $course = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
+        return view('admin.blueprints.index', compact('blueprints', 'course'));
     }
 
     public function store(Request $request)

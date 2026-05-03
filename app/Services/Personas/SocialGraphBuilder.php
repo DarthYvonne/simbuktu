@@ -193,23 +193,14 @@ class SocialGraphBuilder
 
     private function targetFriendCount(array $p, array $params): int
     {
-        $bf = $p['personality']['big_five'];
         $base = $params['base_friend_count'];
-        $bonusE = ($bf['E'] - 5) * 8;
-        $bonusA = ($bf['A'] - 5) * 5;
-        $bonusO = ($bf['O'] - 5) * 3;
-        $penaltyN = ($bf['N'] - 5) * -4;
         $noise = random_int(-15, 15);
-        return max($params['min_friends'], min($params['max_friends'], (int) round($base + $bonusE + $bonusA + $bonusO + $penaltyN + $noise)));
+        return max($params['min_friends'], min($params['max_friends'], (int) round($base + $noise)));
     }
 
     private function bridgeThreshold(array $personas, float $pct): float
     {
-        // Bridge score = O value + centrality of politics (|value_axis| low) + subculture count
-        $scores = [];
-        foreach ($personas as $p) {
-            $scores[] = $this->bridgeScore($p);
-        }
+        $scores = array_map(fn ($p) => $this->bridgeScore($p), $personas);
         if (empty($scores)) return 999;
         rsort($scores);
         $idx = max(1, (int) floor(count($scores) * $pct / 100)) - 1;
@@ -218,11 +209,10 @@ class SocialGraphBuilder
 
     private function bridgeScore(array $p): float
     {
-        $bf = $p['personality']['big_five'];
-        $score = $bf['O'] * 1.0; // high openness
-        $score += (5 - abs(($p['politics']['value_axis'] ?? 0))) * 0.5; // central politics
-        $score += count($p['subcultures'] ?? []) * 1.2; // multiple subcultures
-        return $score;
+        // Without typed Big Five fields, treat dimension count as a rough proxy for "central"
+        // personas (more dimensions = more cross-cutting profile). Random tiebreaker keeps the
+        // bridge set from collapsing onto identical personas.
+        return count($p['dimensions'] ?? []) + mt_rand(0, 100) / 100;
     }
 
     private function isBridge(array $p, float $threshold): bool
@@ -233,56 +223,49 @@ class SocialGraphBuilder
     private function similarity(array $a, array $b, array $params): float
     {
         // Demographics
-        $ageSim = 1 - min(abs($a['demographics']['age'] - $b['demographics']['age']) / 30, 1);
+        $ageA = (int) ($a['demographics']['age'] ?? 0);
+        $ageB = (int) ($b['demographics']['age'] ?? 0);
+        $ageSim = 1 - min(abs($ageA - $ageB) / 30, 1);
         $eduMap = ['folkeskole' => 1, 'gymnasial' => 2, 'erhvervsuddannelse' => 2, 'kort videregående' => 3, 'mellemlang videregående' => 4, 'lang videregående' => 5];
-        $eA = $eduMap[$a['demographics']['education']] ?? 2;
-        $eB = $eduMap[$b['demographics']['education']] ?? 2;
+        $eA = $eduMap[$a['demographics']['education'] ?? ''] ?? 2;
+        $eB = $eduMap[$b['demographics']['education'] ?? ''] ?? 2;
         $eduSim = 1 - abs($eA - $eB) / 4;
-        $regionSim = $a['demographics']['region'] === $b['demographics']['region'] ? 1 : 0;
+        $regionSim = ($a['demographics']['region'] ?? null) === ($b['demographics']['region'] ?? null) ? 1 : 0;
         $demographics = ($ageSim * 0.5 + $eduSim * 0.3 + $regionSim * 0.2);
 
-        // Subculture overlap
-        $shared = array_intersect($a['subcultures'] ?? [], $b['subcultures'] ?? []);
-        $subcultureSim = min(1, count($shared) * 0.5);
-
-        // Political (weak)
-        $vA = $a['politics']['value_axis'] ?? 0;
-        $vB = $b['politics']['value_axis'] ?? 0;
-        $eA2 = $a['politics']['economic_axis'] ?? 0;
-        $eB2 = $b['politics']['economic_axis'] ?? 0;
-        $politicalSim = (1 - abs($vA - $vB) / 10) * 0.6 + (1 - abs($eA2 - $eB2) / 10) * 0.4;
-
-        // Big Five homophily on A, E, O
-        $bfA = $a['personality']['big_five'];
-        $bfB = $b['personality']['big_five'];
-        $personalitySim = (
-            (1 - abs($bfA['A'] - $bfB['A']) / 9) +
-            (1 - abs($bfA['E'] - $bfB['E']) / 9) +
-            (1 - abs($bfA['O'] - $bfB['O']) / 9)
-        ) / 3;
+        // Personality similarity — share of dimensions where the same facet was sampled.
+        $aDims = $this->dimMap($a);
+        $bDims = $this->dimMap($b);
+        $shared = 0; $compared = 0;
+        foreach ($aDims as $name => $facet) {
+            if (isset($bDims[$name])) {
+                $compared++;
+                if ($facet === $bDims[$name]) $shared++;
+            }
+        }
+        $personalitySim = $compared > 0 ? $shared / $compared : 0.5;
 
         // Heritage
-        $heritageSim = $a['demographics']['heritage'] === $b['demographics']['heritage'] ? 1 : 0.3;
+        $heritageSim = ($a['demographics']['heritage'] ?? null) === ($b['demographics']['heritage'] ?? null) ? 1 : 0.3;
 
         return $demographics * $params['demographics_weight']
-            + $subcultureSim * $params['subculture_weight']
-            + $politicalSim * $params['political_weight']
-            + $personalitySim * $params['personality_weight']
+            + $personalitySim * ($params['personality_weight'] + ($params['subculture_weight'] ?? 0) + ($params['political_weight'] ?? 0))
             + $heritageSim * $params['heritage_weight'];
     }
 
-    /**
-     * A decides whether to accept B's friend request (or reach out).
-     * High E + A = accepts more; running out of quota = accepts less.
-     */
+    private function dimMap(array $p): array
+    {
+        $out = [];
+        foreach ($p['dimensions'] ?? [] as $d) {
+            if (!empty($d['dimension'])) $out[$d['dimension']] = $d['facet'] ?? '';
+        }
+        return $out;
+    }
+
     private function acceptsRequest(array $self, array $other, float $similarity, int $remaining, int $target): bool
     {
-        $bf = $self['personality']['big_five'];
-        $base = 0.5;
-        $base += (($bf['E'] - 5) / 5) * 0.3;
-        $base += (($bf['A'] - 5) / 5) * 0.2;
-        $base += $similarity * 0.4; // high similarity pulls acceptance up
-        $base *= max(0.2, $remaining / max(1, $target)); // running out of room → less open
+        $base = 0.5 + $similarity * 0.4;
+        $base *= max(0.2, $remaining / max(1, $target));
         return mt_rand(0, 100) / 100 < min(1.0, max(0.02, $base));
     }
 }

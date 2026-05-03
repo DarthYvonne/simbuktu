@@ -118,49 +118,6 @@ class PopulationController extends Controller
         return back()->with('success', 'Demografi gemt.');
     }
 
-    public function subkultur(Population $population)
-    {
-        $defaults     = config('personas')['subcultures'];
-        $override     = $population->config_overrides['subcultures'] ?? null;
-        $effective    = $override ?? $defaults;
-        $isOverridden = $override !== null;
-        return view('admin.populations.subkultur', compact('population', 'defaults', 'effective', 'isOverridden'));
-    }
-
-    public function saveSubkultur(Request $request, Population $population)
-    {
-        $rows = $request->input('subcultures', []);
-        $map  = [];
-        foreach ($rows as $r) {
-            $name = trim((string) ($r['name'] ?? ''));
-            if ($name === '') continue;
-            $w = is_numeric($r['weight'] ?? null) ? 0 + $r['weight'] : 0;
-            $map[$name] = $w;
-        }
-
-        $allOverride   = $population->config_overrides ?? [];
-        $defaults      = config('personas')['subcultures'];
-        $defaultsFloat = array_map(fn ($v) => 0 + $v, $defaults);
-        $mapFloat      = array_map(fn ($v) => 0 + $v, $map);
-
-        if ($mapFloat === $defaultsFloat) {
-            unset($allOverride['subcultures']);
-        } else {
-            $allOverride['subcultures'] = $map;
-        }
-
-        $population->update(['config_overrides' => empty($allOverride) ? null : $allOverride]);
-        return back()->with('success', 'Subkulturer gemt.');
-    }
-
-    public function resetSubkultur(Population $population)
-    {
-        $allOverride = $population->config_overrides ?? [];
-        unset($allOverride['subcultures']);
-        $population->update(['config_overrides' => empty($allOverride) ? null : $allOverride]);
-        return redirect("/simulation/admin/populations/{$population->id}/subkultur")->with('success', 'Nulstillet til global standard.');
-    }
-
     public function resetDemografiDimension(Population $population, string $dim)
     {
         $allowed = ['age_brackets', 'gender', 'region', 'city_type', 'education', 'heritage'];

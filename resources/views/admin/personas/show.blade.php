@@ -76,36 +76,23 @@
       <strong>Indre modsigelse:</strong> {{ $p['inner_contradiction'] }}
     </div>
 
-    <div style="margin-top: 12px; font-size: 14px;">
-      @if (!empty($p['subcultures']))
-        <strong style="color: #166534;">{{ implode(', ', $p['subcultures']) }}</strong>
-      @endif
-      @if (!empty($p['subcultures']) && !empty($p['triggers']))
-        <span style="color: #65676b;"> · </span>
-      @endif
-      @if (!empty($p['triggers']))
-        <strong style="color: #b91c1c;">Triggers: {{ implode(', ', $p['triggers']) }}</strong>
-      @endif
-    </div>
   </div>
 </div>
 
 <div class="profile-grid">
   <div class="panel">
-    <h3>Parametre</h3>
-    <div class="attr-row"><span>Politik</span><strong>{{ $p['politics']['party'] }}</strong></div>
-    <div class="attr-row"><span>Engagement</span><strong>{{ $p['politics']['engagement_level'] }}</strong></div>
-    <div class="attr-row"><span>Værdiakse</span><strong>{{ $p['politics']['value_axis'] }}</strong></div>
-    <div class="attr-row"><span>Økonomisk akse</span><strong>{{ $p['politics']['economic_axis'] }}</strong></div>
-    <div class="attr-row"><span>Big Five</span><strong>O{{ $p['personality']['big_five']['O'] }} C{{ $p['personality']['big_five']['C'] }} E{{ $p['personality']['big_five']['E'] }} A{{ $p['personality']['big_five']['A'] }} N{{ $p['personality']['big_five']['N'] }}</strong></div>
-    <div class="attr-row"><span>Autoritarianisme</span><strong>{{ $p['personality']['authoritarianism'] }}</strong></div>
-    <div class="attr-row"><span>Konfliktstil</span><strong>{{ $p['personality']['conflict_style'] }}</strong></div>
-    <div class="attr-row"><span>Tone</span><strong>{{ $p['some_behavior']['tone'] }}</strong></div>
-    <div class="attr-row"><span>Sprogregister</span><strong>{{ $p['language']['register'] }}</strong></div>
-    <div class="attr-row"><span>Retskrivning</span><strong>{{ $p['language']['spelling_quality'] }}</strong></div>
-    <div class="attr-row"><span>Indkomst</span><strong>{{ $p['demographics']['income_bracket'] }}</strong></div>
-    <div class="attr-row"><span>Bytype</span><strong>{{ $p['demographics']['city_type'] }}</strong></div>
-    <div class="attr-row"><span>Herkomst</span><strong>{{ $p['demographics']['heritage'] }}</strong></div>
+    <h3>Demografi</h3>
+    <div class="attr-row"><span>Indkomst</span><strong>{{ $p['demographics']['income_bracket'] ?? '—' }}</strong></div>
+    <div class="attr-row"><span>Bytype</span><strong>{{ $p['demographics']['city_type'] ?? '—' }}</strong></div>
+    <div class="attr-row"><span>Herkomst</span><strong>{{ $p['demographics']['heritage'] ?? '—' }}</strong></div>
+    <div class="attr-row"><span>Uddannelse</span><strong>{{ $p['demographics']['education'] ?? '—' }}</strong></div>
+
+    <h3 style="margin-top: 18px;">Personlighed (samplede facetter)</h3>
+    @forelse (($p['dimensions'] ?? []) as $d)
+      <div class="attr-row"><span>{{ $d['dimension'] ?? '' }}</span><strong>{{ $d['facet'] ?? '' }}</strong></div>
+    @empty
+      <div style="font-size:12px; color:#65676b; padding: 6px 0;">Ingen personlighedsstruktur tilknyttet kurset.</div>
+    @endforelse
   </div>
 
   <div class="panel">
