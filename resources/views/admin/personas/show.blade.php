@@ -69,6 +69,15 @@
       </div>
     </div>
 
+    @php $shownDims = collect($p['dimensions'] ?? [])->filter(fn ($d) => !empty($d['show_on_profile'])); @endphp
+    @if ($shownDims->isNotEmpty())
+      <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px;">
+        @foreach ($shownDims as $d)
+          <span style="font-size: 12px; padding: 3px 10px; border-radius: 12px; background: #e7f3ff; color: #1877f2; font-weight: 600;" title="{{ $d['dimension'] ?? '' }}">{{ $d['facet'] ?? '' }}</span>
+        @endforeach
+      </div>
+    @endif
+
     <div class="narrative-box">
       <strong>Hvem er {{ explode(' ', $p['name'])[0] }}?</strong><br>
       {{ $p['narrative'] }}

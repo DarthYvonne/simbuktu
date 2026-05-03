@@ -211,6 +211,7 @@ state.parameters = state.parameters.map(p => ({
   name: p.name ?? '',
   description: p.description ?? '',
   library_parameter_id: p.library_parameter_id ?? null,
+  show_on_profile: !!p.show_on_profile,
   facets: Array.isArray(p.facets) && p.facets.length
     ? p.facets.map(f => ({ name: f.name ?? '', text: f.text ?? '', weight: Number.isFinite(f.weight) ? f.weight : 0 }))
     : [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
@@ -303,6 +304,10 @@ function renderEditor() {
         </div>
         <div class="actions">
           ${libBadge}
+          <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#65676b; cursor:pointer; padding:5px 8px; border:1px solid #dadde1; border-radius:6px;" title="Vis sampled facet som badge på persona-profilen">
+            <input type="checkbox" ${p.show_on_profile ? 'checked' : ''} onchange="updateDim('show_on_profile', this.checked)" style="margin:0;">
+            Vis på profil
+          </label>
           <button type="button" onclick="openPromote()" title="Gem til biblioteket"><i class="fa-solid fa-arrow-up"></i> Til bibliotek</button>
           <button type="button" onclick="removeDim()" style="color:#b91c1c;" title="Fjern dimension"><i class="fa-solid fa-trash"></i></button>
         </div>
@@ -383,7 +388,7 @@ function normalWeights(n) {
 
 function addCustomDimension() {
   state.parameters.push({
-    name: '', description: '', library_parameter_id: null,
+    name: '', description: '', library_parameter_id: null, show_on_profile: false,
     facets: [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
   });
   state.selectedDim = state.parameters.length - 1;
@@ -421,6 +426,7 @@ function buildFormData() {
     fd.append(`parameters[${i}][name]`, p.name);
     fd.append(`parameters[${i}][description]`, p.description ?? '');
     if (p.library_parameter_id) fd.append(`parameters[${i}][library_parameter_id]`, p.library_parameter_id);
+    fd.append(`parameters[${i}][show_on_profile]`, p.show_on_profile ? 1 : 0);
     p.facets.forEach((f, j) => {
       fd.append(`parameters[${i}][facets][${j}][name]`, f.name);
       fd.append(`parameters[${i}][facets][${j}][text]`, f.text);
@@ -535,6 +541,7 @@ function insertFromLibrary(id) {
     name: lib.name,
     description: lib.description ?? '',
     library_parameter_id: lib.id,
+    show_on_profile: false,
     facets: (lib.facets || []).map(f => ({ name: f.name ?? '', text: f.text ?? '', weight: Number.isFinite(f.weight) ? f.weight : 0 })),
   });
   state.selectedDim = state.parameters.length - 1;

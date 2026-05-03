@@ -26,9 +26,10 @@ class BlueprintFacetSampler
             $facet = $this->pickFacet($param['facets'] ?? []);
             if ($facet === null) continue;
             $out[] = [
-                'dimension' => $param['name'] ?? '',
-                'facet'     => $facet['name'] ?? '',
-                'text'      => $facet['text'] ?? '',
+                'dimension'       => $param['name'] ?? '',
+                'facet'           => $facet['name'] ?? '',
+                'text'            => $facet['text'] ?? '',
+                'show_on_profile' => (bool) ($param['show_on_profile'] ?? false),
             ];
         }
         return $out;

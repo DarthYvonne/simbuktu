@@ -45,6 +45,7 @@ class BlueprintController extends Controller
             'parameters.*.name'                 => 'required|string|max:64',
             'parameters.*.description'          => 'nullable|string|max:500',
             'parameters.*.library_parameter_id' => 'nullable|integer',
+            'parameters.*.show_on_profile'      => 'nullable|boolean',
             'parameters.*.facets'               => 'required|array|min:2',
             'parameters.*.facets.*.name'        => 'required|string|max:64',
             'parameters.*.facets.*.text'        => 'required|string|max:5000',
@@ -68,6 +69,7 @@ class BlueprintController extends Controller
                 'name'                 => trim($p['name']),
                 'description'          => $p['description'] ?? null,
                 'library_parameter_id' => $p['library_parameter_id'] ?? null,
+                'show_on_profile'      => (bool) ($p['show_on_profile'] ?? false),
                 'facets'               => $facets,
             ];
         }, $data['parameters'] ?? [], array_keys($data['parameters'] ?? [])));

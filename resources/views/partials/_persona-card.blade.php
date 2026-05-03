@@ -74,7 +74,7 @@
 
 @php
   $_cover = app(\App\Services\CoverPicker::class)->pickFor($p);
-  $_dims = array_slice($p['dimensions'] ?? [], 0, 3);
+  $_dims = array_slice(array_values(array_filter($p['dimensions'] ?? [], fn ($d) => !empty($d['show_on_profile']))), 0, 3);
   $_hasFooter = !empty($_dims);
 @endphp
 
