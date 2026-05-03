@@ -265,12 +265,16 @@ return new class extends Migration
         ];
     }
 
-    /** Subkultur: 4 each across 25 entries = 100. User adjusts per blueprint. */
+    /** Subkultur: integer split summing to 100 across all entries. User adjusts per blueprint. */
     private function subcultureWeights(array $pairs): array
     {
-        return array_map(
-            fn ($p) => ['name' => $p[0], 'text' => $p[1], 'weight' => 4],
-            $pairs
-        );
+        $n = count($pairs);
+        $base = intdiv(100, $n);
+        $remainder = 100 - $base * $n;
+        $out = [];
+        foreach ($pairs as $i => $p) {
+            $out[] = ['name' => $p[0], 'text' => $p[1], 'weight' => $base + ($i < $remainder ? 1 : 0)];
+        }
+        return $out;
     }
 };
