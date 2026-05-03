@@ -41,7 +41,9 @@ class PopulationController extends Controller
 
     public function show(Population $population)
     {
-        return view('admin.populations.show', compact('population'));
+        $course = Auth::user()?->currentCourse();
+        $blueprints = \App\Models\Blueprint::orderBy('name')->get(['id', 'name']);
+        return view('admin.populations.show', compact('population', 'course', 'blueprints'));
     }
 
     public function update(Request $request, Population $population)

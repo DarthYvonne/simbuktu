@@ -26,7 +26,7 @@ class BlueprintController extends Controller
         $data['parameters'] = [];
         $data['created_by'] = Auth::id();
         $blueprint = Blueprint::create($data);
-        return redirect("/simulation/admin/blueprints/{$blueprint->id}")->with('success', 'Personlighedsstruktur oprettet.');
+        return redirect("/simulation/admin/blueprints/{$blueprint->id}")->with('success', 'Personlighed oprettet.');
     }
 
     public function edit(Blueprint $blueprint)
@@ -77,13 +77,13 @@ class BlueprintController extends Controller
         $blueprint->update($data);
         return $request->wantsJson()
             ? response()->json(['ok' => true])
-            : back()->with('success', 'Personlighedsstruktur gemt.');
+            : back()->with('success', 'Personlighed gemt.');
     }
 
     public function destroy(Blueprint $blueprint)
     {
         $blueprint->delete();
-        return redirect('/simulation/admin/blueprints')->with('success', 'Personlighedsstruktur slettet.');
+        return redirect('/simulation/admin/blueprints')->with('success', 'Personlighed slettet.');
     }
 
     public function promote(Request $request, Blueprint $blueprint)

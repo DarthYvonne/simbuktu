@@ -86,7 +86,7 @@
     @forelse (($p['dimensions'] ?? []) as $d)
       <div class="attr-row"><span>{{ $d['dimension'] ?? '' }}</span><strong>{{ $d['facet'] ?? '' }}</strong></div>
     @empty
-      <div style="font-size:12px; color:#65676b; padding: 6px 0;">Ingen personlighedsstruktur tilknyttet.</div>
+      <div style="font-size:12px; color:#65676b; padding: 6px 0;">Ingen personlighed tilknyttet.</div>
     @endforelse
   </div>
 

@@ -3,11 +3,11 @@
 
 <div class="view-header">
   <div>
-    <h1 style="margin-bottom: 3px;">Personlighedsstrukturer</h1>
+    <h1 style="margin-bottom: 3px;">Personligheder</h1>
     @if ($course)
       <div style="font-size: 13px; color: #65676b;">
         {{ $course->name }} &nbsp;·&nbsp;
-        Aktiv struktur:
+        Aktiv personlighed:
         <strong style="color: {{ $course->blueprint_id ? '#1c1e21' : '#b91c1c' }};">
           {{ $course->blueprint?->name ?? 'Ingen valgt' }}
         </strong>
@@ -17,7 +17,7 @@
     @endif
   </div>
   <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
-    <i class="fa-solid fa-plus"></i> Ny struktur
+    <i class="fa-solid fa-plus"></i> Ny personlighed
   </button>
 </div>
 
@@ -28,7 +28,7 @@
 @if ($blueprints->isEmpty())
   <div style="text-align: center; padding: 60px 20px; color: #65676b;">
     <i class="fa-solid fa-id-card" style="font-size: 48px; margin-bottom: 16px; display: block; opacity: .3;"></i>
-    <p>Ingen personlighedsstrukturer endnu.</p>
+    <p>Ingen personligheder endnu.</p>
   </div>
 @else
   <div style="display: grid; gap: 8px; max-width: 860px;">
@@ -64,7 +64,7 @@
 
 <div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
   <div style="background:#fff; border-radius:12px; padding:28px; width:100%; max-width:460px; box-shadow:0 8px 40px rgba(0,0,0,.2);">
-    <h2 style="margin:0 0 18px; font-size:18px;">Ny personlighedsstruktur</h2>
+    <h2 style="margin:0 0 18px; font-size:18px;">Ny personlighed</h2>
     <form method="POST" action="{{ url('/simulation/admin/blueprints') }}">
       @csrf
       <div style="margin-bottom:14px;">

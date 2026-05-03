@@ -4,15 +4,15 @@
 <div class="view-header">
   <h1>
     <a href="{{ url('/simulation/admin/blueprints') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
-    <span style="font-weight:400;color:#65676b;">Personlighedsstruktur:</span> {{ $blueprint->name }}
+    <span style="font-weight:400;color:#65676b;">Personlighed:</span> {{ $blueprint->name }}
   </h1>
   <div style="display:flex; gap:8px;">
     <button type="button" class="btn btn-secondary" style="font-size:12px; color:#b91c1c;"
-      onclick="if(confirm('Slet denne personlighedsstruktur?')) document.getElementById('delete-form').submit()">
+      onclick="if(confirm('Slet denne personlighed?')) document.getElementById('delete-form').submit()">
       <i class="fa-solid fa-trash"></i> Slet
     </button>
     <button type="button" class="btn btn-primary" id="save-btn" onclick="saveBlueprint()">
-      <i class="fa-solid fa-floppy-disk"></i> Gem personlighedsstruktur
+      <i class="fa-solid fa-floppy-disk"></i> Gem personlighed
     </button>
   </div>
 </div>
@@ -170,7 +170,7 @@
   <div class="panel" style="max-width:460px;">
     <h2>Gem til biblioteket</h2>
     <div style="font-size:13px; color:#65676b; margin-bottom:14px;">
-      Et snapshot af denne dimension lægges i biblioteket. Eksisterende personlighedsstrukturer påvirkes ikke.
+      Et snapshot af denne dimension lægges i biblioteket. Eksisterende personligheder påvirkes ikke.
     </div>
     <button type="button" class="promote-option" onclick="doPromote('new')">
       <div class="t">Gem som ny</div>
