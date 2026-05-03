@@ -66,6 +66,9 @@
   .nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
   .nav .ico { width: 20px; display: inline-block; text-align: center; color: #65676b; }
   .nav a.active .ico { color: var(--accent); }
+  .nav a.nav-sub { padding: 6px 12px 6px 44px; font-size: 13px; color: #65676b; }
+  .nav a.nav-sub:hover { color: #1c1e21; }
+  .nav a.nav-sub.active { background: var(--accent-soft); color: var(--accent); }
   .nav-section { font-size: 11px; text-transform: uppercase; color: #65676b; padding: 16px 12px 6px; }
   .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
   .btn-primary { background: var(--accent); color: #fff; }
@@ -121,8 +124,10 @@
       @auth @if (auth()->user()->is_admin)
       <div class="nav-section">Admin</div>
       <a href="{{ url('/simulation/admin/populations') }}" data-nav="admin-populations" class="{{ request()->is('simulation/admin/populations*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-dna"></i></span> Populationer</a>
-      <a href="{{ url('/simulation/admin/blueprints') }}" data-nav="admin-blueprints" class="{{ request()->is('simulation/admin/blueprints*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-id-card"></i></span> Personligheder</a>
-      <a href="{{ url('/simulation/admin/blueprint-library') }}" data-nav="admin-blueprint-library" class="{{ request()->is('simulation/admin/blueprint-library*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-layer-group"></i></span> Dimensions-bibliotek</a>
+      @php $personlighederActive = request()->is('simulation/admin/blueprints*') || request()->is('simulation/admin/blueprint-library*'); @endphp
+      <a href="{{ url('/simulation/admin/blueprints') }}" data-nav="admin-personligheder" class="{{ $personlighederActive ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-id-card"></i></span> Personligheder</a>
+      <a href="{{ url('/simulation/admin/blueprints') }}" class="nav-sub {{ request()->is('simulation/admin/blueprints*') ? 'active' : '' }}">Personlighedsstruktur</a>
+      <a href="{{ url('/simulation/admin/blueprint-library') }}" class="nav-sub {{ request()->is('simulation/admin/blueprint-library*') ? 'active' : '' }}">Dimensionsbibliotek</a>
       <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/prompts*') || request()->is('simulation/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
       <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Kursusmanager</a>
       @endif @endauth
