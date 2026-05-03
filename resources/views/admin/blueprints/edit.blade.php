@@ -1,106 +1,167 @@
 @extends('layouts.app')
 @section('content')
 
-<form id="bp-form" method="POST" action="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}">
-  @csrf @method('PATCH')
-
-  <div class="view-header">
-    <div style="flex:1; min-width:0;">
-      <a href="{{ url('/simulation/admin/blueprints') }}" style="font-size:13px; color:#65676b; text-decoration:none;">
-        <i class="fa-solid fa-arrow-left"></i> Personlighedsstrukturer
-      </a>
-      <input type="text" name="name" required value="{{ old('name', $blueprint->name) }}"
-        style="display:block; margin-top:6px; font-size:22px; font-weight:700; padding:4px 6px; border:1px solid transparent; border-radius:6px; font-family:inherit; width:100%; max-width:520px;"
-        onfocus="this.style.borderColor='#dadde1'" onblur="this.style.borderColor='transparent'">
-      <input type="text" name="description" value="{{ old('description', $blueprint->description) }}" placeholder="Beskrivelse"
-        style="display:block; margin-top:2px; font-size:13px; color:#65676b; padding:4px 6px; border:1px solid transparent; border-radius:6px; font-family:inherit; width:100%; max-width:520px;"
-        onfocus="this.style.borderColor='#dadde1'" onblur="this.style.borderColor='transparent'">
-    </div>
-    <div style="display:flex; gap:8px;">
-      <button type="button" class="btn btn-secondary" style="color:#b91c1c;"
-        onclick="if(confirm('Slet denne personlighedsstruktur?')) { document.getElementById('delete-form').submit(); }">
-        <i class="fa-solid fa-trash"></i>
-      </button>
-      <button type="submit" class="btn btn-primary">
-        <i class="fa-solid fa-floppy-disk"></i> Gem personlighedsstruktur
-      </button>
-    </div>
+<div class="view-header">
+  <h1>
+    <a href="{{ url('/simulation/admin/blueprints') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
+    <span style="font-weight:400;color:#65676b;">Personlighedsstruktur:</span> {{ $blueprint->name }}
+  </h1>
+  <div style="display:flex; gap:8px;">
+    <button type="button" class="btn btn-secondary" style="font-size:12px; color:#b91c1c;"
+      onclick="if(confirm('Slet denne personlighedsstruktur?')) document.getElementById('delete-form').submit()">
+      <i class="fa-solid fa-trash"></i> Slet
+    </button>
+    <button type="button" class="btn btn-primary" id="save-btn" onclick="saveBlueprint()">
+      <i class="fa-solid fa-floppy-disk"></i> Gem personlighedsstruktur
+    </button>
   </div>
+</div>
 
-  @if (session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-  @endif
-  @if ($errors->any())
-    <div class="alert alert-error">
-      @foreach ($errors->all() as $err)<div>{{ $err }}</div>@endforeach
-    </div>
-  @endif
+<style>
+.bp-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
+.bp-side { position: sticky; top: 14px; background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 8px; max-height: calc(100vh - 40px); overflow-y: auto; }
+.bp-side h4 { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 10px 4px; }
+.bp-dim { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: #1c1e21; cursor: pointer; }
+.bp-dim:hover { background: #f0f2f5; }
+.bp-dim.active { background: #e7f3ff; color: #1877f2; font-weight: 600; }
+.bp-dim .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-dim .meta { font-size: 11px; color: #65676b; }
+.bp-dim.active .meta { color: #1877f2; }
+.bp-dim .lib-icon { font-size: 10px; color: #65676b; }
+.bp-side-actions { display: flex; flex-direction: column; gap: 4px; padding: 8px 4px 4px; margin-top: 6px; border-top: 1px solid #f0f2f5; }
+.bp-side-actions button { background: none; border: none; text-align: left; padding: 7px 10px; font-size: 13px; color: #1c1e21; cursor: pointer; border-radius: 6px; font-family: inherit; display: flex; align-items: center; gap: 8px; }
+.bp-side-actions button:hover { background: #f0f2f5; }
+.bp-side-actions button .ico { width: 14px; color: #65676b; }
 
-  <div style="display:grid; grid-template-columns: 280px 1fr; gap:14px; align-items:start;">
+.bp-content { min-width: 0; }
+.bp-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); margin-bottom: 12px; overflow: hidden; }
+.bp-card-head { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: #f7f8fa; border-bottom: 1px solid #e4e6eb; }
+.bp-card-head .meta { flex: 1; min-width: 0; }
+.bp-card-head input.dim-name { display: block; width: 100%; max-width: 480px; font-size: 16px; font-weight: 700; color: #1c1e21; padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-family: inherit; }
+.bp-card-head input.dim-name:hover { border-color: #dadde1; background: #fff; }
+.bp-card-head input.dim-name:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-card-head input.dim-desc { display: block; width: 100%; max-width: 480px; margin-top: 4px; font-size: 13px; color: #65676b; padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-family: inherit; }
+.bp-card-head input.dim-desc:hover { border-color: #dadde1; background: #fff; }
+.bp-card-head input.dim-desc:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-card-head .actions { display: flex; gap: 6px; flex-shrink: 0; }
+.bp-card-head .actions button { background: none; border: 1px solid #dadde1; border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: #65676b; white-space: nowrap; }
+.bp-card-head .actions button:hover { background: #fff; color: #1c1e21; }
+.bp-card-head .actions .lib-badge { font-size: 11px; color: #65676b; background: #fff; border: 1px solid #dadde1; border-radius: 10px; padding: 3px 9px; align-self: center; }
 
-    {{-- LEFT: dimension list --}}
-    <div style="background:#fff; border:1px solid #dadde1; border-radius:8px; padding:10px;">
-      <div style="font-size:12px; font-weight:700; color:#65676b; text-transform:uppercase; letter-spacing:.4px; padding:4px 6px 8px;">Dimensioner</div>
-      <div id="dim-list"></div>
-      <div style="display:flex; flex-direction:column; gap:4px; margin-top:8px; padding-top:8px; border-top:1px solid #f0f2f5;">
-        <button type="button" class="btn btn-secondary" style="font-size:13px; justify-content:flex-start;" onclick="addNewDimension()">
-          <i class="fa-solid fa-plus"></i> Ny dimension
-        </button>
-        <button type="button" class="btn btn-secondary" style="font-size:13px; justify-content:flex-start;" onclick="openPicker()">
-          <i class="fa-solid fa-layer-group"></i> Fra biblioteket
-        </button>
-      </div>
-    </div>
+.bp-facet { display: grid; grid-template-columns: 180px 1fr auto; gap: 12px; padding: 12px 16px; border-top: 1px solid #f0f2f5; align-items: start; }
+.bp-facet:first-child { border-top: none; }
+.bp-facet-name { padding-top: 4px; }
+.bp-facet-name input { width: 100%; font-weight: 600; font-size: 13px; color: #1c1e21; padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-family: inherit; }
+.bp-facet-name input:hover { border-color: #dadde1; background: #fafbfc; }
+.bp-facet-name input:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-facet-text textarea { width: 100%; min-height: 80px; border: 1px solid transparent; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; line-height: 1.5; color: #1c1e21; background: #fafbfc; resize: vertical; }
+.bp-facet-text textarea:hover { border-color: #dadde1; background: #fff; }
+.bp-facet-text textarea:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-facet-actions { padding-top: 4px; }
+.bp-facet-actions button { background: none; border: 1px solid #dadde1; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #65676b; }
+.bp-facet-actions button:hover:not(:disabled) { background: #f0f2f5; color: #b91c1c; border-color: #fecaca; }
+.bp-facet-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    {{-- RIGHT: dimension editor --}}
-    <div id="dim-editor" style="background:#fff; border:1px solid #dadde1; border-radius:8px; padding:18px; min-height:400px;"></div>
+.bp-card-foot { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #f7f8fa; border-top: 1px solid #e4e6eb; font-size: 12px; color: #65676b; }
+.bp-card-foot button { background: none; border: none; color: #1877f2; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-family: inherit; }
+.bp-card-foot button:hover { background: #e7f3ff; }
 
+.bp-empty { text-align: center; padding: 80px 20px; color: #65676b; background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.bp-empty i { font-size: 36px; opacity: 0.3; display: block; margin-bottom: 14px; }
+
+.bp-meta-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 14px 16px; margin-bottom: 12px; }
+.bp-meta-card label { display: block; font-weight: 600; font-size: 12px; color: #65676b; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+.bp-meta-card input { width: 100%; padding: 8px 10px; border: 1px solid transparent; border-radius: 6px; font-size: 14px; font-family: inherit; background: #fafbfc; }
+.bp-meta-card input:hover { border-color: #dadde1; background: #fff; }
+.bp-meta-card input:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-meta-card .row { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; align-items: center; }
+.bp-meta-card .row + .row { margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .bp-layout { grid-template-columns: 1fr; }
+  .bp-side { position: static; max-height: none; }
+  .bp-facet { grid-template-columns: 1fr; gap: 6px; }
+}
+
+/* Modals — match the rest of the site */
+.bp-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+.bp-modal.open { display: flex; }
+.bp-modal .panel { background: #fff; border-radius: 12px; padding: 22px; width: 100%; max-width: 520px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); max-height: 80vh; display: flex; flex-direction: column; }
+.bp-modal h2 { font-size: 17px; margin: 0 0 14px; }
+.bp-modal .search { padding: 9px 12px; border: 1px solid #dadde1; border-radius: 6px; font-size: 14px; font-family: inherit; margin-bottom: 10px; }
+.bp-modal .list { overflow-y: auto; flex: 1; min-height: 0; max-height: 50vh; }
+.bp-modal .list-item { padding: 10px 12px; border: 1px solid #dadde1; border-radius: 6px; margin-bottom: 6px; cursor: pointer; background: #fff; }
+.bp-modal .list-item:hover { background: #f0f7ff; border-color: #1877f2; }
+.bp-modal .list-item .n { font-weight: 700; font-size: 14px; color: #1c1e21; }
+.bp-modal .list-item .d { font-size: 12px; color: #65676b; margin-top: 2px; }
+.bp-modal .list-item .c { font-size: 11px; color: #65676b; margin-top: 4px; }
+.bp-modal .promote-option { display: block; width: 100%; padding: 14px; border: 1px solid #dadde1; border-radius: 8px; background: #fff; cursor: pointer; text-align: left; font-family: inherit; margin-bottom: 8px; }
+.bp-modal .promote-option:hover { background: #f0f7ff; border-color: #1877f2; }
+.bp-modal .promote-option .t { font-weight: 700; font-size: 14px; color: #1c1e21; }
+.bp-modal .promote-option .s { font-size: 12px; color: #65676b; margin-top: 3px; }
+.bp-modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+</style>
+
+<div id="save-toast" style="display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%); background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; z-index:2000; box-shadow:0 4px 16px rgba(0,0,0,0.1);"></div>
+
+<div class="bp-meta-card">
+  <div class="row">
+    <label>Navn</label>
+    <input type="text" id="bp-name" value="{{ $blueprint->name }}" placeholder="fx Klima-shitstorm">
   </div>
+  <div class="row">
+    <label>Beskrivelse</label>
+    <input type="text" id="bp-description" value="{{ $blueprint->description }}" placeholder="Valgfri kort beskrivelse">
+  </div>
+</div>
 
-  <div id="bp-hidden"></div>
-</form>
+<div class="bp-layout">
+  <aside class="bp-side">
+    <h4>Dimensioner</h4>
+    <div id="dim-list"></div>
+    <div class="bp-side-actions">
+      <button type="button" onclick="addNewDimension()"><span class="ico"><i class="fa-solid fa-plus"></i></span> Ny dimension</button>
+      <button type="button" onclick="openPicker()"><span class="ico"><i class="fa-solid fa-layer-group"></i></span> Fra biblioteket</button>
+    </div>
+  </aside>
+
+  <div class="bp-content" id="dim-editor"></div>
+</div>
 
 <form id="delete-form" method="POST" action="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}" style="display:none;">
   @csrf @method('DELETE')
 </form>
 
-{{-- Library picker modal --}}
-<div id="picker" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:#fff; border-radius:12px; padding:22px; width:100%; max-width:560px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 8px 40px rgba(0,0,0,.2);">
-    <h2 style="margin:0 0 14px; font-size:17px;">Vælg fra biblioteket</h2>
-    <input type="text" id="picker-search" placeholder="Søg dimensioner..." autofocus
-      style="padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit; margin-bottom:10px;">
-    <div id="picker-list" style="overflow-y:auto; flex:1; min-height:0; max-height:50vh;"></div>
-    <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+{{-- Library picker --}}
+<div class="bp-modal" id="picker">
+  <div class="panel">
+    <h2>Vælg fra biblioteket</h2>
+    <input type="text" class="search" id="picker-search" placeholder="Søg dimensioner..." autofocus>
+    <div class="list" id="picker-list"></div>
+    <div class="actions">
       <button type="button" class="btn btn-secondary" onclick="closePicker()">Luk</button>
     </div>
   </div>
 </div>
 
-{{-- Promote modal --}}
-<div id="promote-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:#fff; border-radius:12px; padding:24px; width:100%; max-width:480px; box-shadow:0 8px 40px rgba(0,0,0,.2);">
-    <h2 style="margin:0 0 14px; font-size:17px;">Gem til biblioteket</h2>
+{{-- Promote --}}
+<div class="bp-modal" id="promote-modal">
+  <div class="panel" style="max-width:460px;">
+    <h2>Gem til biblioteket</h2>
     <div style="font-size:13px; color:#65676b; margin-bottom:14px;">
-      Snapshot af denne dimension lægges i biblioteket. Eksisterende strukturer påvirkes ikke.
+      Et snapshot af denne dimension lægges i biblioteket. Eksisterende personlighedsstrukturer påvirkes ikke.
     </div>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <button type="button" class="btn btn-secondary" style="justify-content:flex-start; padding:14px;" onclick="doPromote('new')">
-        <div>
-          <div style="font-weight:700;">Gem som ny</div>
-          <div style="font-size:12px; color:#65676b; font-weight:400;">Opret en ny biblioteks-dimension med dette navn.</div>
-        </div>
+    <button type="button" class="promote-option" onclick="doPromote('new')">
+      <div class="t">Gem som ny</div>
+      <div class="s">Opret en ny biblioteks-dimension med dette navn.</div>
+    </button>
+    <div id="update-existing-row" style="display:none;">
+      <button type="button" class="promote-option" onclick="doPromote('update')">
+        <div class="t">Opdater eksisterende</div>
+        <div class="s" id="update-existing-target">—</div>
       </button>
-      <div id="update-existing-row" style="display:none;">
-        <button type="button" class="btn btn-secondary" style="justify-content:flex-start; padding:14px; width:100%;" onclick="doPromote('update')">
-          <div>
-            <div style="font-weight:700;">Opdater eksisterende</div>
-            <div style="font-size:12px; color:#65676b; font-weight:400;" id="update-existing-target">—</div>
-          </div>
-        </button>
-      </div>
     </div>
-    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+    <div class="actions">
       <button type="button" class="btn btn-secondary" onclick="closePromote()">Annuller</button>
     </div>
   </div>
@@ -114,10 +175,8 @@ const LIBRARY = @json($library);
 const state = {
   parameters: @json($blueprint->parameters ?? []),
   selectedDim: 0,
-  selectedFacet: 0,
 };
 
-// Ensure each parameter has the expected shape
 state.parameters = state.parameters.map(p => ({
   name: p.name ?? '',
   description: p.description ?? '',
@@ -132,24 +191,23 @@ function escapeHtml(s) {
 function render() {
   renderList();
   renderEditor();
-  renderHidden();
 }
 
 function renderList() {
   const wrap = document.getElementById('dim-list');
   if (!state.parameters.length) {
-    wrap.innerHTML = '<div style="font-size:13px; color:#65676b; padding:8px; text-align:center;">Ingen dimensioner endnu.</div>';
+    wrap.innerHTML = '<div style="font-size:12px; color:#65676b; padding:8px; font-style:italic;">Ingen dimensioner endnu.</div>';
     return;
   }
   wrap.innerHTML = state.parameters.map((p, i) => {
     const active = i === state.selectedDim;
-    const fromLib = p.library_parameter_id ? '<i class="fa-solid fa-layer-group" style="font-size:10px; color:#65676b;" title="Fra biblioteket"></i>' : '';
+    const lib = p.library_parameter_id ? '<i class="fa-solid fa-layer-group lib-icon" title="Fra biblioteket"></i>' : '';
+    const name = p.name ? escapeHtml(p.name) : '<em style="color:#9ca3af;">unavngivet</em>';
     return `
-      <div onclick="selectDim(${i})"
-        style="display:flex; align-items:center; gap:6px; padding:9px 10px; border-radius:6px; cursor:pointer; ${active ? 'background:#e7f0ff; color:#1877f2;' : 'color:#1c1e21;'}; font-size:14px; ${active ? 'font-weight:600;' : ''}">
-        <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(p.name) || '<em style="color:#9ca3af;">unavngivet</em>'}</span>
-        ${fromLib}
-        <span style="font-size:11px; color:#65676b;">${(p.facets || []).length}</span>
+      <div class="bp-dim ${active ? 'active' : ''}" onclick="selectDim(${i})">
+        <span class="label">${name}</span>
+        ${lib}
+        <span class="meta">${(p.facets || []).length}</span>
       </div>
     `;
   }).join('');
@@ -159,8 +217,8 @@ function renderEditor() {
   const wrap = document.getElementById('dim-editor');
   if (!state.parameters.length) {
     wrap.innerHTML = `
-      <div style="text-align:center; padding:60px 20px; color:#65676b;">
-        <i class="fa-solid fa-arrow-left" style="font-size:36px; opacity:.3; display:block; margin-bottom:14px;"></i>
+      <div class="bp-empty">
+        <i class="fa-solid fa-id-card"></i>
         <p>Tilføj en dimension for at komme i gang.</p>
       </div>`;
     return;
@@ -168,99 +226,60 @@ function renderEditor() {
   const i = state.selectedDim;
   const p = state.parameters[i];
   if (!p) return;
-  if (state.selectedFacet >= (p.facets || []).length) state.selectedFacet = 0;
-  const f = p.facets[state.selectedFacet];
 
-  const facetTabs = (p.facets || []).map((fc, fi) => {
-    const active = fi === state.selectedFacet;
-    return `
-      <div onclick="selectFacet(${fi})"
-        style="padding:7px 14px; border-radius:6px 6px 0 0; cursor:pointer; font-size:13px; ${active ? 'background:#fff; border:1px solid #dadde1; border-bottom:1px solid #fff; font-weight:600; color:#1c1e21; position:relative; top:1px;' : 'background:#f0f2f5; color:#65676b; border:1px solid transparent;'}">
-        ${escapeHtml(fc.name) || '<em style="color:#9ca3af;">facet</em>'}
-      </div>`;
-  }).join('');
-
-  wrap.innerHTML = `
-    <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:14px;">
-      <div style="flex:1; min-width:0;">
-        <input type="text" value="${escapeHtml(p.name)}" placeholder="Dimensionens navn (fx empati)"
-          oninput="updateDim('name', this.value)"
-          style="display:block; width:100%; font-size:18px; font-weight:700; padding:6px 8px; border:1px solid #dadde1; border-radius:6px; font-family:inherit; margin-bottom:6px;">
-        <input type="text" value="${escapeHtml(p.description ?? '')}" placeholder="Kort beskrivelse"
-          oninput="updateDim('description', this.value)"
-          style="display:block; width:100%; font-size:13px; color:#65676b; padding:6px 8px; border:1px solid #dadde1; border-radius:6px; font-family:inherit;">
+  const facetCount = (p.facets || []).length;
+  const facetRows = p.facets.map((f, fi) => `
+    <div class="bp-facet" data-fi="${fi}">
+      <div class="bp-facet-name">
+        <input type="text" value="${escapeHtml(f.name)}" placeholder="Facet-navn (fx lav, anekdotisk)" oninput="updateFacet(${fi}, 'name', this.value)">
       </div>
-      <div style="display:flex; gap:6px; flex-shrink:0;">
-        <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="openPromote()">
-          <i class="fa-solid fa-arrow-up"></i> Til bibliotek
-        </button>
-        <button type="button" class="btn btn-secondary" style="font-size:12px; color:#b91c1c;" onclick="removeDim()">
+      <div class="bp-facet-text">
+        <textarea rows="3" placeholder="Håndskreven psykologi/kommunikations-konsekvens-tekst..." oninput="updateFacet(${fi}, 'text', this.value)">${escapeHtml(f.text)}</textarea>
+      </div>
+      <div class="bp-facet-actions">
+        <button type="button" onclick="removeFacet(${fi})" ${facetCount <= 2 ? 'disabled title="Minimum 2 facetter"' : 'title="Slet facet"'}>
           <i class="fa-solid fa-trash"></i>
         </button>
       </div>
     </div>
+  `).join('');
 
-    <div style="display:flex; gap:2px; align-items:flex-end; border-bottom:1px solid #dadde1; margin-bottom:0; flex-wrap:wrap;">
-      ${facetTabs}
-      <div onclick="addFacet()" style="padding:7px 12px; cursor:pointer; font-size:13px; color:#1877f2; font-weight:600;">
-        <i class="fa-solid fa-plus"></i> Facet
-      </div>
-    </div>
+  const libBadge = p.library_parameter_id
+    ? '<span class="lib-badge"><i class="fa-solid fa-layer-group" style="font-size:9px;"></i> Fra biblioteket</span>'
+    : '';
 
-    <div style="background:#fff; padding:14px 0 0;">
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
-        <input type="text" value="${escapeHtml(f.name)}" placeholder="Facet-navn (fx lav, anekdotisk)"
-          oninput="updateFacet('name', this.value)"
-          style="flex:1; font-size:14px; font-weight:600; padding:8px 10px; border:1px solid #dadde1; border-radius:6px; font-family:inherit;">
-        <button type="button" class="btn btn-secondary" style="font-size:12px; color:#b91c1c;" onclick="removeFacet()" ${(p.facets || []).length <= 2 ? 'disabled title="Minimum 2 facetter"' : ''}>
-          <i class="fa-solid fa-trash"></i> Slet facet
-        </button>
+  wrap.innerHTML = `
+    <div class="bp-card">
+      <div class="bp-card-head">
+        <div class="meta">
+          <input type="text" class="dim-name" value="${escapeHtml(p.name)}" placeholder="Dimensionens navn (fx empati)" oninput="updateDim('name', this.value)">
+          <input type="text" class="dim-desc" value="${escapeHtml(p.description ?? '')}" placeholder="Kort beskrivelse" oninput="updateDim('description', this.value)">
+        </div>
+        <div class="actions">
+          ${libBadge}
+          <button type="button" onclick="openPromote()" title="Gem til biblioteket"><i class="fa-solid fa-arrow-up"></i> Til bibliotek</button>
+          <button type="button" onclick="removeDim()" style="color:#b91c1c;" title="Fjern dimension"><i class="fa-solid fa-trash"></i></button>
+        </div>
       </div>
-      <textarea oninput="updateFacet('text', this.value)" rows="14" placeholder="Håndskreven psykologi/kommunikations-konsekvens-tekst for denne facet..."
-        style="width:100%; padding:12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit; resize:vertical; line-height:1.5;">${escapeHtml(f.text)}</textarea>
+      <div>${facetRows}</div>
+      <div class="bp-card-foot">
+        <span>${facetCount} facetter</span>
+        <button type="button" onclick="addFacet()"><i class="fa-solid fa-plus"></i> Tilføj facet</button>
+      </div>
     </div>
   `;
 }
 
-function renderHidden() {
-  const h = document.getElementById('bp-hidden');
-  let html = '';
-  state.parameters.forEach((p, i) => {
-    html += `<input type="hidden" name="parameters[${i}][name]" value="${escapeHtml(p.name)}">`;
-    html += `<input type="hidden" name="parameters[${i}][description]" value="${escapeHtml(p.description ?? '')}">`;
-    if (p.library_parameter_id) {
-      html += `<input type="hidden" name="parameters[${i}][library_parameter_id]" value="${p.library_parameter_id}">`;
-    }
-    (p.facets || []).forEach((f, j) => {
-      html += `<input type="hidden" name="parameters[${i}][facets][${j}][name]" value="${escapeHtml(f.name)}">`;
-      html += `<input type="hidden" name="parameters[${i}][facets][${j}][text]" value="${escapeHtml(f.text)}">`;
-    });
-  });
-  h.innerHTML = html;
-}
-
-function selectDim(i) { state.selectedDim = i; state.selectedFacet = 0; render(); }
-function selectFacet(i) { state.selectedFacet = i; render(); }
+function selectDim(i) { state.selectedDim = i; render(); }
 
 function updateDim(field, value) {
   state.parameters[state.selectedDim][field] = value;
-  state.parameters[state.selectedDim].library_parameter_id = state.parameters[state.selectedDim].library_parameter_id; // keep
-  // Update list label live without rerendering editor (preserves cursor)
   if (field === 'name') renderList();
-  renderHidden();
 }
-function updateFacet(field, value) {
-  const p = state.parameters[state.selectedDim];
-  p.facets[state.selectedFacet][field] = value;
-  if (field === 'name') {
-    // Update tab label live
-    const tabs = document.querySelectorAll('#dim-editor > div:nth-child(2) > div');
-    if (tabs[state.selectedFacet]) {
-      tabs[state.selectedFacet].innerHTML = value || '<em style="color:#9ca3af;">facet</em>';
-    }
-    renderList();
-  }
-  renderHidden();
+
+function updateFacet(fi, field, value) {
+  state.parameters[state.selectedDim].facets[fi][field] = value;
+  if (field === 'name') renderList();
 }
 
 function addNewDimension() {
@@ -269,7 +288,6 @@ function addNewDimension() {
     facets: [{ name: '', text: '' }, { name: '', text: '' }],
   });
   state.selectedDim = state.parameters.length - 1;
-  state.selectedFacet = 0;
   render();
 }
 
@@ -277,32 +295,83 @@ function removeDim() {
   if (!confirm('Fjern denne dimension fra strukturen?')) return;
   state.parameters.splice(state.selectedDim, 1);
   if (state.selectedDim >= state.parameters.length) state.selectedDim = Math.max(0, state.parameters.length - 1);
-  state.selectedFacet = 0;
   render();
 }
 
 function addFacet() {
   state.parameters[state.selectedDim].facets.push({ name: '', text: '' });
-  state.selectedFacet = state.parameters[state.selectedDim].facets.length - 1;
   render();
 }
 
-function removeFacet() {
+function removeFacet(fi) {
   const p = state.parameters[state.selectedDim];
   if (p.facets.length <= 2) return;
-  p.facets.splice(state.selectedFacet, 1);
-  if (state.selectedFacet >= p.facets.length) state.selectedFacet = p.facets.length - 1;
+  p.facets.splice(fi, 1);
   render();
+}
+
+// --- Save ---
+function buildFormData() {
+  const fd = new FormData();
+  fd.append('_token', CSRF);
+  fd.append('_method', 'PATCH');
+  fd.append('name', document.getElementById('bp-name').value);
+  fd.append('description', document.getElementById('bp-description').value);
+  state.parameters.forEach((p, i) => {
+    fd.append(`parameters[${i}][name]`, p.name);
+    fd.append(`parameters[${i}][description]`, p.description ?? '');
+    if (p.library_parameter_id) fd.append(`parameters[${i}][library_parameter_id]`, p.library_parameter_id);
+    p.facets.forEach((f, j) => {
+      fd.append(`parameters[${i}][facets][${j}][name]`, f.name);
+      fd.append(`parameters[${i}][facets][${j}][text]`, f.text);
+    });
+  });
+  return fd;
+}
+
+function showToast(msg, ok = true) {
+  const el = document.getElementById('save-toast');
+  el.textContent = msg;
+  el.style.background = ok ? '#dcfce7' : '#fee2e2';
+  el.style.color = ok ? '#166534' : '#b91c1c';
+  el.style.borderColor = ok ? '#bbf7d0' : '#fecaca';
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 1800);
+}
+
+async function saveBlueprint() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  try {
+    const r = await fetch(BP_URL, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: buildFormData(),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      const msg = err.errors ? Object.values(err.errors).flat().join(' · ') : 'Kunne ikke gemme.';
+      showToast(msg, false);
+      return false;
+    }
+    showToast('Gemt');
+    return true;
+  } catch (e) {
+    showToast('Netværksfejl', false);
+    return false;
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // --- Picker ---
 function openPicker() {
-  document.getElementById('picker').style.display = 'flex';
+  document.getElementById('picker').classList.add('open');
   document.getElementById('picker-search').value = '';
   renderPicker('');
   setTimeout(() => document.getElementById('picker-search').focus(), 50);
 }
-function closePicker() { document.getElementById('picker').style.display = 'none'; }
+function closePicker() { document.getElementById('picker').classList.remove('open'); }
 function renderPicker(query) {
   const list = document.getElementById('picker-list');
   const q = (query || '').toLowerCase();
@@ -314,11 +383,10 @@ function renderPicker(query) {
     return;
   }
   list.innerHTML = items.map(p => `
-    <div onclick="insertFromLibrary(${p.id})" style="padding:10px 12px; border:1px solid #dadde1; border-radius:6px; margin-bottom:6px; cursor:pointer; background:#fff;"
-         onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='#fff'">
-      <div style="font-weight:700; font-size:14px;">${escapeHtml(p.name)}</div>
-      ${p.description ? `<div style="font-size:12px; color:#65676b; margin-top:2px;">${escapeHtml(p.description)}</div>` : ''}
-      <div style="font-size:11px; color:#65676b; margin-top:4px;">${(p.facets || []).length} facetter</div>
+    <div class="list-item" onclick="insertFromLibrary(${p.id})">
+      <div class="n">${escapeHtml(p.name)}</div>
+      ${p.description ? `<div class="d">${escapeHtml(p.description)}</div>` : ''}
+      <div class="c">${(p.facets || []).length} facetter</div>
     </div>
   `).join('');
 }
@@ -334,7 +402,6 @@ function insertFromLibrary(id) {
     facets: (lib.facets || []).map(f => ({ name: f.name ?? '', text: f.text ?? '' })),
   });
   state.selectedDim = state.parameters.length - 1;
-  state.selectedFacet = 0;
   closePicker();
   render();
 }
@@ -342,8 +409,7 @@ function insertFromLibrary(id) {
 // --- Promote ---
 function openPromote() {
   const p = state.parameters[state.selectedDim];
-  if (!p || !p.name.trim()) { alert('Giv dimensionen et navn først.'); return; }
-  document.getElementById('promote-modal').style.display = 'flex';
+  if (!p || !p.name.trim()) { showToast('Giv dimensionen et navn først.', false); return; }
   const target = LIBRARY.find(l => l.id === p.library_parameter_id) || LIBRARY.find(l => l.name === p.name);
   const row = document.getElementById('update-existing-row');
   if (target) {
@@ -353,46 +419,33 @@ function openPromote() {
   } else {
     row.style.display = 'none';
   }
+  document.getElementById('promote-modal').classList.add('open');
 }
-function closePromote() { document.getElementById('promote-modal').style.display = 'none'; }
+function closePromote() { document.getElementById('promote-modal').classList.remove('open'); }
 
 async function doPromote(mode) {
+  const ok = await saveBlueprint();
+  if (!ok) return;
   const targetId = document.getElementById('update-existing-row').dataset.targetId;
-  const body = {
-    parameter_index: state.selectedDim,
-    mode,
-    target_id: mode === 'update' ? Number(targetId) : null,
-  };
   try {
-    // Save the current blueprint first so the server has the latest dimension content.
-    await fetch(BP_URL, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-      body: buildFormData('PATCH'),
-    });
     const r = await fetch(BP_URL + '/promote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        parameter_index: state.selectedDim,
+        mode,
+        target_id: mode === 'update' ? Number(targetId) : null,
+      }),
     });
     const data = await r.json();
-    if (!r.ok || !data.ok) {
-      alert(data.error || 'Kunne ikke gemme til biblioteket.');
-      return;
-    }
+    if (!r.ok || !data.ok) { showToast(data.error || 'Kunne ikke gemme til biblioteket.', false); return; }
     state.parameters[state.selectedDim].library_parameter_id = data.library_parameter_id;
     closePromote();
-    alert(mode === 'new' ? `"${data.name}" tilføjet til biblioteket.` : `"${data.name}" opdateret i biblioteket.`);
+    showToast(mode === 'new' ? `"${data.name}" tilføjet til biblioteket` : `"${data.name}" opdateret`);
     render();
   } catch (e) {
-    alert('Netværksfejl.');
+    showToast('Netværksfejl', false);
   }
-}
-
-function buildFormData(method) {
-  const fd = new FormData(document.getElementById('bp-form'));
-  fd.append('_method', method);
-  return fd;
 }
 
 render();
