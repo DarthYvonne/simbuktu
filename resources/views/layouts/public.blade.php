@@ -14,6 +14,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Stack Sans Headline', system-ui, sans-serif; }
         body { background-color: #ffffff; color: #2c3e50; line-height: 1.5; }
         a { color: inherit; }
+        img { max-width: 100%; height: auto; }
 
         header { border-bottom: 1px solid #e0e0e0; background-color: #ffffff; }
 
