@@ -85,8 +85,8 @@
 @section('content')
     <section class="hero">
         <div class="hero-left">
-            <h1>Data-driven<br>Scenarios</h1>
-            <p>PROVEN TO SIMULATE 4X<br>FASTER THAN TRADITIONAL MODELS</p>
+            <h1>Hvad hvis du kunne spørge dem?</h1>
+            <p>VI BYGGER SIMULEREDE POPULATIONER SOM KAN GIVE DIG INSPIRATION TIL AT FORSTÅ DIN MÅLGRUPPE BEDRE</p>
             <a href="#" class="btn">Udforsk nu</a>
         </div>
 
