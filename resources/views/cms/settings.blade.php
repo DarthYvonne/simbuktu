@@ -4,6 +4,39 @@
 
 @section('content')
     <div class="card">
+        <h2 style="font-size:18px;margin-bottom:8px;">Forside · hero-tekst</h2>
+        <p style="color:#666;font-size:14px;margin-bottom:16px;">Tekst i venstre side af hero-sektionen. Linjeskift bevares.</p>
+
+        <form method="POST" action="/cms/settings">
+            @csrf
+
+            <div class="form-row">
+                <label>Overskrift</label>
+                <textarea name="hero_headline" rows="2" style="min-height:60px;font-family:inherit;">{{ old('hero_headline', $heroHeadline) }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <label>Underoverskrift</label>
+                <textarea name="hero_subhead" rows="3" style="min-height:80px;font-family:inherit;">{{ old('hero_subhead', $heroSubhead) }}</textarea>
+            </div>
+
+            <div class="form-row form-row--inline">
+                <div>
+                    <label>Knap-tekst</label>
+                    <input type="text" name="hero_button_text" value="{{ old('hero_button_text', $heroButtonText) }}" placeholder="f.eks. Udforsk nu">
+                    <div style="font-size:12px;color:#888;margin-top:4px;">Lad være tom for at skjule knappen.</div>
+                </div>
+                <div>
+                    <label>Knap-link</label>
+                    <input type="text" name="hero_button_url" value="{{ old('hero_button_url', $heroButtonUrl) }}" placeholder="/kontakt eller https://...">
+                </div>
+            </div>
+
+            <button class="btn" type="submit">Gem hero-tekst</button>
+        </form>
+    </div>
+
+    <div class="card">
         <h2 style="font-size:18px;margin-bottom:16px;">Forside · hero-billede</h2>
 
         <p style="color:#666;font-size:14px;margin-bottom:20px;">

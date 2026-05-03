@@ -85,9 +85,11 @@
 @section('content')
     <section class="hero">
         <div class="hero-left">
-            <h1>Hvad hvis du kunne spørge dem?</h1>
-            <p>VI BYGGER SIMULEREDE POPULATIONER SOM KAN GIVE DIG INSPIRATION TIL AT FORSTÅ DIN MÅLGRUPPE BEDRE</p>
-            <a href="#" class="btn">Udforsk nu</a>
+            <h1>{!! nl2br(e($heroHeadline)) !!}</h1>
+            <p>{!! nl2br(e($heroSubhead)) !!}</p>
+            @if(!empty($heroButtonText))
+                <a href="{{ $heroButtonUrl ?: '#' }}" class="btn">{{ $heroButtonText }}</a>
+            @endif
         </div>
 
         <div class="hero-right">

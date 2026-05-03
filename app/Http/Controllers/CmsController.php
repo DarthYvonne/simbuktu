@@ -11,19 +11,34 @@ class CmsController extends Controller
 {
     public function settings()
     {
-        $heroImage   = CmsSetting::get('home_hero_image');
-        $homeContent = CmsSetting::get('home_content');
-        return view('cms.settings', compact('heroImage', 'homeContent'));
+        $heroImage      = CmsSetting::get('home_hero_image');
+        $heroHeadline   = CmsSetting::get('home_hero_headline', 'Hvad hvis du kunne spørge dem?');
+        $heroSubhead    = CmsSetting::get('home_hero_subhead', 'VI BYGGER SIMULEREDE POPULATIONER SOM KAN GIVE DIG INSPIRATION TIL AT FORSTÅ DIN MÅLGRUPPE BEDRE');
+        $heroButtonText = CmsSetting::get('home_hero_button_text', 'Udforsk nu');
+        $heroButtonUrl  = CmsSetting::get('home_hero_button_url', '#');
+        $homeContent    = CmsSetting::get('home_content');
+        return view('cms.settings', compact('heroImage', 'heroHeadline', 'heroSubhead', 'heroButtonText', 'heroButtonUrl', 'homeContent'));
     }
 
     public function saveSettings(Request $request)
     {
         $request->validate([
-            'hero_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
-            'remove_hero'  => 'nullable|boolean',
-            'home_content' => 'nullable|string',
-            'reset_home_content' => 'nullable|boolean',
+            'hero_image'           => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'remove_hero'          => 'nullable|boolean',
+            'hero_headline'        => 'nullable|string|max:500',
+            'hero_subhead'         => 'nullable|string|max:1000',
+            'hero_button_text'     => 'nullable|string|max:100',
+            'hero_button_url'      => 'nullable|string|max:500',
+            'home_content'         => 'nullable|string',
+            'reset_home_content'   => 'nullable|boolean',
         ]);
+
+        if ($request->has('hero_headline')) {
+            CmsSetting::set('home_hero_headline',    $request->input('hero_headline'));
+            CmsSetting::set('home_hero_subhead',     $request->input('hero_subhead'));
+            CmsSetting::set('home_hero_button_text', $request->input('hero_button_text'));
+            CmsSetting::set('home_hero_button_url',  $request->input('hero_button_url'));
+        }
 
         if ($request->boolean('remove_hero')) {
             $this->deleteCurrentHero();

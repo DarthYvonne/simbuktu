@@ -9,10 +9,14 @@ class PageController extends Controller
 {
     public function home()
     {
-        $heroImage   = CmsSetting::get('home_hero_image', 'img/hero-feed.png');
-        $homeContent = CmsSetting::get('home_content', $this->defaultHomeTemplate());
-        $editUrl     = '/cms/settings';
-        return view('landing', compact('heroImage', 'homeContent', 'editUrl'));
+        $heroImage      = CmsSetting::get('home_hero_image', 'img/hero-feed.png');
+        $heroHeadline   = CmsSetting::get('home_hero_headline', 'Hvad hvis du kunne spørge dem?');
+        $heroSubhead    = CmsSetting::get('home_hero_subhead', 'VI BYGGER SIMULEREDE POPULATIONER SOM KAN GIVE DIG INSPIRATION TIL AT FORSTÅ DIN MÅLGRUPPE BEDRE');
+        $heroButtonText = CmsSetting::get('home_hero_button_text', 'Udforsk nu');
+        $heroButtonUrl  = CmsSetting::get('home_hero_button_url', '#');
+        $homeContent    = CmsSetting::get('home_content', $this->defaultHomeTemplate());
+        $editUrl        = '/cms/settings';
+        return view('landing', compact('heroImage', 'heroHeadline', 'heroSubhead', 'heroButtonText', 'heroButtonUrl', 'homeContent', 'editUrl'));
     }
 
     private function defaultHomeTemplate(): string
