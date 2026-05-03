@@ -48,11 +48,21 @@ class BlueprintLibraryController extends Controller
             'facets'          => 'required|array|min:2',
             'facets.*.name'   => 'required|string|max:64',
             'facets.*.text'   => 'required|string|max:5000',
+            'facets.*.weight' => 'nullable|integer|min:0|max:100',
         ]);
         $data['facets'] = array_values(array_map(
-            fn ($f) => ['name' => trim($f['name']), 'text' => trim($f['text'])],
+            fn ($f) => [
+                'name'   => trim($f['name']),
+                'text'   => trim($f['text']),
+                'weight' => (int) ($f['weight'] ?? 0),
+            ],
             $data['facets']
         ));
+        if (array_sum(array_column($data['facets'], 'weight')) > 100) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'facets' => 'Summen af vægte må højst være 100 %.',
+            ]);
+        }
         return $data;
     }
 }

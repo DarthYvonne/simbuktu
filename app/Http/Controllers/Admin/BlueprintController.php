@@ -37,29 +37,45 @@ class BlueprintController extends Controller
     public function update(Request $request, Blueprint $blueprint)
     {
         $data = $request->validate([
-            'name'                       => 'required|string|max:255',
-            'description'                => 'nullable|string',
-            'parameters'                 => 'array',
-            'parameters.*.name'          => 'required|string|max:64',
-            'parameters.*.description'   => 'nullable|string|max:500',
+            'name'                              => 'required|string|max:255',
+            'description'                       => 'nullable|string',
+            'parameters'                        => 'array',
+            'parameters.*.name'                 => 'required|string|max:64',
+            'parameters.*.description'          => 'nullable|string|max:500',
             'parameters.*.library_parameter_id' => 'nullable|integer',
-            'parameters.*.facets'        => 'required|array|min:2',
-            'parameters.*.facets.*.name' => 'required|string|max:64',
-            'parameters.*.facets.*.text' => 'required|string|max:5000',
+            'parameters.*.facets'               => 'required|array|min:2',
+            'parameters.*.facets.*.name'        => 'required|string|max:64',
+            'parameters.*.facets.*.text'        => 'required|string|max:5000',
+            'parameters.*.facets.*.weight'      => 'nullable|integer|min:0|max:100',
         ]);
-        $data['parameters'] = array_values(array_map(function ($p) {
+        $errors = [];
+        $data['parameters'] = array_values(array_map(function ($p, $i) use (&$errors) {
+            $facets = array_values(array_map(
+                fn ($f) => [
+                    'name'   => trim($f['name']),
+                    'text'   => trim($f['text']),
+                    'weight' => (int) ($f['weight'] ?? 0),
+                ],
+                $p['facets']
+            ));
+            $sum = array_sum(array_column($facets, 'weight'));
+            if ($sum > 100) {
+                $errors["parameters.$i.facets"] = 'Summen af vægte for "'.($p['name'] ?: 'unavngivet').'" overstiger 100 % (er '.$sum.' %).';
+            }
             return [
                 'name'                 => trim($p['name']),
                 'description'          => $p['description'] ?? null,
                 'library_parameter_id' => $p['library_parameter_id'] ?? null,
-                'facets'               => array_values(array_map(
-                    fn ($f) => ['name' => trim($f['name']), 'text' => trim($f['text'])],
-                    $p['facets']
-                )),
+                'facets'               => $facets,
             ];
-        }, $data['parameters'] ?? []));
+        }, $data['parameters'] ?? [], array_keys($data['parameters'] ?? [])));
+        if ($errors) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errors);
+        }
         $blueprint->update($data);
-        return back()->with('success', 'Personlighedsstruktur gemt.');
+        return $request->wantsJson()
+            ? response()->json(['ok' => true])
+            : back()->with('success', 'Personlighedsstruktur gemt.');
     }
 
     public function destroy(Blueprint $blueprint)

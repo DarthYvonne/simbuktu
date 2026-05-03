@@ -48,9 +48,13 @@
   <div style="background:#fff; border:1px solid #dadde1; border-radius:8px; padding:18px; margin-bottom:14px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
       <div style="font-weight:600; font-size:14px;">Facetter</div>
-      <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="addFacet()">
-        <i class="fa-solid fa-plus"></i> Tilføj facet
-      </button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span id="weight-sum" style="font-size:12px; color:#65676b;"></span>
+        <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="distributeEqually()">Fordel jævnt</button>
+        <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="addFacet()">
+          <i class="fa-solid fa-plus"></i> Tilføj facet
+        </button>
+      </div>
     </div>
     <div id="facets"></div>
   </div>
@@ -64,7 +68,7 @@
 const existing = @json($parameter->facets ?? []);
 let facetIdx = 0;
 
-function addFacet(name = '', text = '') {
+function addFacet(name = '', text = '', weight = 0) {
   const wrap = document.getElementById('facets');
   const i = facetIdx++;
   const div = document.createElement('div');
@@ -73,7 +77,12 @@ function addFacet(name = '', text = '') {
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
       <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
-      <button type="button" onclick="this.closest('div').parentElement.remove()" style="background:none; border:none; color:#b91c1c; cursor:pointer; font-size:14px;">
+      <div style="display:flex; align-items:center; gap:4px;">
+        <input type="number" name="facets[${i}][weight]" min="0" max="100" step="1" oninput="updateSum()"
+          style="width:64px; padding:6px 8px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; text-align:right;">
+        <span style="font-size:13px; color:#65676b;">%</span>
+      </div>
+      <button type="button" onclick="this.closest('div').parentElement.remove(); updateSum();" style="background:none; border:none; color:#b91c1c; cursor:pointer; font-size:14px;">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -81,12 +90,43 @@ function addFacet(name = '', text = '') {
       style="width:100%; padding:8px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
   `;
   wrap.appendChild(div);
-  div.querySelector('input').value = name;
+  div.querySelector('input[name$="[name]"]').value = name;
+  div.querySelector('input[type=number]').value = weight;
   div.querySelector('textarea').value = text;
+  updateSum();
+}
+
+function getWeights() {
+  return Array.from(document.querySelectorAll('#facets input[type=number]'));
+}
+
+function updateSum() {
+  const inputs = getWeights();
+  const sum = inputs.reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+  const el = document.getElementById('weight-sum');
+  if (sum > 100) {
+    el.textContent = `Sum: ${sum}% — over grænsen`;
+    el.style.color = '#b91c1c';
+  } else if (sum === 100) {
+    el.textContent = `Sum: 100%`;
+    el.style.color = '#166534';
+  } else {
+    el.textContent = `Sum: ${sum}% — ${100 - sum}% får ingen tekst`;
+    el.style.color = '#65676b';
+  }
+}
+
+function distributeEqually() {
+  const inputs = getWeights();
+  if (!inputs.length) return;
+  const base = Math.floor(100 / inputs.length);
+  const remainder = 100 - base * inputs.length;
+  inputs.forEach((el, i) => { el.value = base + (i < remainder ? 1 : 0); });
+  updateSum();
 }
 
 if (existing.length) {
-  existing.forEach(f => addFacet(f.name ?? '', f.text ?? ''));
+  existing.forEach(f => addFacet(f.name ?? '', f.text ?? '', f.weight ?? 0));
 } else {
   addFacet(); addFacet();
 }

@@ -67,7 +67,7 @@
 
 <script>
 let facetIdx = 0;
-function addFacet(name = '', text = '') {
+function addFacet(name = '', text = '', weight = 0) {
   const wrap = document.getElementById('facets');
   const i = facetIdx++;
   const div = document.createElement('div');
@@ -76,6 +76,11 @@ function addFacet(name = '', text = '') {
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
       <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
+      <div style="display:flex; align-items:center; gap:4px;">
+        <input type="number" name="facets[${i}][weight]" min="0" max="100" step="1" value="${weight}"
+          style="width:60px; padding:6px 8px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; text-align:right;">
+        <span style="font-size:13px; color:#65676b;">%</span>
+      </div>
       <button type="button" onclick="this.closest('div').parentElement.remove()" style="background:none; border:none; color:#b91c1c; cursor:pointer; font-size:14px;">
         <i class="fa-solid fa-trash"></i>
       </button>
@@ -84,7 +89,7 @@ function addFacet(name = '', text = '') {
       style="width:100%; padding:8px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
   `;
   wrap.appendChild(div);
-  if (name) div.querySelector('input').value = name;
+  if (name) div.querySelector('input[name$="[name]"]').value = name;
   if (text) div.querySelector('textarea').value = text;
 }
 addFacet();

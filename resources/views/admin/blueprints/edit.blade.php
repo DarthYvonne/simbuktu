@@ -48,12 +48,17 @@
 .bp-card-head .actions button:hover { background: #fff; color: #1c1e21; }
 .bp-card-head .actions .lib-badge { font-size: 11px; color: #65676b; background: #fff; border: 1px solid #dadde1; border-radius: 10px; padding: 3px 9px; align-self: center; }
 
-.bp-facet { display: grid; grid-template-columns: 180px 1fr auto; gap: 12px; padding: 12px 16px; border-top: 1px solid #f0f2f5; align-items: start; }
+.bp-facet { display: grid; grid-template-columns: 180px 90px 1fr auto; gap: 12px; padding: 12px 16px; border-top: 1px solid #f0f2f5; align-items: start; }
 .bp-facet:first-child { border-top: none; }
 .bp-facet-name { padding-top: 4px; }
 .bp-facet-name input { width: 100%; font-weight: 600; font-size: 13px; color: #1c1e21; padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-family: inherit; }
 .bp-facet-name input:hover { border-color: #dadde1; background: #fafbfc; }
 .bp-facet-name input:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-facet-weight { display: flex; align-items: center; gap: 4px; padding-top: 4px; }
+.bp-facet-weight input { width: 56px; padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; font-size: 13px; font-family: inherit; background: #fafbfc; text-align: right; color: #1c1e21; }
+.bp-facet-weight input:hover { border-color: #dadde1; background: #fff; }
+.bp-facet-weight input:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
+.bp-facet-weight .u { font-size: 12px; color: #65676b; }
 .bp-facet-text textarea { width: 100%; min-height: 80px; border: 1px solid transparent; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; line-height: 1.5; color: #1c1e21; background: #fafbfc; resize: vertical; }
 .bp-facet-text textarea:hover { border-color: #dadde1; background: #fff; }
 .bp-facet-text textarea:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
@@ -76,6 +81,11 @@
 .bp-meta-card input:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
 .bp-meta-card .row { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; align-items: center; }
 .bp-meta-card .row + .row { margin-top: 8px; }
+
+.bp-sum { font-size: 12px; }
+.bp-sum.ok  { color: #166534; font-weight: 600; }
+.bp-sum.gap { color: #65676b; }
+.bp-sum.over { color: #b91c1c; font-weight: 600; }
 
 @media (max-width: 900px) {
   .bp-layout { grid-template-columns: 1fr; }
@@ -181,7 +191,9 @@ state.parameters = state.parameters.map(p => ({
   name: p.name ?? '',
   description: p.description ?? '',
   library_parameter_id: p.library_parameter_id ?? null,
-  facets: Array.isArray(p.facets) && p.facets.length ? p.facets.map(f => ({ name: f.name ?? '', text: f.text ?? '' })) : [{ name: '', text: '' }, { name: '', text: '' }],
+  facets: Array.isArray(p.facets) && p.facets.length
+    ? p.facets.map(f => ({ name: f.name ?? '', text: f.text ?? '', weight: Number.isFinite(f.weight) ? f.weight : 0 }))
+    : [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
 }));
 
 function escapeHtml(s) {
@@ -233,6 +245,10 @@ function renderEditor() {
       <div class="bp-facet-name">
         <input type="text" value="${escapeHtml(f.name)}" placeholder="Facet-navn (fx lav, anekdotisk)" oninput="updateFacet(${fi}, 'name', this.value)">
       </div>
+      <div class="bp-facet-weight">
+        <input type="number" min="0" max="100" step="1" value="${f.weight ?? 0}" oninput="updateFacet(${fi}, 'weight', this.value)">
+        <span class="u">%</span>
+      </div>
       <div class="bp-facet-text">
         <textarea rows="3" placeholder="Håndskreven psykologi/kommunikations-konsekvens-tekst..." oninput="updateFacet(${fi}, 'text', this.value)">${escapeHtml(f.text)}</textarea>
       </div>
@@ -243,6 +259,12 @@ function renderEditor() {
       </div>
     </div>
   `).join('');
+
+  const sum = p.facets.reduce((s, f) => s + (parseInt(f.weight) || 0), 0);
+  let sumLabel, sumClass;
+  if (sum > 100)       { sumLabel = `Sum: ${sum}% — over grænsen`; sumClass = 'over'; }
+  else if (sum === 100) { sumLabel = `Sum: 100%`;                   sumClass = 'ok'; }
+  else                  { sumLabel = `Sum: ${sum}% — ${100 - sum}% får ingen tekst`; sumClass = 'gap'; }
 
   const libBadge = p.library_parameter_id
     ? '<span class="lib-badge"><i class="fa-solid fa-layer-group" style="font-size:9px;"></i> Fra biblioteket</span>'
@@ -263,8 +285,11 @@ function renderEditor() {
       </div>
       <div>${facetRows}</div>
       <div class="bp-card-foot">
-        <span>${facetCount} facetter</span>
-        <button type="button" onclick="addFacet()"><i class="fa-solid fa-plus"></i> Tilføj facet</button>
+        <span class="bp-sum ${sumClass}">${sumLabel}</span>
+        <span style="display:flex; gap:8px; align-items:center;">
+          <button type="button" onclick="distributeEqually()" style="color:#65676b; font-weight:600;">Fordel jævnt</button>
+          <button type="button" onclick="addFacet()"><i class="fa-solid fa-plus"></i> Tilføj facet</button>
+        </span>
       </div>
     </div>
   `;
@@ -278,8 +303,27 @@ function updateDim(field, value) {
 }
 
 function updateFacet(fi, field, value) {
+  if (field === 'weight') {
+    const n = parseInt(value); value = (Number.isFinite(n) && n >= 0) ? Math.min(100, n) : 0;
+  }
   state.parameters[state.selectedDim].facets[fi][field] = value;
+  if (field === 'weight') {
+    // Re-render to refresh the sum indicator without losing focus is tricky; cheap approach:
+    renderEditor();
+    // restore focus to weight input that just changed
+    const el = document.querySelector(`.bp-facet[data-fi="${fi}"] .bp-facet-weight input`);
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  }
   if (field === 'name') renderList();
+}
+
+function distributeEqually() {
+  const p = state.parameters[state.selectedDim];
+  if (!p || !p.facets.length) return;
+  const base = Math.floor(100 / p.facets.length);
+  const remainder = 100 - base * p.facets.length;
+  p.facets.forEach((f, i) => { f.weight = base + (i < remainder ? 1 : 0); });
+  renderEditor();
 }
 
 function addNewDimension() {
@@ -324,6 +368,7 @@ function buildFormData() {
     p.facets.forEach((f, j) => {
       fd.append(`parameters[${i}][facets][${j}][name]`, f.name);
       fd.append(`parameters[${i}][facets][${j}][text]`, f.text);
+      fd.append(`parameters[${i}][facets][${j}][weight]`, f.weight ?? 0);
     });
   });
   return fd;
