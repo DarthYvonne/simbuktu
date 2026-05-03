@@ -51,15 +51,12 @@
         align-items: center;
         justify-content: center;
         padding: 40px;
+        overflow: hidden;
     }
-    .hero-right-content {
-        color: #999;
-        font-weight: 700;
-        font-size: 24px;
-        text-transform: uppercase;
-        border: 2px dashed #ddd;
-        padding: 40px;
-        text-align: center;
+    .hero-right img {
+        max-width: 100%;
+        height: auto;
+        display: block;
     }
     .info-bar {
         background-color: #ffffff;
@@ -86,8 +83,7 @@
         .hero-left h1 { font-size: 2.25rem; }
         .hero-left p { font-size: 1rem; margin-bottom: 24px; }
         .btn { padding: 14px 28px; font-size: 14px; }
-        .hero-right { padding: 40px 5%; }
-        .hero-right-content { font-size: 18px; padding: 28px; }
+        .hero-right { padding: 24px 5%; }
         .info-bar { gap: 16px; padding: 16px 5%; }
         .info-bar span { font-size: 13px; }
     }
@@ -102,7 +98,7 @@
         </div>
 
         <div class="hero-right">
-            <div class="hero-right-content">[ SIMULATION GRAFIK ]</div>
+            <img src="{{ asset('img/hero-feed.png') }}" alt="Simbuktu simulerede feeds">
         </div>
     </section>
 
