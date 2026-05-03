@@ -47,15 +47,13 @@
     .hero-right {
         flex: 1;
         background-color: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
         overflow: hidden;
+        padding: 0;
     }
     .hero-right img {
-        max-width: 100%;
-        height: auto;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
         display: block;
     }
     .info-bar {
@@ -83,7 +81,7 @@
         .hero-left h1 { font-size: 2.25rem; }
         .hero-left p { font-size: 1rem; margin-bottom: 24px; }
         .btn { padding: 14px 28px; font-size: 14px; }
-        .hero-right { padding: 24px 5%; }
+        .hero-right { min-height: 280px; }
         .info-bar { gap: 16px; padding: 16px 5%; }
         .info-bar span { font-size: 13px; }
     }
