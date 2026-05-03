@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<title>SlopHub — mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; color: #1c1e21; font-size: 14px; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 240px 1fr 320px; min-height: 100vh; max-width: 1400px; margin: 0 auto; }
+
+  /* Sidebar */
+  .sidebar { background: #fff; border-right: 1px solid #dadde1; padding: 16px 12px; position: sticky; top: 0; height: 100vh; }
+  .logo { font-size: 22px; font-weight: 800; color: #e11d48; padding: 8px 12px 20px; letter-spacing: -0.5px; }
+  .logo small { display: block; font-size: 11px; font-weight: 400; color: #65676b; letter-spacing: 0; }
+  .nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; margin-bottom: 2px; cursor: pointer; }
+  .nav a:hover { background: #f0f2f5; }
+  .nav a.active { background: #e7f3ff; color: #1877f2; font-weight: 600; }
+  .nav .ico { width: 20px; display: inline-block; text-align: center; }
+  .nav-section { font-size: 11px; text-transform: uppercase; color: #65676b; padding: 16px 12px 6px; }
+
+  /* Main */
+  .main { padding: 20px 24px; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .view-header h1 { font-size: 20px; font-weight: 700; }
+  .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
+  .btn-primary { background: #1877f2; color: #fff; }
+  .btn-secondary { background: #e4e6eb; color: #1c1e21; }
+
+  /* Card */
+  .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 14px; padding: 14px 16px; }
+
+  /* Post */
+  .post-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a1c4fd, #c2e9fb); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #1c1e21; flex-shrink: 0; }
+  .avatar.sm { width: 32px; height: 32px; font-size: 12px; }
+  .avatar.a1 { background: linear-gradient(135deg, #fbc2eb, #a6c1ee); }
+  .avatar.a2 { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+  .avatar.a3 { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+  .avatar.a4 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+  .avatar.a5 { background: linear-gradient(135deg, #ff9a9e, #fad0c4); }
+  .avatar.a6 { background: linear-gradient(135deg, #cfd9df, #e2ebf0); }
+  .author { font-weight: 600; }
+  .meta { font-size: 12px; color: #65676b; }
+  .post-body { margin: 8px 0 12px; line-height: 1.45; }
+  .post-stats { display: flex; gap: 16px; font-size: 12px; color: #65676b; padding-top: 10px; border-top: 1px solid #f0f2f5; }
+  .stat { cursor: pointer; }
+
+  /* Comments */
+  .comment { display: flex; gap: 8px; padding: 8px 0; align-items: flex-start; }
+  .comment-body { background: #f0f2f5; padding: 8px 12px; border-radius: 14px; flex: 1; }
+  .comment-body .author { font-size: 13px; font-weight: 600; cursor: pointer; color: #050505; }
+  .comment-body .author:hover { text-decoration: underline; }
+  .comment-body .text { font-size: 13px; line-height: 1.4; margin-top: 2px; }
+  .comment-meta { font-size: 11px; color: #65676b; padding: 2px 12px; }
+  .thread { margin-left: 40px; }
+  .tick-badge { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+
+  /* Respons live */
+  .live-dot { display: inline-block; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; margin-right: 6px; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .new-comment { animation: slideIn 0.4s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  /* Right rail */
+  .rail { padding: 20px 16px; border-left: 1px solid #dadde1; background: #fff; }
+  .rail h3 { font-size: 13px; text-transform: uppercase; color: #65676b; margin-bottom: 10px; }
+  .score-big { font-size: 42px; font-weight: 800; color: #1877f2; line-height: 1; }
+  .score-label { font-size: 12px; color: #65676b; margin-bottom: 18px; }
+  .metric { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
+  .metric strong { color: #1c1e21; }
+  .bar { height: 6px; background: #f0f2f5; border-radius: 3px; overflow: hidden; margin: 4px 0 10px; }
+  .bar > span { display: block; height: 100%; background: #1877f2; }
+
+  /* Persona profile */
+  .persona-hero { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; }
+  .avatar-big { width: 96px; height: 96px; border-radius: 50%; }
+  .narrative { background: #fef9e7; border-left: 3px solid #f59e0b; padding: 12px 14px; border-radius: 6px; font-size: 13px; line-height: 1.5; margin-bottom: 14px; }
+  .attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 13px; }
+  .attr-grid div { padding: 4px 0; border-bottom: 1px solid #f0f2f5; }
+  .attr-grid span { color: #65676b; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .tag { background: #e7f3ff; color: #1877f2; font-size: 12px; padding: 3px 10px; border-radius: 12px; }
+  .tag.trigger { background: #fee2e2; color: #b91c1c; }
+  .tag.sub { background: #dcfce7; color: #166534; }
+
+  /* Admin sliders */
+  .slider-row { display: grid; grid-template-columns: 220px 1fr 50px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f2f5; }
+  .slider-row label { font-size: 13px; }
+  .slider-row label small { display: block; color: #65676b; font-size: 11px; font-weight: 400; }
+  input[type=range] { width: 100%; }
+  .val { text-align: right; font-family: monospace; font-weight: 600; color: #1877f2; }
+  .preset-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .preset { padding: 6px 12px; border: 1px solid #dadde1; border-radius: 16px; font-size: 12px; cursor: pointer; background: #fff; }
+  .preset.active { background: #1877f2; color: #fff; border-color: #1877f2; }
+
+  /* Leaderboard */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #f0f2f5; }
+  th { background: #f8f9fa; font-weight: 600; color: #65676b; font-size: 11px; text-transform: uppercase; }
+  tr:hover td { background: #f8f9fa; }
+  .rank { font-weight: 700; color: #1877f2; }
+  .score-chip { display: inline-block; padding: 2px 10px; background: #1877f2; color: #fff; border-radius: 12px; font-weight: 600; font-size: 12px; }
+
+  /* Filters */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter { padding: 6px 12px; background: #fff; border: 1px solid #dadde1; border-radius: 16px; font-size: 12px; cursor: pointer; }
+
+  /* Persona grid */
+  .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .persona-card { background: #fff; border-radius: 10px; padding: 14px; cursor: pointer; transition: transform 0.15s; }
+  .persona-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .persona-card .avatar { width: 64px; height: 64px; margin-bottom: 10px; font-size: 20px; }
+  .persona-card .name { font-weight: 600; margin-bottom: 2px; }
+  .persona-card .desc { font-size: 12px; color: #65676b; }
+
+  /* Editor */
+  textarea { width: 100%; border: 1px solid #dadde1; border-radius: 8px; padding: 12px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 120px; }
+  .editor-knobs { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
+  .editor-knobs h4 { font-size: 13px; margin-bottom: 10px; color: #65676b; text-transform: uppercase; }
+
+  /* Round indicator */
+  .round-indicator { display: inline-flex; align-items: center; gap: 8px; background: #e7f3ff; color: #1877f2; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">SlopHub<small>shitstormlab.dk</small></div>
+    <nav class="nav">
+      <a onclick="show('feed')" class="active" data-nav="feed"><span class="ico">📰</span> Feed</a>
+      <a onclick="show('mine')" data-nav="mine"><span class="ico">✍️</span> Mine opslag</a>
+      <a onclick="show('profiler')" data-nav="profiler"><span class="ico">👥</span> Profiler</a>
+      <a onclick="show('respons')" data-nav="respons"><span class="ico">💬</span> Respons <span class="tick-badge">LIVE</span></a>
+      <a onclick="show('analyse')" data-nav="analyse"><span class="ico">📊</span> Analyse</a>
+      <a onclick="show('leaderboard')" data-nav="leaderboard"><span class="ico">🏆</span> Leaderboard</a>
+      <div class="nav-section">Admin</div>
+      <a onclick="show('admin')" data-nav="admin"><span class="ico">⚙️</span> Algoritme-config</a>
+    </nav>
+    <div style="position: absolute; bottom: 16px; left: 12px; right: 12px; padding: 10px 12px; background: #f0f2f5; border-radius: 8px; font-size: 12px;">
+      <div style="font-weight: 600;">Mette Underviser</div>
+      <div style="color: #65676b;">Hold: Krisekom F26</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- FEED -->
+    <div class="view active" id="feed">
+      <div class="view-header"><h1>Feed</h1><button class="btn btn-primary">+ Nyt opslag</button></div>
+
+      <div class="card">
+        <div class="post-head">
+          <div class="avatar a1">LH</div>
+          <div><div class="author">Lars H. (deltager)</div><div class="meta">i dag 14:22 · Runde 7</div></div>
+        </div>
+        <div class="post-body">Jeg synes vi skal forbyde elcykler i København. De larmer ikke, men de kører som sindssyge på cykelstierne. Nok er nok.</div>
+        <div class="post-stats">
+          <span class="stat">💬 47 kommentarer</span>
+          <span class="stat">🔄 12 delinger</span>
+          <span class="stat">❤️ 89</span>
+          <span class="stat" style="margin-left: auto; color: #1877f2; font-weight: 600;">Viralitet: 73</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="post-head">
+          <div class="avatar a2">SK</div>
+          <div><div class="author">Sofie K. (deltager)</div><div class="meta">i dag 11:04 · Runde 14</div></div>
+        </div>
+        <div class="post-body">Har vi ikke et problem med at folkeskolelærere ikke får lov at være autoriteter længere? Mine venner der underviser er ved at knække sammen.</div>
+        <div class="post-stats">
+          <span class="stat">💬 112 kommentarer</span>
+          <span class="stat">🔄 34 delinger</span>
+          <span class="stat">❤️ 156</span>
+          <span class="stat" style="margin-left: auto; color: #e11d48; font-weight: 600;">Viralitet: 91</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="post-head">
+          <div class="avatar a3">TB</div>
+          <div><div class="author">Thomas B. (deltager)</div><div class="meta">i går · Afsluttet</div></div>
+        </div>
+        <div class="post-body">Bare en hyggelig søndag med familien 🌞</div>
+        <div class="post-stats">
+          <span class="stat">💬 3 kommentarer</span>
+          <span class="stat">❤️ 14</span>
+          <span class="stat" style="margin-left: auto; color: #65676b;">Viralitet: 8</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MINE OPSLAG -->
+    <div class="view" id="mine">
+      <div class="view-header"><h1>Mine opslag</h1></div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 10px;">Nyt opslag</h3>
+        <textarea placeholder="Hvad har du på hjerte, Mette?">Jeg synes vi skal forbyde elcykler i København...</textarea>
+
+        <div class="editor-knobs">
+          <h4>Platform-algoritme for dette opslag</h4>
+          <div class="preset-row">
+            <span class="preset">Facebook-agtig</span>
+            <span class="preset active">TikTok-agtig</span>
+            <span class="preset">X-agtig</span>
+            <span class="preset">Reddit-agtig</span>
+            <span class="preset">Custom</span>
+          </div>
+          <div class="slider-row">
+            <label>Algoritmens aggressivitet<small>hvor hurtigt spreder indhold sig</small></label>
+            <input type="range" min="0" max="100" value="75">
+            <div class="val">75</div>
+          </div>
+          <div class="slider-row">
+            <label>Boble-tæthed<small>holder det sig i din egen boble?</small></label>
+            <input type="range" min="0" max="100" value="30">
+            <div class="val">30</div>
+          </div>
+          <div class="slider-row">
+            <label>Eksponering per runde<small>antal personas der ser det</small></label>
+            <input type="range" min="5" max="50" value="20">
+            <div class="val">20</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; text-align: right;">
+          <button class="btn btn-secondary">Gem som udkast</button>
+          <button class="btn btn-primary">Start simulation</button>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 10px; font-size: 15px;">Tidligere opslag</h3>
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600;">"Hash burde legaliseres"</div>
+            <div class="meta">Startet i går · 23 runder · Afsluttet</div>
+          </div>
+          <span class="score-chip">Viralitet 67</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600;">"Test om vejret"</div>
+            <div class="meta">3 dage siden · 4 runde · Afsluttet</div>
+          </div>
+          <span class="score-chip" style="background: #9ca3af;">Viralitet 12</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILER -->
+    <div class="view" id="profiler">
+      <div class="view-header"><h1>Profiler <span style="color: #65676b; font-weight: 400; font-size: 14px;">(1.000 personas)</span></h1></div>
+      <div class="filter-bar">
+        <span class="filter">Alle aldre ▾</span>
+        <span class="filter">Alle regioner ▾</span>
+        <span class="filter">Alle subkulturer ▾</span>
+        <span class="filter">Alle partier ▾</span>
+        <input type="text" class="filter" placeholder="Søg navn eller bio..." style="min-width: 200px;">
+      </div>
+      <div class="persona-grid">
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a1">TK</div>
+          <div class="name">Torben Kjær</div>
+          <div class="desc">58 · murer · Esbjerg · DD</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a2">AM</div>
+          <div class="name">Amalie Mortensen</div>
+          <div class="desc">24 · studerende · KBH · EL</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a3">JS</div>
+          <div class="name">Jens Sørensen</div>
+          <div class="desc">67 · pensionist · Viborg · V</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a4">LN</div>
+          <div class="name">Layla Nielsen</div>
+          <div class="desc">31 · SoMe-manager · Aarhus · RV</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a5">MB</div>
+          <div class="name">Mikkel Boe</div>
+          <div class="desc">19 · arbejdsløs · Odense · DD</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a6">HE</div>
+          <div class="name">Hanne Eriksen</div>
+          <div class="desc">52 · sygeplejerske · Randers · S</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a1">AO</div>
+          <div class="name">Ahmad Osman</div>
+          <div class="desc">29 · ingeniør · Høje-Taastrup · stemmer ikke</div>
+        </div>
+        <div class="persona-card" onclick="show('persona')">
+          <div class="avatar a2">BL</div>
+          <div class="name">Birgit Larsen</div>
+          <div class="desc">71 · pensionist · Nakskov · DF</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONA PROFIL -->
+    <div class="view" id="persona">
+      <div class="view-header">
+        <h1><a onclick="show('profiler')" style="color: #1877f2; cursor: pointer;">← Profiler</a></h1>
+      </div>
+      <div class="card">
+        <div class="persona-hero">
+          <div class="avatar avatar-big a1" style="font-size: 32px;">TK</div>
+          <div>
+            <h2>Torben Kjær, 58</h2>
+            <div class="meta">Murer · Esbjerg · Fraskilt · 2 voksne børn</div>
+            <div style="margin-top: 6px; font-style: italic; color: #1c1e21;">"Far, murer, realist."</div>
+          </div>
+        </div>
+
+        <div class="narrative">
+          <strong>Hvem er Torben?</strong><br>
+          Fraskilt. To voksne børn han ser for lidt. Stemte A én gang i 90'erne, fortryder det. Læser BT og Den Korte Avis.
+          Mener politikerne er ude af trit og at håndværkere ikke bliver respekteret.
+          <br><br>
+          <strong>Indre modsigelse:</strong> Havde en lærling der ikke kunne få dansk pas trods 10 år i DK. Det irriterer ham,
+          men han siger det ikke højt — det passer ikke til hans selvfortælling. Ekskonens nye mand er akademiker.
+          Det irriterer ham endnu mere.
+          <br><br>
+          <strong>Trigger:</strong> Hvis nogen kalder ham racist. Så eksploderer han.
+        </div>
+
+        <div class="tags">
+          <span class="tag sub">Håndværkerkultur</span>
+          <span class="tag sub">Boomer-Facebook</span>
+          <span class="tag trigger">Trigger: indvandring</span>
+          <span class="tag trigger">Trigger: klima</span>
+          <span class="tag trigger">Trigger: akademikere</span>
+        </div>
+
+        <div class="attr-grid" style="margin-top: 14px;">
+          <div><span>Politisk:</span> <strong>DD (stemte DF før)</strong></div>
+          <div><span>Engagement:</span> <strong>Middel — deler oprørt</strong></div>
+          <div><span>Big Five O:</span> <strong>3/10</strong></div>
+          <div><span>Big Five A:</span> <strong>4/10</strong></div>
+          <div><span>Konfliktstil:</span> <strong>Direkte konfronterende</strong></div>
+          <div><span>Sprogregister:</span> <strong>Dagligdags, stavefejl, "sq"</strong></div>
+          <div><span>Indkomstlag:</span> <strong>Middel</strong></div>
+          <div><span>Mediehabitat:</span> <strong>Facebook, BT, TV2 News</strong></div>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 10px; font-size: 15px;">Torbens tidligere opslag</h3>
+      <div class="card">
+        <div class="post-head"><div class="avatar sm a1">TK</div><div><div class="author">Torben Kjær</div><div class="meta">3 uger siden</div></div></div>
+        <div class="post-body">færdig med terrassen hos fru hansen i esbjerg. flot arbejde hvis jeg selv skal sige det 👍 [billede]</div>
+      </div>
+      <div class="card">
+        <div class="post-head"><div class="avatar sm a1">TK</div><div><div class="author">Torben Kjær</div><div class="meta">1 måned siden · delt fra BT</div></div></div>
+        <div class="post-body">sq da utroligt hvad de slipper af sted med. hvornår stopper det?? 🤬</div>
+      </div>
+      <div class="card">
+        <div class="post-head"><div class="avatar sm a1">TK</div><div><div class="author">Torben Kjær</div><div class="meta">2 måneder siden</div></div></div>
+        <div class="post-body">nogen der har et godt tilbud på en ordentlig slagboremaskine? hilti eller bosch</div>
+      </div>
+    </div>
+
+    <!-- RESPONS -->
+    <div class="view" id="respons">
+      <div class="view-header">
+        <h1>Respons <span class="round-indicator"><span class="live-dot"></span>LIVE · Runde 7</span></h1>
+        <button class="btn btn-secondary">⏸ Pause</button>
+      </div>
+
+      <div class="card">
+        <div class="post-head">
+          <div class="avatar">ME</div>
+          <div><div class="author">Mette (dig)</div><div class="meta">Startet for 7 min. siden</div></div>
+        </div>
+        <div class="post-body">Jeg synes vi skal forbyde elcykler i København. De larmer ikke, men de kører som sindssyge på cykelstierne. Nok er nok.</div>
+      </div>
+
+      <h3 style="margin: 16px 0 10px; font-size: 14px; color: #65676b;">Kommentarer tikker ind...</h3>
+
+      <div class="card new-comment">
+        <div class="comment">
+          <div class="avatar sm a1">TK</div>
+          <div style="flex:1">
+            <div class="comment-body">
+              <span class="author" onclick="show('persona')">Torben Kjær</span>
+              <div class="text">endelig en der siger det. de kører som gale på de der skidt. jeg har selv været tæt på at blive kørt ned sq</div>
+            </div>
+            <div class="comment-meta">Runde 1 · 👍 14 · Svar</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comment">
+          <div class="avatar sm a4">LN</div>
+          <div style="flex:1">
+            <div class="comment-body">
+              <span class="author" onclick="show('persona')">Layla Nielsen</span>
+              <div class="text">Det er jo netop fordi vi ikke har ordentlig infrastruktur. Forbud løser ingenting — lav bredere cykelstier 🚴‍♀️</div>
+            </div>
+            <div class="comment-meta">Runde 2 · 👍 8 · Svar</div>
+            <!-- Thread -->
+            <div class="thread">
+              <div class="comment">
+                <div class="avatar sm a1">TK</div>
+                <div style="flex:1">
+                  <div class="comment-body">
+                    <span class="author">Torben Kjær</span>
+                    <div class="text">typisk københavner svar. flere cykelstier. for mine skattepenge. nej tak</div>
+                  </div>
+                  <div class="comment-meta">Runde 3 · 👍 5</div>
+                </div>
+              </div>
+              <div class="comment">
+                <div class="avatar sm a4">LN</div>
+                <div style="flex:1">
+                  <div class="comment-body">
+                    <span class="author">Layla Nielsen</span>
+                    <div class="text">Jeg betaler sq også skat, Torben. Prøv at argumentere i stedet for at fyre fordomme af.</div>
+                  </div>
+                  <div class="comment-meta">Runde 4 · 👍 11</div>
+                </div>
+              </div>
+              <div class="comment">
+                <div class="avatar sm a1">TK</div>
+                <div style="flex:1">
+                  <div class="comment-body">
+                    <span class="author">Torben Kjær</span>
+                    <div class="text">det er ikke fordomme det er FAKTA. i kbh har i ikke en skid forstand på hvad der foregår i resten af landet</div>
+                  </div>
+                  <div class="comment-meta">Runde 5 · 👍 9</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comment">
+          <div class="avatar sm a5">MB</div>
+          <div style="flex:1">
+            <div class="comment-body">
+              <span class="author" onclick="show('persona')">Mikkel Boe</span>
+              <div class="text">boomer take 💀 elcykler er fremtiden, kom videre</div>
+            </div>
+            <div class="comment-meta">Runde 6 · 👍 22 · Svar</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card new-comment" style="border-left: 3px solid #22c55e;">
+        <div class="comment">
+          <div class="avatar sm a6">HE</div>
+          <div style="flex:1">
+            <div class="comment-body">
+              <span class="author" onclick="show('persona')">Hanne Eriksen</span>
+              <div class="text">Jeg er sygeplejerske og ser dagligt folk komme ind efter elcykel-ulykker. Det er virkelig blevet et problem, og det snakker ingen om.</div>
+            </div>
+            <div class="comment-meta">Runde 7 (ny) · 👍 3 · Svar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSE -->
+    <div class="view" id="analyse">
+      <div class="view-header"><h1>Analyse · "Forbyd elcykler i KBH"</h1></div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="card">
+          <h3 style="font-size: 13px; color: #65676b; text-transform: uppercase;">Viralitets-score</h3>
+          <div style="font-size: 48px; font-weight: 800; color: #1877f2;">73<span style="font-size: 20px; color: #65676b;">/100</span></div>
+          <div class="bar"><span style="width: 73%"></span></div>
+          <div style="font-size: 12px; color: #65676b;">Højere end 82% af hold-opslag</div>
+        </div>
+        <div class="card">
+          <h3 style="font-size: 13px; color: #65676b; text-transform: uppercase;">Reach & engagement</h3>
+          <div class="metric"><span>Personas eksponeret</span><strong>247</strong></div>
+          <div class="metric"><span>Kommentarer</span><strong>47</strong></div>
+          <div class="metric"><span>Delinger</span><strong>12</strong></div>
+          <div class="metric"><span>Max tråddybde</span><strong>8</strong></div>
+          <div class="metric"><span>Subkulturer involveret</span><strong>6</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 13px; color: #65676b; text-transform: uppercase; margin-bottom: 10px;">Reach over tid</h3>
+        <svg viewBox="0 0 400 120" style="width: 100%; height: 120px;">
+          <polyline fill="none" stroke="#1877f2" stroke-width="2" points="0,100 40,90 80,70 120,55 160,30 200,20 240,28 280,40 320,55 360,70 400,80"/>
+          <polyline fill="#1877f2" fill-opacity="0.1" stroke="none" points="0,100 40,90 80,70 120,55 160,30 200,20 240,28 280,40 320,55 360,70 400,80 400,120 0,120"/>
+        </svg>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #65676b;">
+          <span>Runde 1</span><span>Runde 4</span><span>Runde 7 (nu)</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="card">
+          <h3 style="font-size: 13px; color: #65676b; text-transform: uppercase; margin-bottom: 10px;">Hvem reagerede?</h3>
+          <div class="metric"><span>Håndværkerkultur</span><strong>18%</strong></div>
+          <div class="bar"><span style="width: 18%"></span></div>
+          <div class="metric"><span>Boomer-Facebook</span><strong>24%</strong></div>
+          <div class="bar"><span style="width: 24%"></span></div>
+          <div class="metric"><span>Klima-aktivisme</span><strong>15%</strong></div>
+          <div class="bar"><span style="width: 15%"></span></div>
+          <div class="metric"><span>Gaming/Gen Z</span><strong>12%</strong></div>
+          <div class="bar"><span style="width: 12%"></span></div>
+          <div class="metric"><span>Øvrige</span><strong>31%</strong></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size: 13px; color: #65676b; text-transform: uppercase; margin-bottom: 10px;">Trigger-emner drev dynamikken</h3>
+          <div class="tags">
+            <span class="tag trigger">Gentrificering</span>
+            <span class="tag trigger">KBH vs resten af DK</span>
+            <span class="tag trigger">Generations-konflikt</span>
+            <span class="tag trigger">Klima</span>
+          </div>
+          <p style="font-size: 12px; color: #65676b; margin-top: 10px; line-height: 1.5;">
+            Opslaget blev hurtigt en stedfortræderkrig om by-vs-land frem for et reelt cykelsti-spørgsmål.
+            To subkulturer (boomer-FB + Gen Z) kolliderede i runde 5, hvilket boostede engagementet markant.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="view" id="leaderboard">
+      <div class="view-header"><h1>Leaderboard — Hold: Krisekom F26</h1></div>
+      <div class="card" style="padding: 0;">
+        <table>
+          <thead><tr><th>#</th><th>Opslag</th><th>Deltager</th><th>Runder</th><th>Kommentarer</th><th>Viralitet</th></tr></thead>
+          <tbody>
+            <tr><td class="rank">1</td><td>"Folkeskolelærere er ved at knække sammen"</td><td>Sofie K.</td><td>14</td><td>112</td><td><span class="score-chip">91</span></td></tr>
+            <tr><td class="rank">2</td><td>"Forbyd elcykler i KBH"</td><td>Mette U.</td><td>7</td><td>47</td><td><span class="score-chip">73</span></td></tr>
+            <tr><td class="rank">3</td><td>"Hash burde legaliseres"</td><td>Jonas P.</td><td>23</td><td>84</td><td><span class="score-chip">67</span></td></tr>
+            <tr><td class="rank">4</td><td>"Vindmøller er griske..."</td><td>Anne B.</td><td>11</td><td>39</td><td><span class="score-chip" style="background: #7c3aed;">54</span></td></tr>
+            <tr><td class="rank">5</td><td>"DR bør nedlægges"</td><td>Peter M.</td><td>9</td><td>28</td><td><span class="score-chip" style="background: #7c3aed;">41</span></td></tr>
+            <tr><td class="rank">6</td><td>"Test: bare en lille hilsen"</td><td>Thomas B.</td><td>4</td><td>3</td><td><span class="score-chip" style="background: #9ca3af;">8</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="view" id="admin">
+      <div class="view-header"><h1>Platform-algoritme · globale indstillinger</h1><button class="btn btn-primary">Gem</button></div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 10px;">Preset</h3>
+        <div class="preset-row">
+          <span class="preset">Facebook-agtig</span>
+          <span class="preset active">TikTok-agtig</span>
+          <span class="preset">X-agtig</span>
+          <span class="preset">Reddit-agtig</span>
+          <span class="preset">Custom</span>
+        </div>
+        <p style="font-size: 12px; color: #65676b;">Brug presets som udgangspunkt. Deltagere kan override per opslag.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 10px;">Reach-mekanik</h3>
+        <div class="slider-row">
+          <label>Base eksponering per runde<small>antal nye personas runde 1</small></label>
+          <input type="range" min="5" max="50" value="20"><div class="val">20</div>
+        </div>
+        <div class="slider-row">
+          <label>Eksponerings-vækstfaktor<small>multiplikator ved højt engagement</small></label>
+          <input type="range" min="100" max="300" value="180"><div class="val">1.8×</div>
+        </div>
+        <div class="slider-row">
+          <label>Decay-rate<small>hvor hurtigt reach falder ved stilhed</small></label>
+          <input type="range" min="30" max="100" value="70"><div class="val">0.7</div>
+        </div>
+        <div class="slider-row">
+          <label>Trending threshold<small>engagement der udløser viralitet</small></label>
+          <input type="range" min="5" max="50" value="20"><div class="val">20</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 10px;">Boble-logik</h3>
+        <div class="slider-row">
+          <label>Boble-tæthed<small>hvor strikt samme-subkultur i runde 1-2</small></label>
+          <input type="range" min="0" max="100" value="70"><div class="val">0.70</div>
+        </div>
+        <div class="slider-row">
+          <label>Tilstødende-unlock runde<small>hvornår nabo-subkulturer ser det</small></label>
+          <input type="range" min="1" max="8" value="3"><div class="val">3</div>
+        </div>
+        <div class="slider-row">
+          <label>Modstand-unlock runde<small>hvornår modsat subkultur ser det</small></label>
+          <input type="range" min="3" max="10" value="5"><div class="val">5</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 10px;">Engagement-vægte</h3>
+        <div class="slider-row">
+          <label>Kommentar vægt</label>
+          <input type="range" min="1" max="10" value="3"><div class="val">3</div>
+        </div>
+        <div class="slider-row">
+          <label>Deling vægt</label>
+          <input type="range" min="1" max="10" value="5"><div class="val">5</div>
+        </div>
+        <div class="slider-row">
+          <label>Like vægt</label>
+          <input type="range" min="1" max="10" value="1"><div class="val">1</div>
+        </div>
+        <div class="slider-row">
+          <label>Tråd-reply vægt<small>svar dybt i tråde</small></label>
+          <input type="range" min="1" max="10" value="2"><div class="val">2</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 10px;">Persona-adfærd caps</h3>
+        <div class="slider-row">
+          <label>Max LLM-kald per runde<small>cost control</small></label>
+          <input type="range" min="5" max="50" value="25"><div class="val">25</div>
+        </div>
+        <div class="slider-row">
+          <label>Notifikations-returrate<small>chance for svar-genbesøg</small></label>
+          <input type="range" min="0" max="100" value="80"><div class="val">0.80</div>
+        </div>
+        <div class="slider-row">
+          <label>Tråd-eskaleringsfaktor<small>intensitets-vækst per reply</small></label>
+          <input type="range" min="100" max="200" value="130"><div class="val">1.30</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT RAIL -->
+  <aside class="rail">
+    <h3>Aktivt opslag</h3>
+    <div class="score-big">73</div>
+    <div class="score-label">Viralitet · Runde 7</div>
+    <div class="bar"><span style="width: 73%"></span></div>
+
+    <h3 style="margin-top: 20px;">Live-metrics</h3>
+    <div class="metric"><span>Reach</span><strong>247</strong></div>
+    <div class="metric"><span>Kommentarer</span><strong>47</strong></div>
+    <div class="metric"><span>Delinger</span><strong>12</strong></div>
+    <div class="metric"><span>Max tråddybde</span><strong>8</strong></div>
+    <div class="metric"><span>Subkulturer</span><strong>6</strong></div>
+
+    <h3 style="margin-top: 20px;">Næste runde</h3>
+    <div style="background: #f0f2f5; padding: 10px; border-radius: 8px; font-size: 12px;">
+      <div style="font-weight: 600; color: #1877f2;">⏱ 42 sek</div>
+      <div style="color: #65676b; margin-top: 4px;">~18 personas i kø · 6 forventet at kommentere</div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Aktive trigger-emner</h3>
+    <div class="tags">
+      <span class="tag trigger">KBH vs provinsen</span>
+      <span class="tag trigger">Generationskonflikt</span>
+      <span class="tag trigger">Klima</span>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+  const navMap = { feed:'feed', mine:'mine', profiler:'profiler', persona:'profiler', respons:'respons', analyse:'analyse', leaderboard:'leaderboard', admin:'admin' };
+  const nav = document.querySelector(`.nav a[data-nav="${navMap[id]}"]`);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+
+</body>
+</html>
