@@ -24,11 +24,16 @@ class GeneratePersonaJob implements ShouldQueue
     public int $tries = 2;
     public int $timeout = 300;
 
-    public function __construct(
-        public bool $skipImage = false,
-        public ?int $populationId = null,
-        public ?int $blueprintId = null,
-    ) {}
+    public bool $skipImage = false;
+    public ?int $populationId = null;
+    public ?int $blueprintId = null;
+
+    public function __construct(bool $skipImage = false, ?int $populationId = null, ?int $blueprintId = null)
+    {
+        $this->skipImage    = $skipImage;
+        $this->populationId = $populationId;
+        $this->blueprintId  = $blueprintId;
+    }
 
     public function handle(): void
     {
