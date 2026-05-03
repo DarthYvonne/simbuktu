@@ -312,6 +312,7 @@ function renderEditor() {
         <span class="bp-sum ${sumClass}">${sumLabel}</span>
         <span style="display:flex; gap:8px; align-items:center;">
           <button type="button" onclick="distributeEqually()" style="color:#65676b; font-weight:600;">Fordel jævnt</button>
+          <button type="button" onclick="distributeNormal()" style="color:#65676b; font-weight:600;">Normalfordel</button>
           <button type="button" onclick="addFacet()"><i class="fa-solid fa-plus"></i> Tilføj facet</button>
         </span>
       </div>
@@ -346,6 +347,38 @@ function distributeEqually() {
   const remainder = 100 - base * p.facets.length;
   p.facets.forEach((f, i) => { f.weight = base + (i < remainder ? 1 : 0); });
   renderEditor();
+}
+
+function distributeNormal() {
+  const p = state.parameters[state.selectedDim];
+  if (!p || !p.facets.length) return;
+  const weights = normalWeights(p.facets.length);
+  p.facets.forEach((f, i) => { f.weight = weights[i]; });
+  renderEditor();
+}
+
+// Gaussian-weighted distribution of `n` integer values summing to 100.
+// Center at the middle index, standard deviation = n/4 so the bell fits the range nicely.
+// Falls back to equal split for n <= 1.
+function normalWeights(n) {
+  if (n <= 0) return [];
+  if (n === 1) return [100];
+  const center = (n - 1) / 2;
+  const std = Math.max(0.5, n / 4);
+  const raw = [];
+  for (let i = 0; i < n; i++) {
+    raw.push(Math.exp(-((i - center) ** 2) / (2 * std * std)));
+  }
+  const sum = raw.reduce((a, b) => a + b, 0);
+  // Scale to 100, round, distribute leftover by largest fractional remainders.
+  const scaled = raw.map(v => v / sum * 100);
+  const floored = scaled.map(v => Math.floor(v));
+  let leftover = 100 - floored.reduce((a, b) => a + b, 0);
+  const order = scaled
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < leftover; k++) floored[order[k].i] += 1;
+  return floored;
 }
 
 function addCustomDimension() {

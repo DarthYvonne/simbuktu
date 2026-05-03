@@ -63,6 +63,7 @@
       <div style="display:flex; gap:8px; align-items:center;">
         <span id="weight-sum" style="font-size:12px; color:#65676b;"></span>
         <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="distributeEqually()">Fordel jævnt</button>
+        <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="distributeNormal()">Normalfordel</button>
         <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="addFacet()">
           <i class="fa-solid fa-plus"></i> Tilføj facet
         </button>
@@ -135,6 +136,34 @@ function distributeEqually() {
   const remainder = 100 - base * inputs.length;
   inputs.forEach((el, i) => { el.value = base + (i < remainder ? 1 : 0); });
   updateSum();
+}
+
+function distributeNormal() {
+  const inputs = getWeights();
+  if (!inputs.length) return;
+  const w = normalWeights(inputs.length);
+  inputs.forEach((el, i) => { el.value = w[i]; });
+  updateSum();
+}
+
+function normalWeights(n) {
+  if (n <= 0) return [];
+  if (n === 1) return [100];
+  const center = (n - 1) / 2;
+  const std = Math.max(0.5, n / 4);
+  const raw = [];
+  for (let i = 0; i < n; i++) {
+    raw.push(Math.exp(-((i - center) ** 2) / (2 * std * std)));
+  }
+  const sum = raw.reduce((a, b) => a + b, 0);
+  const scaled = raw.map(v => v / sum * 100);
+  const floored = scaled.map(v => Math.floor(v));
+  let leftover = 100 - floored.reduce((a, b) => a + b, 0);
+  const order = scaled
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < leftover; k++) floored[order[k].i] += 1;
+  return floored;
 }
 
 if (existing.length) {
