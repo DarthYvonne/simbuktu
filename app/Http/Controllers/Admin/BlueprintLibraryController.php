@@ -45,13 +45,13 @@ class BlueprintLibraryController extends Controller
         $data = $request->validate([
             'name'            => ['required', 'string', 'max:64', Rule::unique('library_parameters', 'name')->ignore($ignoreId)],
             'description'     => 'nullable|string|max:500',
-            'levels'          => 'required|array|min:2',
-            'levels.*.name'   => 'required|string|max:64',
-            'levels.*.text'   => 'required|string|max:5000',
+            'facets'          => 'required|array|min:2',
+            'facets.*.name'   => 'required|string|max:64',
+            'facets.*.text'   => 'required|string|max:5000',
         ]);
-        $data['levels'] = array_values(array_map(
-            fn ($l) => ['name' => trim($l['name']), 'text' => trim($l['text'])],
-            $data['levels']
+        $data['facets'] = array_values(array_map(
+            fn ($f) => ['name' => trim($f['name']), 'text' => trim($f['text'])],
+            $data['facets']
         ));
         return $data;
     }

@@ -1,0 +1,60 @@
+@extends('layouts.app')
+@section('content')
+
+<div class="view-header">
+  <div>
+    <h1 style="margin-bottom: 3px;">Personlighedsstrukturer</h1>
+    <div style="font-size: 13px; color: #65676b;">Komplette persona-skabeloner: en ordnet liste af dimensioner med håndskrevne facetter.</div>
+  </div>
+  <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
+    <i class="fa-solid fa-plus"></i> Ny struktur
+  </button>
+</div>
+
+@if (session('success'))
+  <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if ($blueprints->isEmpty())
+  <div style="text-align: center; padding: 60px 20px; color: #65676b;">
+    <i class="fa-solid fa-id-card" style="font-size: 48px; margin-bottom: 16px; display: block; opacity: .3;"></i>
+    <p>Ingen personlighedsstrukturer endnu.</p>
+  </div>
+@else
+  <div style="display: grid; gap: 8px; max-width: 860px;">
+    @foreach ($blueprints as $bp)
+      <a href="{{ url('/simulation/admin/blueprints/'.$bp->id) }}"
+         style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #dadde1; border-radius:8px; padding:12px 16px; text-decoration:none; color:inherit;">
+        <span style="font-weight:700; font-size:15px; color:#1c1e21;">{{ $bp->name }}</span>
+        @if ($bp->description)
+          <span style="color:#65676b; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;">{{ $bp->description }}</span>
+        @endif
+        <span style="margin-left:auto; color:#65676b; font-size:12px;">{{ count($bp->parameters ?? []) }} dimensioner</span>
+      </a>
+    @endforeach
+  </div>
+@endif
+
+<div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:12px; padding:28px; width:100%; max-width:460px; box-shadow:0 8px 40px rgba(0,0,0,.2);">
+    <h2 style="margin:0 0 18px; font-size:18px;">Ny personlighedsstruktur</h2>
+    <form method="POST" action="{{ url('/simulation/admin/blueprints') }}">
+      @csrf
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Navn *</label>
+        <input type="text" name="name" required autofocus placeholder="fx Klima-shitstorm, Boomer-Facebook"
+          style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Beskrivelse</label>
+        <input type="text" name="description" placeholder="Valgfri kort beskrivelse"
+          style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('createModal').style.display='none'">Annuller</button>
+        <button type="submit" class="btn btn-primary">Opret</button>
+      </div>
+    </form>
+  </div>
+</div>
+@endsection

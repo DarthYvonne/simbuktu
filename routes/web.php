@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AlgorithmController;
+use App\Http\Controllers\Admin\BlueprintController;
 use App\Http\Controllers\Admin\BlueprintLibraryController;
 use App\Http\Controllers\Admin\ContextController;
 use App\Http\Controllers\Admin\CourseController;
@@ -165,6 +166,13 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::get('/blueprint-library/{parameter}',          [BlueprintLibraryController::class, 'edit']);
         Route::patch('/blueprint-library/{parameter}',        [BlueprintLibraryController::class, 'update']);
         Route::delete('/blueprint-library/{parameter}',       [BlueprintLibraryController::class, 'destroy']);
+
+        Route::get('/blueprints',                             [BlueprintController::class, 'index']);
+        Route::post('/blueprints',                            [BlueprintController::class, 'store']);
+        Route::get('/blueprints/{blueprint}',                 [BlueprintController::class, 'edit']);
+        Route::patch('/blueprints/{blueprint}',               [BlueprintController::class, 'update']);
+        Route::delete('/blueprints/{blueprint}',              [BlueprintController::class, 'destroy']);
+        Route::post('/blueprints/{blueprint}/promote',        [BlueprintController::class, 'promote']);
 
         Route::get('/usage', [\App\Http\Controllers\Admin\UsageController::class, 'index']);
 

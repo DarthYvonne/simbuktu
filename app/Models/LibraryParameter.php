@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class LibraryParameter extends Model
 {
     protected $guarded = [];
-    protected $casts = ['levels' => 'array'];
+    protected $casts = ['facets' => 'array'];
 }

@@ -4,7 +4,7 @@
 <div class="view-header">
   <div>
     <h1 style="margin-bottom: 3px;">Dimensions-bibliotek</h1>
-    <div style="font-size: 13px; color: #65676b;">Genbrugelige parametre der kan indsættes i blueprints som snapshots.</div>
+    <div style="font-size: 13px; color: #65676b;">Genbrugelige dimensioner der kan indsættes i blueprints som snapshots.</div>
   </div>
   <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
     <i class="fa-solid fa-plus"></i> Ny dimension
@@ -29,7 +29,7 @@
         @if ($p->description)
           <span style="color:#65676b; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;">{{ $p->description }}</span>
         @endif
-        <span style="margin-left:auto; color:#65676b; font-size:12px;">{{ count($p->levels) }} niveauer</span>
+        <span style="margin-left:auto; color:#65676b; font-size:12px;">{{ count($p->facets) }} facetter</span>
       </a>
     @endforeach
   </div>
@@ -51,10 +51,10 @@
           style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
       </div>
       <div style="margin-bottom:14px;">
-        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:6px;">Niveauer (mindst 2) *</label>
-        <div id="levels"></div>
-        <button type="button" class="btn btn-secondary" style="font-size:12px; margin-top:6px;" onclick="addLevel()">
-          <i class="fa-solid fa-plus"></i> Tilføj niveau
+        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:6px;">Facetter (mindst 2) *</label>
+        <div id="facets"></div>
+        <button type="button" class="btn btn-secondary" style="font-size:12px; margin-top:6px;" onclick="addFacet()">
+          <i class="fa-solid fa-plus"></i> Tilføj facet
         </button>
       </div>
       <div style="display:flex; gap:8px; justify-content:flex-end;">
@@ -66,29 +66,29 @@
 </div>
 
 <script>
-let levelIdx = 0;
-function addLevel(name = '', text = '') {
-  const wrap = document.getElementById('levels');
-  const i = levelIdx++;
+let facetIdx = 0;
+function addFacet(name = '', text = '') {
+  const wrap = document.getElementById('facets');
+  const i = facetIdx++;
   const div = document.createElement('div');
   div.style.cssText = 'border:1px solid #dadde1; border-radius:6px; padding:10px; margin-bottom:8px; background:#f8f9fa;';
   div.innerHTML = `
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-      <input type="text" name="levels[${i}][name]" required placeholder="Niveau-navn (fx lav)"
+      <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
       <button type="button" onclick="this.closest('div').parentElement.remove()" style="background:none; border:none; color:#b91c1c; cursor:pointer; font-size:14px;">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
-    <textarea name="levels[${i}][text]" required rows="3" placeholder="Håndskreven psykologi/kommunikations-konsekvens-tekst"
+    <textarea name="facets[${i}][text]" required rows="3" placeholder="Håndskreven psykologi/kommunikations-konsekvens-tekst"
       style="width:100%; padding:8px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
   `;
   wrap.appendChild(div);
   if (name) div.querySelector('input').value = name;
   if (text) div.querySelector('textarea').value = text;
 }
-addLevel();
-addLevel();
+addFacet();
+addFacet();
 </script>
 
 @endsection

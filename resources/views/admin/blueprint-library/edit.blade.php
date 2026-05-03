@@ -9,7 +9,7 @@
     <h1 style="margin:3px 0 0;">{{ $parameter->name }}</h1>
   </div>
   <form method="POST" action="{{ url('/simulation/admin/blueprint-library/'.$parameter->id) }}"
-        onsubmit="return confirm('Slet dimension {{ addslashes($parameter->name) }}? Eksisterende blueprints påvirkes ikke.')">
+        onsubmit="return confirm('Slet dimension {{ addslashes($parameter->name) }}? Eksisterende strukturer påvirkes ikke.')">
     @csrf @method('DELETE')
     <button type="submit" class="btn btn-secondary" style="color:#b91c1c;">
       <i class="fa-solid fa-trash"></i> Slet
@@ -47,12 +47,12 @@
 
   <div style="background:#fff; border:1px solid #dadde1; border-radius:8px; padding:18px; margin-bottom:14px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-      <div style="font-weight:600; font-size:14px;">Niveauer</div>
-      <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="addLevel()">
-        <i class="fa-solid fa-plus"></i> Tilføj niveau
+      <div style="font-weight:600; font-size:14px;">Facetter</div>
+      <button type="button" class="btn btn-secondary" style="font-size:12px;" onclick="addFacet()">
+        <i class="fa-solid fa-plus"></i> Tilføj facet
       </button>
     </div>
-    <div id="levels"></div>
+    <div id="facets"></div>
   </div>
 
   <div style="display:flex; justify-content:flex-end;">
@@ -61,23 +61,23 @@
 </form>
 
 <script>
-const existing = @json($parameter->levels ?? []);
-let levelIdx = 0;
+const existing = @json($parameter->facets ?? []);
+let facetIdx = 0;
 
-function addLevel(name = '', text = '') {
-  const wrap = document.getElementById('levels');
-  const i = levelIdx++;
+function addFacet(name = '', text = '') {
+  const wrap = document.getElementById('facets');
+  const i = facetIdx++;
   const div = document.createElement('div');
   div.style.cssText = 'border:1px solid #dadde1; border-radius:6px; padding:10px; margin-bottom:8px; background:#f8f9fa;';
   div.innerHTML = `
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-      <input type="text" name="levels[${i}][name]" required placeholder="Niveau-navn (fx lav)"
+      <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
       <button type="button" onclick="this.closest('div').parentElement.remove()" style="background:none; border:none; color:#b91c1c; cursor:pointer; font-size:14px;">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
-    <textarea name="levels[${i}][text]" required rows="4" placeholder="Håndskreven tekst"
+    <textarea name="facets[${i}][text]" required rows="4" placeholder="Håndskreven tekst"
       style="width:100%; padding:8px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
   `;
   wrap.appendChild(div);
@@ -86,9 +86,9 @@ function addLevel(name = '', text = '') {
 }
 
 if (existing.length) {
-  existing.forEach(l => addLevel(l.name ?? '', l.text ?? ''));
+  existing.forEach(f => addFacet(f.name ?? '', f.text ?? ''));
 } else {
-  addLevel(); addLevel();
+  addFacet(); addFacet();
 }
 </script>
 
