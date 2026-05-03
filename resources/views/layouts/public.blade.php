@@ -83,8 +83,24 @@
         }
 
         @media (max-width: 768px) {
-            .menu-toggle { display: inline-flex; }
+            .menu-toggle {
+                display: inline-flex;
+                position: absolute;
+                left: 5%;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 2;
+            }
             .top-bar { padding: 12px 5%; }
+            .top-bar .icon-area--right {
+                position: absolute;
+                right: 5%;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 2;
+            }
+            .icon-area--left { display: none; }
+            .logo-area { flex: 1 1 100%; justify-content: center; }
             .logo-area img { height: 64px; }
 
             nav { padding: 0; }
