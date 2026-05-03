@@ -135,7 +135,14 @@
 
     @yield('content')
 
-    <footer>&copy; {{ date('Y') }} Simbuktu</footer>
+    <footer>
+        &copy; {{ date('Y') }} Simbuktu
+        @auth
+            @if(auth()->user()->is_admin && !empty($editUrl))
+                · <a href="{{ $editUrl }}" style="color:#3498db;text-decoration:none;">Rediger denne side</a>
+            @endif
+        @endauth
+    </footer>
 
 </body>
 </html>

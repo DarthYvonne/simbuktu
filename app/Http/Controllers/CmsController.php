@@ -11,15 +11,18 @@ class CmsController extends Controller
 {
     public function settings()
     {
-        $heroImage = CmsSetting::get('home_hero_image');
-        return view('cms.settings', compact('heroImage'));
+        $heroImage   = CmsSetting::get('home_hero_image');
+        $homeContent = CmsSetting::get('home_content');
+        return view('cms.settings', compact('heroImage', 'homeContent'));
     }
 
     public function saveSettings(Request $request)
     {
         $request->validate([
-            'hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
-            'remove_hero' => 'nullable|boolean',
+            'hero_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'remove_hero'  => 'nullable|boolean',
+            'home_content' => 'nullable|string',
+            'reset_home_content' => 'nullable|boolean',
         ]);
 
         if ($request->boolean('remove_hero')) {
@@ -36,6 +39,12 @@ class CmsController extends Controller
             if (!is_dir($dest)) mkdir($dest, 0755, true);
             $file->move($dest, $name);
             CmsSetting::set('home_hero_image', 'img/uploads/'.$name);
+        }
+
+        if ($request->boolean('reset_home_content')) {
+            CmsSetting::set('home_content', null);
+        } elseif ($request->has('home_content')) {
+            CmsSetting::set('home_content', $request->input('home_content'));
         }
 
         return redirect('/cms/settings')->with('status', 'Indstillinger gemt.');
