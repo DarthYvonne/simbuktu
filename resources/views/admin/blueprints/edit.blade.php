@@ -18,20 +18,32 @@
 </div>
 
 <style>
-.bp-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
+.bp-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
 .bp-side { position: sticky; top: 14px; background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 8px; max-height: calc(100vh - 40px); overflow-y: auto; }
 .bp-side h4 { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 10px 4px; }
-.bp-dim { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: #1c1e21; cursor: pointer; }
+
+.bp-cat { margin-bottom: 4px; }
+.bp-cat-head { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: pointer; user-select: none; font-size: 12px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.3px; border-radius: 6px; }
+.bp-cat-head:hover { background: #f0f2f5; }
+.bp-cat-head .chev { font-size: 10px; transition: transform 0.15s; width: 10px; }
+.bp-cat.collapsed .chev { transform: rotate(-90deg); }
+.bp-cat-head .count { margin-left: auto; font-size: 11px; color: #9ca3af; font-weight: 500; text-transform: none; letter-spacing: 0; }
+.bp-cat-head .count.has-selected { color: #1877f2; }
+.bp-cat-body { padding: 2px 0 4px; }
+.bp-cat.collapsed .bp-cat-body { display: none; }
+
+.bp-dim { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 13px; color: #1c1e21; cursor: pointer; }
 .bp-dim:hover { background: #f0f2f5; }
-.bp-dim.active { background: #e7f3ff; color: #1877f2; font-weight: 600; }
+.bp-dim.active { background: #e7f3ff; color: #1877f2; }
+.bp-dim.active .label { font-weight: 600; }
+.bp-dim .check { width: 16px; height: 16px; border: 1.5px solid #bcc0c4; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; cursor: pointer; }
+.bp-dim.checked .check { background: #1877f2; border-color: #1877f2; }
 .bp-dim .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bp-dim .meta { font-size: 11px; color: #65676b; }
 .bp-dim.active .meta { color: #1877f2; }
-.bp-dim .lib-icon { font-size: 10px; color: #65676b; }
-.bp-side-actions { display: flex; flex-direction: column; gap: 4px; padding: 8px 4px 4px; margin-top: 6px; border-top: 1px solid #f0f2f5; }
-.bp-side-actions button { background: none; border: none; text-align: left; padding: 7px 10px; font-size: 13px; color: #1c1e21; cursor: pointer; border-radius: 6px; font-family: inherit; display: flex; align-items: center; gap: 8px; }
-.bp-side-actions button:hover { background: #f0f2f5; }
-.bp-side-actions button .ico { width: 14px; color: #65676b; }
+
+.bp-add-custom { background: none; border: 1px dashed #bcc0c4; text-align: left; padding: 8px 10px; font-size: 13px; color: #65676b; cursor: pointer; border-radius: 6px; font-family: inherit; display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 4px; }
+.bp-add-custom:hover { background: #f0f2f5; color: #1c1e21; border-color: #1877f2; }
 
 .bp-content { min-width: 0; }
 .bp-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); margin-bottom: 12px; overflow: hidden; }
@@ -127,12 +139,8 @@
 
 <div class="bp-layout">
   <aside class="bp-side">
-    <h4>Dimensioner</h4>
-    <div id="dim-list"></div>
-    <div class="bp-side-actions">
-      <button type="button" onclick="addNewDimension()"><span class="ico"><i class="fa-solid fa-plus"></i></span> Ny dimension</button>
-      <button type="button" onclick="openPicker()"><span class="ico"><i class="fa-solid fa-layer-group"></i></span> Fra biblioteket</button>
-    </div>
+    <h4>Bibliotek</h4>
+    <div id="cat-tree"></div>
   </aside>
 
   <div class="bp-content" id="dim-editor"></div>
@@ -141,18 +149,6 @@
 <form id="delete-form" method="POST" action="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}" style="display:none;">
   @csrf @method('DELETE')
 </form>
-
-{{-- Library picker --}}
-<div class="bp-modal" id="picker">
-  <div class="panel">
-    <h2>Vælg fra biblioteket</h2>
-    <input type="text" class="search" id="picker-search" placeholder="Søg dimensioner..." autofocus>
-    <div class="list" id="picker-list"></div>
-    <div class="actions">
-      <button type="button" class="btn btn-secondary" onclick="closePicker()">Luk</button>
-    </div>
-  </div>
-</div>
 
 {{-- Promote --}}
 <div class="bp-modal" id="promote-modal">
@@ -182,9 +178,19 @@ const BP_URL = @json(url('/simulation/admin/blueprints/'.$blueprint->id));
 const CSRF   = @json(csrf_token());
 const LIBRARY = @json($library);
 
+const CATEGORY_LABELS = {
+  demografi: 'Demografi',
+  psykometri: 'Psykometri',
+  politik: 'Politik',
+  sprog_adfaerd: 'Sprog & adfærd',
+  subkultur: 'Subkultur',
+};
+const CUSTOM_CAT = '__custom';
+
 const state = {
   parameters: @json($blueprint->parameters ?? []),
-  selectedDim: 0,
+  selectedDim: null,
+  collapsed: {},
 };
 
 state.parameters = state.parameters.map(p => ({
@@ -201,43 +207,146 @@ function escapeHtml(s) {
 }
 
 function render() {
-  renderList();
+  renderTree();
   renderEditor();
 }
 
-function renderList() {
-  const wrap = document.getElementById('dim-list');
-  if (!state.parameters.length) {
-    wrap.innerHTML = '<div style="font-size:12px; color:#65676b; padding:8px; font-style:italic;">Ingen dimensioner endnu.</div>';
-    return;
-  }
-  wrap.innerHTML = state.parameters.map((p, i) => {
-    const active = i === state.selectedDim;
-    const lib = p.library_parameter_id ? '<i class="fa-solid fa-layer-group lib-icon" title="Fra biblioteket"></i>' : '';
-    const name = p.name ? escapeHtml(p.name) : '<em style="color:#9ca3af;">unavngivet</em>';
-    return `
-      <div class="bp-dim ${active ? 'active' : ''}" onclick="selectDim(${i})">
-        <span class="label">${name}</span>
-        ${lib}
-        <span class="meta">${(p.facets || []).length}</span>
+function paramIndexForLibrary(libId) {
+  return state.parameters.findIndex(p => p.library_parameter_id === libId);
+}
+
+function renderTree() {
+  const wrap = document.getElementById('cat-tree');
+  // Group library by category, ordered as in CATEGORY_LABELS keys then any other.
+  const categories = [...Object.keys(CATEGORY_LABELS), ...new Set(LIBRARY.map(p => p.category).filter(c => c && !CATEGORY_LABELS[c]))];
+  const customParams = state.parameters
+    .map((p, i) => ({p, i}))
+    .filter(({p}) => !p.library_parameter_id);
+
+  let html = '';
+  for (const cat of categories) {
+    const items = LIBRARY.filter(p => p.category === cat);
+    if (!items.length) continue;
+    const collapsed = state.collapsed[cat] === true;
+    const selectedCount = items.filter(p => paramIndexForLibrary(p.id) >= 0).length;
+    html += `
+      <div class="bp-cat ${collapsed ? 'collapsed' : ''}" data-cat="${cat}">
+        <div class="bp-cat-head" onclick="toggleCat('${cat}')">
+          <span class="chev"><i class="fa-solid fa-chevron-down"></i></span>
+          <span>${escapeHtml(CATEGORY_LABELS[cat] ?? cat)}</span>
+          <span class="count ${selectedCount ? 'has-selected' : ''}">${selectedCount}/${items.length}</span>
+        </div>
+        <div class="bp-cat-body">
+          ${items.map(p => {
+            const idx = paramIndexForLibrary(p.id);
+            const checked = idx >= 0;
+            const active = checked && idx === state.selectedDim;
+            return `
+              <div class="bp-dim ${checked ? 'checked' : ''} ${active ? 'active' : ''}" data-lib-id="${p.id}">
+                <div class="check" onclick="event.stopPropagation(); toggleLibraryDim(${p.id})" title="${checked ? 'Fjern fra strukturen' : 'Tilføj til strukturen'}">
+                  ${checked ? '<i class="fa-solid fa-check"></i>' : ''}
+                </div>
+                <span class="label" onclick="onLibClick(${p.id})">${escapeHtml(p.name)}</span>
+                <span class="meta">${(p.facets || []).length}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
       </div>
     `;
-  }).join('');
+  }
+
+  // Custom dimensions section
+  const customCollapsed = state.collapsed[CUSTOM_CAT] === true;
+  html += `
+    <div class="bp-cat ${customCollapsed ? 'collapsed' : ''}" data-cat="${CUSTOM_CAT}">
+      <div class="bp-cat-head" onclick="toggleCat('${CUSTOM_CAT}')">
+        <span class="chev"><i class="fa-solid fa-chevron-down"></i></span>
+        <span>Egne dimensioner</span>
+        <span class="count ${customParams.length ? 'has-selected' : ''}">${customParams.length}</span>
+      </div>
+      <div class="bp-cat-body">
+        ${customParams.map(({p, i}) => {
+          const active = i === state.selectedDim;
+          const name = p.name ? escapeHtml(p.name) : '<em style="color:#9ca3af;">unavngivet</em>';
+          return `
+            <div class="bp-dim checked ${active ? 'active' : ''}">
+              <div class="check" onclick="event.stopPropagation(); removeCustomDim(${i})" title="Fjern dimension">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <span class="label" onclick="selectDim(${i})">${name}</span>
+              <span class="meta">${(p.facets || []).length}</span>
+            </div>
+          `;
+        }).join('')}
+        <button type="button" class="bp-add-custom" onclick="addCustomDimension()">
+          <i class="fa-solid fa-plus"></i> Ny dimension
+        </button>
+      </div>
+    </div>
+  `;
+
+  wrap.innerHTML = html;
+}
+
+function toggleCat(cat) {
+  state.collapsed[cat] = !state.collapsed[cat];
+  renderTree();
+}
+
+function onLibClick(libId) {
+  let idx = paramIndexForLibrary(libId);
+  if (idx < 0) {
+    insertLibraryDim(libId);
+    idx = paramIndexForLibrary(libId);
+  }
+  selectDim(idx);
+}
+
+function toggleLibraryDim(libId) {
+  const idx = paramIndexForLibrary(libId);
+  if (idx >= 0) {
+    state.parameters.splice(idx, 1);
+    if (state.selectedDim === idx) state.selectedDim = null;
+    else if (state.selectedDim != null && state.selectedDim > idx) state.selectedDim--;
+  } else {
+    insertLibraryDim(libId);
+    state.selectedDim = state.parameters.length - 1;
+  }
+  render();
+}
+
+function insertLibraryDim(libId) {
+  const lib = LIBRARY.find(p => p.id === libId);
+  if (!lib) return;
+  state.parameters.push({
+    name: lib.name,
+    description: lib.description ?? '',
+    library_parameter_id: lib.id,
+    facets: (lib.facets || []).map(f => ({ name: f.name ?? '', text: f.text ?? '', weight: Number.isFinite(f.weight) ? f.weight : 0 })),
+  });
+}
+
+function removeCustomDim(i) {
+  if (!confirm('Fjern denne dimension?')) return;
+  state.parameters.splice(i, 1);
+  if (state.selectedDim === i) state.selectedDim = null;
+  else if (state.selectedDim != null && state.selectedDim > i) state.selectedDim--;
+  render();
 }
 
 function renderEditor() {
   const wrap = document.getElementById('dim-editor');
-  if (!state.parameters.length) {
+  if (state.selectedDim === null || !state.parameters[state.selectedDim]) {
     wrap.innerHTML = `
       <div class="bp-empty">
-        <i class="fa-solid fa-id-card"></i>
-        <p>Tilføj en dimension for at komme i gang.</p>
+        <i class="fa-solid fa-arrow-left"></i>
+        <p>${state.parameters.length ? 'Vælg en dimension i biblioteket for at redigere.' : 'Tilføj en dimension fra biblioteket — eller opret en egen.'}</p>
       </div>`;
     return;
   }
   const i = state.selectedDim;
   const p = state.parameters[i];
-  if (!p) return;
 
   const facetCount = (p.facets || []).length;
   const facetRows = p.facets.map((f, fi) => `
@@ -299,7 +408,7 @@ function selectDim(i) { state.selectedDim = i; render(); }
 
 function updateDim(field, value) {
   state.parameters[state.selectedDim][field] = value;
-  if (field === 'name') renderList();
+  if (field === 'name') renderTree();
 }
 
 function updateFacet(fi, field, value) {
@@ -308,13 +417,11 @@ function updateFacet(fi, field, value) {
   }
   state.parameters[state.selectedDim].facets[fi][field] = value;
   if (field === 'weight') {
-    // Re-render to refresh the sum indicator without losing focus is tricky; cheap approach:
     renderEditor();
-    // restore focus to weight input that just changed
     const el = document.querySelector(`.bp-facet[data-fi="${fi}"] .bp-facet-weight input`);
     if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
   }
-  if (field === 'name') renderList();
+  if (field === 'name') renderTree();
 }
 
 function distributeEqually() {
@@ -326,19 +433,20 @@ function distributeEqually() {
   renderEditor();
 }
 
-function addNewDimension() {
+function addCustomDimension() {
   state.parameters.push({
     name: '', description: '', library_parameter_id: null,
-    facets: [{ name: '', text: '' }, { name: '', text: '' }],
+    facets: [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
   });
   state.selectedDim = state.parameters.length - 1;
+  state.collapsed[CUSTOM_CAT] = false;
   render();
 }
 
 function removeDim() {
   if (!confirm('Fjern denne dimension fra strukturen?')) return;
   state.parameters.splice(state.selectedDim, 1);
-  if (state.selectedDim >= state.parameters.length) state.selectedDim = Math.max(0, state.parameters.length - 1);
+  state.selectedDim = null;
   render();
 }
 
@@ -407,48 +515,6 @@ async function saveBlueprint() {
   } finally {
     btn.disabled = false;
   }
-}
-
-// --- Picker ---
-function openPicker() {
-  document.getElementById('picker').classList.add('open');
-  document.getElementById('picker-search').value = '';
-  renderPicker('');
-  setTimeout(() => document.getElementById('picker-search').focus(), 50);
-}
-function closePicker() { document.getElementById('picker').classList.remove('open'); }
-function renderPicker(query) {
-  const list = document.getElementById('picker-list');
-  const q = (query || '').toLowerCase();
-  const items = LIBRARY.filter(p =>
-    !q || (p.name || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q)
-  );
-  if (!items.length) {
-    list.innerHTML = '<div style="text-align:center; padding:30px; color:#65676b; font-size:13px;">Ingen dimensioner i biblioteket matcher.</div>';
-    return;
-  }
-  list.innerHTML = items.map(p => `
-    <div class="list-item" onclick="insertFromLibrary(${p.id})">
-      <div class="n">${escapeHtml(p.name)}</div>
-      ${p.description ? `<div class="d">${escapeHtml(p.description)}</div>` : ''}
-      <div class="c">${(p.facets || []).length} facetter</div>
-    </div>
-  `).join('');
-}
-document.getElementById('picker-search').addEventListener('input', e => renderPicker(e.target.value));
-
-function insertFromLibrary(id) {
-  const lib = LIBRARY.find(p => p.id === id);
-  if (!lib) return;
-  state.parameters.push({
-    name: lib.name,
-    description: lib.description ?? '',
-    library_parameter_id: lib.id,
-    facets: (lib.facets || []).map(f => ({ name: f.name ?? '', text: f.text ?? '' })),
-  });
-  state.selectedDim = state.parameters.length - 1;
-  closePicker();
-  render();
 }
 
 // --- Promote ---

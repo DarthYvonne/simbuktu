@@ -30,7 +30,8 @@ class BlueprintController extends Controller
 
     public function edit(Blueprint $blueprint)
     {
-        $library = LibraryParameter::orderBy('name')->get(['id', 'name', 'description', 'facets']);
+        $library = LibraryParameter::orderBy('sort_order')->orderBy('name')
+            ->get(['id', 'category', 'name', 'description', 'facets']);
         return view('admin.blueprints.edit', compact('blueprint', 'library'));
     }
 
