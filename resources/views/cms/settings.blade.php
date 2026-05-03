@@ -65,28 +65,15 @@
 
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #eee;padding-top:16px;">
                 <button class="btn" type="submit">Gem</button>
-                <button class="btn btn--secondary" type="submit" name="save_and_preview" value="1">Gem og preview</button>
+                <button class="btn btn--secondary" type="submit" name="save_and_preview" value="1">Gem og vis</button>
             </div>
         </form>
 
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-            @if($heroImage)
-                <form method="POST" action="/cms/settings" style="display:inline;">
-                    @csrf
-                    <button class="btn btn--danger" type="submit" name="remove_hero" value="1"
-                        onclick="return confirm('Fjern hero-billedet og gå tilbage til standard?');">
-                        Fjern hero-billede
-                    </button>
-                </form>
-            @endif
-            <form method="POST" action="/cms/settings" style="display:inline;">
-                @csrf
-                <button class="btn btn--danger" type="submit" name="reset_home_content" value="1"
-                    onclick="return confirm('Nulstil indhold til standardskabelonen?');">
-                    Nulstil indhold til skabelon
-                </button>
-            </form>
-        </div>
+        <form method="POST" action="/cms/settings" style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;"
+              onsubmit="return confirm('Slet alle forside-tilpasninger (tekst, billede og indhold) og vend tilbage til standard?');">
+            @csrf
+            <button class="btn btn--danger" type="submit" name="reset_all" value="1">Slet</button>
+        </form>
     </div>
 
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">

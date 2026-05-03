@@ -24,24 +24,23 @@ class CmsController extends Controller
     {
         $request->validate([
             'hero_image'           => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
-            'remove_hero'          => 'nullable|boolean',
             'hero_headline'        => 'nullable|string|max:500',
             'hero_subhead'         => 'nullable|string|max:1000',
             'hero_button_text'     => 'nullable|string|max:100',
             'hero_button_url'      => 'nullable|string|max:500',
             'home_content'         => 'nullable|string',
-            'reset_home_content'   => 'nullable|boolean',
+            'reset_all'            => 'nullable|boolean',
         ]);
 
-        if ($request->boolean('remove_hero')) {
+        if ($request->boolean('reset_all')) {
             $this->deleteCurrentHero();
-            CmsSetting::set('home_hero_image', null);
-            return redirect('/cms/settings')->with('status', 'Hero-billede fjernet.');
-        }
-
-        if ($request->boolean('reset_home_content')) {
-            CmsSetting::set('home_content', null);
-            return redirect('/cms/settings')->with('status', 'Indhold nulstillet.');
+            foreach ([
+                'home_hero_image', 'home_hero_headline', 'home_hero_subhead',
+                'home_hero_button_text', 'home_hero_button_url', 'home_content',
+            ] as $key) {
+                CmsSetting::where('key', $key)->delete();
+            }
+            return redirect('/cms/settings')->with('status', 'Forside nulstillet til standard.');
         }
 
         foreach ([
