@@ -59,10 +59,12 @@
                     <summary style="cursor:pointer;font-size:13px;color:#888;">Vis HTML-kilde</summary>
                     <textarea id="html-source" style="margin-top:8px;min-height:160px;" oninput="syncFromSource(this.value)">{{ old('home_content', $homeContent) }}</textarea>
                 </details>
+                <div id="preview" style="display:none;margin-top:12px;border:1px solid #e0e0e0;border-radius:4px;padding:20px;background:#fff;"></div>
             </div>
 
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                 <button class="btn" type="submit">Gem indhold</button>
+                <button type="button" class="btn btn--secondary" onclick="togglePreview(this)">Preview</button>
                 <a href="/" class="btn btn--secondary" target="_blank">Vis forside ↗</a>
                 <button class="btn btn--danger" type="submit" name="reset_home_content" value="1"
                     onclick="return confirm('Nulstil til standardskabelonen?');">
@@ -119,5 +121,17 @@
                 hidden.value = quill.root.innerHTML;
             });
         });
+
+        function togglePreview(btn) {
+            const pane = document.getElementById('preview');
+            if (pane.style.display === 'none') {
+                pane.innerHTML = quill.root.innerHTML;
+                pane.style.display = 'block';
+                btn.textContent = 'Skjul preview';
+            } else {
+                pane.style.display = 'none';
+                btn.textContent = 'Preview';
+            }
+        }
     </script>
 @endsection

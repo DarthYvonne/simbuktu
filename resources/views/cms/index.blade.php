@@ -31,6 +31,9 @@
                         </span>
                     </td>
                     <td class="actions">
+                        @if($page->is_visible)
+                            <a href="{{ $page->url() }}" target="_blank" class="btn btn--secondary">Vis ↗</a>
+                        @endif
                         <a href="/cms/{{ $page->id }}/edit" class="btn btn--secondary">Rediger</a>
                         <form method="POST" action="/cms/{{ $page->id }}" onsubmit="return confirm('Slet siden?');">
                             @csrf

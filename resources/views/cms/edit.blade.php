@@ -42,10 +42,15 @@
                     <summary style="cursor:pointer;font-size:13px;color:#888;">Vis HTML-kilde</summary>
                     <textarea id="html-source" style="margin-top:8px;min-height:160px;" oninput="syncFromSource(this.value)">{{ old('content', $page->content) }}</textarea>
                 </details>
+                <div id="preview" style="display:none;margin-top:12px;border:1px solid #e0e0e0;border-radius:4px;padding:20px;background:#fff;"></div>
             </div>
 
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn" type="submit">Gem</button>
+                <button type="button" class="btn btn--secondary" onclick="togglePreview(this)">Preview</button>
+                @if($page->exists && $page->is_visible)
+                    <a href="{{ $page->url() }}" target="_blank" class="btn btn--secondary">Vis live ↗</a>
+                @endif
                 <a href="/cms" class="btn btn--secondary">Annuller</a>
             </div>
         </form>
@@ -97,5 +102,17 @@
         document.querySelector('form').addEventListener('submit', () => {
             hidden.value = quill.root.innerHTML;
         });
+
+        function togglePreview(btn) {
+            const pane = document.getElementById('preview');
+            if (pane.style.display === 'none') {
+                pane.innerHTML = quill.root.innerHTML;
+                pane.style.display = 'block';
+                btn.textContent = 'Skjul preview';
+            } else {
+                pane.style.display = 'none';
+                btn.textContent = 'Preview';
+            }
+        }
     </script>
 @endsection
