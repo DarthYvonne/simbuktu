@@ -2,12 +2,12 @@
 @section('content')
 
 @php
-$base = '/slophub/admin/populations/'.$population->id;
+$base = '/simulation/admin/populations/'.$population->id;
 @endphp
 
 <div class="view-header">
   <h1>
-    <a href="{{ url('/slophub/admin/populations') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
+    <a href="{{ url('/simulation/admin/populations') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
     <span style="font-weight:400;color:#65676b;">Population:</span> {{ $population->name }}
   </h1>
 </div>

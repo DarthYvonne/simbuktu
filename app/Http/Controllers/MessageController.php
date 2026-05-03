@@ -95,8 +95,8 @@ class MessageController extends Controller
                 'id' => $conversation->id,
                 'persona_id' => $conversation->persona_id,
                 'persona_name' => $conversation->persona_name,
-                'persona_thumb' => url('/slophub/profiler/' . $personaId . '/thumb'),
-                'persona_url' => url('/slophub/profiler/' . $personaId),
+                'persona_thumb' => url('/simulation/profiler/' . $personaId . '/thumb'),
+                'persona_url' => url('/simulation/profiler/' . $personaId),
             ],
             'messages' => $messages,
         ]);

@@ -23,7 +23,7 @@
 </style>
 </head>
 <body>
-<form class="box" method="POST" action="{{ url('/slophub/login') }}">
+<form class="box" method="POST" action="{{ url('/simulation/login') }}">
   @csrf
   <div class="logo"><img src="{{ url('/img/slophub-logo.png') }}" alt="SlopHub"></div>
   <h1>Log ind</h1>

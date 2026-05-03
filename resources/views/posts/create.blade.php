@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="view-header">
-  <h1><a href="{{ url('/slophub/posts') }}" style="color: #1877f2;">← Mine opslag</a></h1>
+  <h1><a href="{{ url('/simulation/posts') }}" style="color: #1877f2;">← Mine opslag</a></h1>
 </div>
 
 <style>
@@ -36,7 +36,7 @@
 </style>
 
 <div class="composer">
-  <form method="POST" action="{{ url('/slophub/posts') }}" enctype="multipart/form-data" id="postForm">
+  <form method="POST" action="{{ url('/simulation/posts') }}" enctype="multipart/form-data" id="postForm">
     @csrf
     <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
 
@@ -49,7 +49,7 @@
       @endif
       <div class="composer-who">
         <strong><input type="text" name="author_name" value="{{ $posterName }}" class="author-input" style="font-weight: 700; padding: 2px 6px;" oninput="updateAvatar(this.value)"></strong>
-        <small>Offentligt opslag · <a href="{{ url('/slophub/mig') }}" style="color: #1877f2;">Skift afsendernavn</a></small>
+        <small>Offentligt opslag · <a href="{{ url('/simulation/mig') }}" style="color: #1877f2;">Skift afsendernavn</a></small>
       </div>
     </div>
 
@@ -128,7 +128,7 @@ async function checkForLink() {
   linkCard.innerHTML = '<div class="link-loading">Henter preview...</div>';
 
   try {
-    const res = await fetch('{{ url("/slophub/posts/link-preview") }}', {
+    const res = await fetch('{{ url("/simulation/posts/link-preview") }}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
       body: JSON.stringify({ url })

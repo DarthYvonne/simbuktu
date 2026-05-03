@@ -65,7 +65,7 @@ class PostController extends Controller
         $user = Auth::user();
         $course = $user->currentCourse();
         if (!$course) {
-            if ($user->is_admin) return redirect('/slophub/admin/courses');
+            if ($user->is_admin) return redirect('/simulation/admin/courses');
             abort(403, 'Du er ikke tilmeldt noget kursus.');
         }
         $posts = Post::where('course_id', $course->id)->orderByDesc('created_at')->withCount('comments')->get();
@@ -271,7 +271,7 @@ class PostController extends Controller
 
         $post = Post::create($data);
 
-        return redirect("/slophub/posts/{$post->id}")->with('success', 'Opslag oprettet — simulering starter ved næste tick.');
+        return redirect("/simulation/posts/{$post->id}")->with('success', 'Opslag oprettet — simulering starter ved næste tick.');
     }
 
     public function linkPreview(Request $request)
@@ -408,6 +408,6 @@ class PostController extends Controller
             Storage::disk('public')->delete($post->image_path);
         }
         $post->delete();
-        return redirect('/slophub/posts')->with('success', 'Opslag slettet.');
+        return redirect('/simulation/posts')->with('success', 'Opslag slettet.');
     }
 }

@@ -41,7 +41,7 @@
       @php $isCurrent = $course && $course->population_id == $pop->id; @endphp
       <div style="display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid {{ $isCurrent ? '#1877f2' : '#dadde1' }}; border-radius: 8px; padding: 12px 16px; {{ $isCurrent ? 'background: #f5f9ff;' : '' }}">
 
-        <a href="{{ url('/slophub/admin/populations/'.$pop->id.'/personas') }}"
+        <a href="{{ url('/simulation/admin/populations/'.$pop->id.'/personas') }}"
           style="flex: 1; min-width: 0; text-decoration: none; color: inherit; display: flex; align-items: baseline; gap: 10px;">
           <span style="font-weight: 700; font-size: 15px; color: #1c1e21; white-space: nowrap;">{{ $pop->name }}</span>
           @if ($pop->description)
@@ -57,7 +57,7 @@
             </span>
           @elseif ($course)
             @if ($activityCount > 0)
-              <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id.'/population') }}">
+              <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id.'/population') }}">
                 @csrf @method('PATCH')
                 <input type="hidden" name="population_id" value="{{ $pop->id }}">
                 <input type="hidden" name="force" value="1">
@@ -67,14 +67,14 @@
                 </button>
               </form>
             @else
-              <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id.'/population') }}">
+              <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id.'/population') }}">
                 @csrf @method('PATCH')
                 <input type="hidden" name="population_id" value="{{ $pop->id }}">
                 <button type="submit" class="btn btn-secondary" style="font-size: 12px;">Vælg</button>
               </form>
             @endif
           @endif
-          <a href="{{ url('/slophub/admin/populations/'.$pop->id) }}" style="color: #bcc0c4; padding: 4px 6px; font-size: 14px;" title="Indstillinger">
+          <a href="{{ url('/simulation/admin/populations/'.$pop->id) }}" style="color: #bcc0c4; padding: 4px 6px; font-size: 14px;" title="Indstillinger">
             <i class="fa-solid fa-gear"></i>
           </a>
         </div>
@@ -87,7 +87,7 @@
 <div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
   <div style="background:#fff; border-radius:12px; padding:28px; width:100%; max-width:460px; box-shadow:0 8px 40px rgba(0,0,0,.2);">
     <h2 style="margin:0 0 18px; font-size:18px;">Ny population</h2>
-    <form method="POST" action="{{ url('/slophub/admin/populations') }}">
+    <form method="POST" action="{{ url('/simulation/admin/populations') }}">
       @csrf
       <div style="margin-bottom:14px;">
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Navn *</label>

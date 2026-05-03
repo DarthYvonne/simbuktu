@@ -24,7 +24,7 @@
 </style>
 </head>
 <body>
-<form class="box" method="POST" action="{{ url('/slophub/invite/'.$course->invite_token) }}">
+<form class="box" method="POST" action="{{ url('/simulation/invite/'.$course->invite_token) }}">
   @csrf
   <div class="logo"><img src="{{ url('/img/slophub-logo.png') }}" alt="SlopHub"></div>
   <h1>Opret din konto</h1>
@@ -39,7 +39,7 @@
   <label>Gentag kodeord</label>
   <input type="password" name="password_confirmation" required minlength="6">
   <button class="btn">Opret konto og log ind</button>
-  <div class="foot">Har du allerede en konto? <a href="{{ url('/slophub/login') }}">Log ind her</a></div>
+  <div class="foot">Har du allerede en konto? <a href="{{ url('/simulation/login') }}">Log ind her</a></div>
 </form>
 </body>
 </html>

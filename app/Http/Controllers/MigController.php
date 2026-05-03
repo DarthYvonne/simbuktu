@@ -53,6 +53,6 @@ class MigController extends Controller
         }
         $m->save();
 
-        return redirect('/slophub/mig')->with('success', 'Profil gemt for dette kursus.');
+        return redirect('/simulation/mig')->with('success', 'Profil gemt for dette kursus.');
     }
 }

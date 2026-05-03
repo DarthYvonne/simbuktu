@@ -188,13 +188,13 @@ class AnalyseController extends Controller
             $nodes[] = [
                 'id' => $e->persona_id,
                 'label' => $persona['name'],
-                'image' => !empty($persona['image_file']) ? url('/slophub/profiler/'.$persona['id'].'/thumb') : null,
+                'image' => !empty($persona['image_file']) ? url('/simulation/profiler/'.$persona['id'].'/thumb') : null,
                 'color' => $colors[$attr['type']],
                 'size' => $size,
                 'attribution' => $attr['type'],
                 'action' => $e->action,
                 'round' => $e->round,
-                'url' => url('/slophub/profiler/'.$e->persona_id),
+                'url' => url('/simulation/profiler/'.$e->persona_id),
             ];
 
             if ($attr['type'] === 'via_friend' && $attr['source']) {

@@ -14,7 +14,7 @@
 @media (max-width: 767px) { .mig-avatar-grid { grid-template-columns: 1fr; } }
 </style>
 
-<form method="POST" action="{{ url('/slophub/mig') }}" enctype="multipart/form-data">
+<form method="POST" action="{{ url('/simulation/mig') }}" enctype="multipart/form-data">
   @csrf
 
   <div class="card">

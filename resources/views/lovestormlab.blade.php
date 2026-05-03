@@ -625,7 +625,7 @@
 
 <body>
     <div class="wrap">
-        <a href="/slophub/login" class="login-float" aria-label="Log ind">
+        <a href="/simulation/login" class="login-float" aria-label="Log ind">
             <img src="/img/login.png" alt="Log ind">
         </a>
 

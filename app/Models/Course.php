@@ -49,6 +49,6 @@ class Course extends Model
 
     public function inviteUrl(): string
     {
-        return url("/slophub/invite/{$this->invite_token}");
+        return url("/simulation/invite/{$this->invite_token}");
     }
 }

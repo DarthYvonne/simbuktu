@@ -6,7 +6,7 @@
   <div style="color: #65676b; font-size: 13px;">Skriv et opslag, vælg personas, se hvad de ville svare.</div>
 </div>
 
-@php $base = '/slophub/admin/populations/'.$population->id; @endphp
+@php $base = '/simulation/admin/populations/'.$population->id; @endphp
 @include('admin._opsaetning_tabs')
 
 @if (count($personas) === 0)
@@ -170,7 +170,7 @@ async function checkForLink() {
   linkPreviewEl.style.display = 'block';
   linkCard.innerHTML = '<div class="link-loading">Henter preview...</div>';
   try {
-    const res = await fetch('{{ url("/slophub/posts/link-preview") }}', {
+    const res = await fetch('{{ url("/simulation/posts/link-preview") }}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
       body: JSON.stringify({ url })

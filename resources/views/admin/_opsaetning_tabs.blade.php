@@ -1,10 +1,10 @@
 @php
 $tabs = [
-  ['Simulation', url('/slophub/admin/algorithm'), 'slophub/admin/algorithm'],
-  ['Test simulation', url('/slophub/admin/personas/tester'), 'slophub/admin/personas/tester'],
-  ['Aktuel kontekst', url('/slophub/admin/context'), 'slophub/admin/context'],
-  ['Prompts', url('/slophub/admin/prompts'), 'slophub/admin/prompts'],
-  ['Forbrug', url('/slophub/admin/usage'), 'slophub/admin/usage'],
+  ['Simulation', url('/simulation/admin/algorithm'), 'simulation/admin/algorithm'],
+  ['Test simulation', url('/simulation/admin/personas/tester'), 'simulation/admin/personas/tester'],
+  ['Aktuel kontekst', url('/simulation/admin/context'), 'simulation/admin/context'],
+  ['Prompts', url('/simulation/admin/prompts'), 'simulation/admin/prompts'],
+  ['Forbrug', url('/simulation/admin/usage'), 'simulation/admin/usage'],
 ];
 @endphp
 <div style="display: flex; gap: 2px; border-bottom: 1px solid #dadde1; margin-bottom: 14px;">

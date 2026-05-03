@@ -58,7 +58,7 @@ class PromptController extends Controller
         $prompt->body = $request->input('body');
         $prompt->save();
         $this->repo->clearCache($prompt->key);
-        return redirect("/slophub/admin/prompts/{$prompt->key}")->with('success', 'Prompt gemt.');
+        return redirect("/simulation/admin/prompts/{$prompt->key}")->with('success', 'Prompt gemt.');
     }
 
     public function reset(Prompt $prompt)
@@ -68,8 +68,8 @@ class PromptController extends Controller
             $prompt->body = $default['body'];
             $prompt->save();
             $this->repo->clearCache($prompt->key);
-            return redirect("/slophub/admin/prompts/{$prompt->key}")->with('success', 'Nulstillet til standard.');
+            return redirect("/simulation/admin/prompts/{$prompt->key}")->with('success', 'Nulstillet til standard.');
         }
-        return redirect("/slophub/admin/prompts/{$prompt->key}")->with('error', 'Ingen standard fundet.');
+        return redirect("/simulation/admin/prompts/{$prompt->key}")->with('error', 'Ingen standard fundet.');
     }
 }

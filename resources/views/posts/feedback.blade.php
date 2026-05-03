@@ -12,10 +12,10 @@
 
 <div class="view-header">
   <div class="posts-tabs">
-    <a href="{{ url('/slophub/posts') }}" class="{{ $_isOwn ? 'active' : '' }}">Mine opslag</a>
-    <a href="{{ url('/slophub/posts/all') }}" class="{{ $_isOwn ? '' : 'active' }}">Alles opslag</a>
+    <a href="{{ url('/simulation/posts') }}" class="{{ $_isOwn ? 'active' : '' }}">Mine opslag</a>
+    <a href="{{ url('/simulation/posts/all') }}" class="{{ $_isOwn ? '' : 'active' }}">Alles opslag</a>
   </div>
-  <a href="{{ url('/slophub/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a>
+  <a href="{{ url('/simulation/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a>
 </div>
 
 <h2 style="font-size: 15px; font-weight: 600; color: #65676b; margin-bottom: 12px;">Feedback</h2>
@@ -112,8 +112,8 @@
 
 <script>
 (function () {
-  const FETCH_URL = '{{ url('/slophub/posts/'.$post->id.'/feedback/data') }}';
-  const SEND_URL = '{{ url('/slophub/posts/'.$post->id.'/feedback') }}';
+  const FETCH_URL = '{{ url('/simulation/posts/'.$post->id.'/feedback/data') }}';
+  const SEND_URL = '{{ url('/simulation/posts/'.$post->id.'/feedback') }}';
   const CSRF = document.querySelector('meta[name="csrf-token"]').content;
   const listEl = document.getElementById('fbComments');
   const input = document.getElementById('fbInput');

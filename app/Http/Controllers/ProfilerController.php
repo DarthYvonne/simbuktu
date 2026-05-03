@@ -102,11 +102,11 @@ class ProfilerController extends Controller
             $nodes[] = [
                 'id' => $p['id'],
                 'label' => $p['name'] ?? 'Ukendt',
-                'image' => !empty($p['image_file']) ? url('/slophub/profiler/'.$p['id'].'/thumb') : null,
+                'image' => !empty($p['image_file']) ? url('/simulation/profiler/'.$p['id'].'/thumb') : null,
                 'color' => $colorMap[$sub],
                 'subculture' => $sub,
                 'age' => $p['demographics']['age'] ?? null,
-                'url' => url('/slophub/profiler/'.$p['id']),
+                'url' => url('/simulation/profiler/'.$p['id']),
             ];
         }
 

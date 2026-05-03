@@ -50,7 +50,7 @@ class SocialGraphController extends Controller
         $runId = (string) Str::uuid();
         session(['graph_run_id' => $runId]);
         BuildSocialGraphJob::dispatch($runId, $params, $population->id);
-        return redirect("/slophub/admin/populations/{$population->id}/personas/graph");
+        return redirect("/simulation/admin/populations/{$population->id}/personas/graph");
     }
 
     public function status(Population $population)
@@ -98,11 +98,11 @@ class SocialGraphController extends Controller
             $nodes[] = [
                 'id'         => $p['id'],
                 'label'      => $p['name'] ?? 'Ukendt',
-                'image'      => !empty($p['image_file']) ? url("/slophub/admin/populations/{$population->id}/personas/{$p['id']}/thumb") : null,
+                'image'      => !empty($p['image_file']) ? url("/simulation/admin/populations/{$population->id}/personas/{$p['id']}/thumb") : null,
                 'color'      => $colorMap[$sub],
                 'subculture' => $sub,
                 'age'        => $p['demographics']['age'] ?? null,
-                'url'        => url("/slophub/admin/populations/{$population->id}/personas/{$p['id']}"),
+                'url'        => url("/simulation/admin/populations/{$population->id}/personas/{$p['id']}"),
             ];
         }
 

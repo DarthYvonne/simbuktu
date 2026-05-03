@@ -3,7 +3,7 @@
 
 <div class="view-header">
   <h1>Opsætning @if ($course)<span style="font-weight: 400; color: #65676b; font-size: 14px;">· {{ $course->name }}</span>@endif</h1>
-  <form method="POST" action="{{ url('/slophub/admin/algorithm/reset') }}">
+  <form method="POST" action="{{ url('/simulation/admin/algorithm/reset') }}">
     @csrf
     <button class="btn btn-secondary" onclick="return confirm('Nulstil til standard?')">Nulstil til standard</button>
   </form>
@@ -19,7 +19,7 @@
   <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
-<form method="POST" action="{{ url('/slophub/admin/algorithm') }}">
+<form method="POST" action="{{ url('/simulation/admin/algorithm') }}">
   @csrf
 
   {{-- Students commenting toggle --}}

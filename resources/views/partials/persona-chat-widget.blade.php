@@ -66,7 +66,7 @@ async function openPersonaChat(personaId, personaName) {
   pchatEl('pchatBody').innerHTML = '<div class="pchat-empty">Indlæser...</div>';
 
   try {
-    const res = await fetch('{{ url('/slophub/beskeder/open') }}/' + encodeURIComponent(personaId), {
+    const res = await fetch('{{ url('/simulation/beskeder/open') }}/' + encodeURIComponent(personaId), {
       method: 'POST',
       headers: { 'X-CSRF-TOKEN': pchatCsrf(), 'Accept': 'application/json' },
     });
@@ -146,7 +146,7 @@ async function pchatSend(ev) {
   pchatShowTyping();
 
   try {
-    const res = await fetch('{{ url('/slophub/beskeder') }}/' + state.conversationId + '/send', {
+    const res = await fetch('{{ url('/simulation/beskeder') }}/' + state.conversationId + '/send', {
       method: 'POST',
       headers: { 'X-CSRF-TOKEN': pchatCsrf(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ body }),
@@ -185,7 +185,7 @@ function pchatOpenFull(ev) {
   ev && ev.stopPropagation();
   const state = window.__pchatState;
   if (state.conversationId) {
-    window.location = '{{ url('/slophub/beskeder') }}/' + state.conversationId;
+    window.location = '{{ url('/simulation/beskeder') }}/' + state.conversationId;
   }
 }
 </script>

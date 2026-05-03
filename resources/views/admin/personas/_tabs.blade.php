@@ -1,9 +1,9 @@
 @php
 $tabs = [
-  ['Personas', url('/slophub/admin/personas'), 'slophub/admin/personas'],
-  ['Personlighed', url('/slophub/admin/personlighed'), 'slophub/admin/personlighed'],
-  ['Skab social graf', url('/slophub/admin/personas/graph'), 'slophub/admin/personas/graph'],
-  ['Vis graf', url('/slophub/admin/personas/graph/view'), 'slophub/admin/personas/graph/view'],
+  ['Personas', url('/simulation/admin/personas'), 'simulation/admin/personas'],
+  ['Personlighed', url('/simulation/admin/personlighed'), 'simulation/admin/personlighed'],
+  ['Skab social graf', url('/simulation/admin/personas/graph'), 'simulation/admin/personas/graph'],
+  ['Vis graf', url('/simulation/admin/personas/graph/view'), 'simulation/admin/personas/graph/view'],
 ];
 @endphp
 <div style="display: flex; gap: 2px; border-bottom: 1px solid #dadde1; margin-bottom: 14px;">

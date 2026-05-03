@@ -1,5 +1,5 @@
 @php
-$base = '/slophub/admin/populations/'.$population->id;
+$base = '/simulation/admin/populations/'.$population->id;
 $path = request()->path();
 
 $onPersonas = str_starts_with($path, ltrim("$base/personas", '/'))

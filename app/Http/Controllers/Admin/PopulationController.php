@@ -15,7 +15,7 @@ class PopulationController extends Controller
     {
         $course = Auth::user()?->currentCourse();
         if ($course?->population_id) {
-            return redirect("/slophub/admin/populations/{$course->population_id}/personas");
+            return redirect("/simulation/admin/populations/{$course->population_id}/personas");
         }
 
         $populations   = Population::withCount('personas')->orderBy('name')->get();
@@ -36,7 +36,7 @@ class PopulationController extends Controller
         ]);
         $data['created_by'] = Auth::id();
         $population = Population::create($data);
-        return redirect("/slophub/admin/populations/{$population->id}")->with('success', 'Population oprettet.');
+        return redirect("/simulation/admin/populations/{$population->id}")->with('success', 'Population oprettet.');
     }
 
     public function show(Population $population)
@@ -158,7 +158,7 @@ class PopulationController extends Controller
         $allOverride = $population->config_overrides ?? [];
         unset($allOverride['subcultures']);
         $population->update(['config_overrides' => empty($allOverride) ? null : $allOverride]);
-        return redirect("/slophub/admin/populations/{$population->id}/subkultur")->with('success', 'Nulstillet til global standard.');
+        return redirect("/simulation/admin/populations/{$population->id}/subkultur")->with('success', 'Nulstillet til global standard.');
     }
 
     public function resetDemografiDimension(Population $population, string $dim)
@@ -174,7 +174,7 @@ class PopulationController extends Controller
             }
         }
         $population->update(['config_overrides' => empty($allOverride) ? null : $allOverride]);
-        return redirect("/slophub/admin/populations/{$population->id}/demografi")->with('success', 'Nulstillet til global standard.');
+        return redirect("/simulation/admin/populations/{$population->id}/demografi")->with('success', 'Nulstillet til global standard.');
     }
 
     public function prompts(Population $population)
@@ -205,6 +205,6 @@ class PopulationController extends Controller
             @rmdir($imageDir);
         }
         $population->delete();
-        return redirect('/slophub/admin/populations')->with('success', 'Population slettet.');
+        return redirect('/simulation/admin/populations')->with('success', 'Population slettet.');
     }
 }

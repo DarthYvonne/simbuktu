@@ -16,7 +16,7 @@
 
 @php $mode = $course->context_mode ?? 'auto'; @endphp
 
-<form method="POST" action="{{ url('/slophub/admin/context/mode') }}" class="card">
+<form method="POST" action="{{ url('/simulation/admin/context/mode') }}" class="card">
   @csrf
   <h3 style="margin-bottom: 10px;">Hvilken kontekst skal personas reagere ud fra?</h3>
   <p style="color: #65676b; font-size: 13px; margin-bottom: 12px;">Valget gælder for dette kursus. Injiceres i alle prompts der styrer persona-reaktioner.</p>
@@ -41,7 +41,7 @@
 <div class="card">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
     <h3 style="margin: 0;">Aktuel opsamling</h3>
-    <form method="POST" action="{{ url('/slophub/admin/context/build') }}" style="display: inline;">
+    <form method="POST" action="{{ url('/simulation/admin/context/build') }}" style="display: inline;">
       @csrf
       <button class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Lav opsamling</button>
     </form>
@@ -95,7 +95,7 @@
 
 @else
 
-<form method="POST" action="{{ url('/slophub/admin/context/manual') }}" class="card">
+<form method="POST" action="{{ url('/simulation/admin/context/manual') }}" class="card">
   @csrf
   <h3 style="margin-bottom: 8px;">Manuel kontekst</h3>
   <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Beskriv samtiden som personerne i dette kursus skal reagere ud fra. Indsættes direkte i alle persona-prompts.</p>

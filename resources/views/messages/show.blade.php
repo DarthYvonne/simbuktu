@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="view-header">
-  <h1><a href="{{ url('/slophub/beskeder') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Beskeder</a></h1>
+  <h1><a href="{{ url('/simulation/beskeder') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Beskeder</a></h1>
 </div>
 
 <style>
@@ -30,11 +30,11 @@
 
 <div class="conv-wrap">
   <div class="conv-head">
-    <a href="{{ url('/slophub/profiler/' . $conversation->persona_id) }}">
-      <img src="{{ url('/slophub/profiler/' . $conversation->persona_id . '/thumb') }}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'{{ strtoupper(substr($conversation->persona_name, 0, 2)) }}'}))">
+    <a href="{{ url('/simulation/profiler/' . $conversation->persona_id) }}">
+      <img src="{{ url('/simulation/profiler/' . $conversation->persona_id . '/thumb') }}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'{{ strtoupper(substr($conversation->persona_name, 0, 2)) }}'}))">
     </a>
     <div style="flex:1;">
-      <a class="name" href="{{ url('/slophub/profiler/' . $conversation->persona_id) }}">{{ $conversation->persona_name }}</a>
+      <a class="name" href="{{ url('/simulation/profiler/' . $conversation->persona_id) }}">{{ $conversation->persona_name }}</a>
       @if (!empty($persona['demographics']))
         <div class="meta">{{ $persona['demographics']['occupation_hint'] ?? '' }} · {{ $persona['demographics']['region'] ?? '' }}</div>
       @endif
@@ -103,7 +103,7 @@ async function convSend(ev) {
   convAppend('user', body);
   convShowTyping();
   try {
-    const res = await fetch('{{ url('/slophub/beskeder/' . $conversation->id . '/send') }}', {
+    const res = await fetch('{{ url('/simulation/beskeder/' . $conversation->id . '/send') }}', {
       method: 'POST',
       headers: {
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

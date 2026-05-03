@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 
-@php $base = '/slophub/admin/populations/'.$population->id; @endphp
+@php $base = '/simulation/admin/populations/'.$population->id; @endphp
 <div class="view-header">
   <h1><a href="{{ url("$base/personas") }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Personas</a></h1>
   <div style="display: flex; gap: 8px;">

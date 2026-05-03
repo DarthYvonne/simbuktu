@@ -58,7 +58,7 @@
     const createNodeImageProgram = ni ? (ni.createNodeImageProgram || ni.default) : null;
 
     setStatus('Henter data...');
-    const res = await fetch('{{ url("/slophub/profiler/graph/data") }}');
+    const res = await fetch('{{ url("/simulation/profiler/graph/data") }}');
     const data = await res.json();
 
     const graph = new Graph();

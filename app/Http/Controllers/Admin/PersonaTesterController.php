@@ -90,7 +90,7 @@ class PersonaTesterController extends Controller
             'tester_link_preview'      => $linkPreview,
         ]);
 
-        return redirect("/slophub/admin/populations/{$population->id}/personas/tester");
+        return redirect("/simulation/admin/populations/{$population->id}/personas/tester");
     }
 
     public function status(Population $population)

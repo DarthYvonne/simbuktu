@@ -2,7 +2,7 @@
 @section('content')
 
 @php
-  $base = '/slophub/admin/populations/'.$population->id;
+  $base = '/simulation/admin/populations/'.$population->id;
   $activeFilters = array_filter(['subculture' => $subculture, 'party' => $party, 'region' => $region, 'age' => $age]);
   $maxAge = max(array_values($ageDist) ?: [0]);
   $regionTop = array_slice($regionDist, 0, 6, true);
@@ -56,7 +56,7 @@
 
 <div class="pop-bar">
   @if ($course)
-    <form id="switchPopForm" method="POST" action="{{ url('/slophub/admin/courses/'.$course->id.'/population') }}">
+    <form id="switchPopForm" method="POST" action="{{ url('/simulation/admin/courses/'.$course->id.'/population') }}">
       @csrf @method('PATCH')
       <input type="hidden" name="population_id" id="switchPopId" value="">
       <input type="hidden" name="force" id="switchPopForce" value="0">
@@ -65,7 +65,7 @@
   <select id="popSwitcher" class="pop-switch">
     @foreach ($allPopulations as $pop)
       <option value="{{ $pop->id }}"
-        data-url="{{ url('/slophub/admin/populations/'.$pop->id.'/personas') }}"
+        data-url="{{ url('/simulation/admin/populations/'.$pop->id.'/personas') }}"
         {{ $pop->id === $population->id ? 'selected' : '' }}>
         {{ $pop->name }} ({{ $pop->personas_count }})
       </option>
@@ -300,7 +300,7 @@
 <div id="createPopModal" class="modal-bg">
   <div class="modal-card">
     <h3 style="margin:0 0 14px;">Ny population</h3>
-    <form method="POST" action="{{ url('/slophub/admin/populations') }}">
+    <form method="POST" action="{{ url('/simulation/admin/populations') }}">
       @csrf
       <div style="margin-bottom:14px;">
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Navn *</label>

@@ -61,7 +61,7 @@ class AlgorithmController extends Controller
 
         $course->algorithm_config = $config;
         $course->save();
-        return redirect('/slophub/admin/algorithm')->with('success', 'Opsætning gemt for dette kursus.');
+        return redirect('/simulation/admin/algorithm')->with('success', 'Opsætning gemt for dette kursus.');
     }
 
     public function reset()
@@ -71,7 +71,7 @@ class AlgorithmController extends Controller
             $course->algorithm_config = null;
             $course->save();
         }
-        return redirect('/slophub/admin/algorithm')->with('success', 'Nulstillet til standard for dette kursus.');
+        return redirect('/simulation/admin/algorithm')->with('success', 'Nulstillet til standard for dette kursus.');
     }
 
     /**

@@ -21,7 +21,7 @@
 <div class="prompts-layout">
   <div class="card" style="padding: 8px 0; height: fit-content;">
     @foreach ($prompts as $p)
-      <a href="{{ url('/slophub/admin/prompts/'.$p->key) }}"
+      <a href="{{ url('/simulation/admin/prompts/'.$p->key) }}"
          style="display: block; padding: 10px 14px; border-left: 3px solid {{ $current && $current->id === $p->id ? '#1877f2' : 'transparent' }}; background: {{ $current && $current->id === $p->id ? '#e7f3ff' : 'transparent' }}; color: #1c1e21; text-decoration: none;">
         <div style="font-weight: 600; font-size: 14px;">{{ $p->name }}</div>
         @if ($p->description)
@@ -52,12 +52,12 @@
           </details>
         @endif
 
-        <form method="POST" action="{{ url('/slophub/admin/prompts/'.$current->id) }}">
+        <form method="POST" action="{{ url('/simulation/admin/prompts/'.$current->id) }}">
           @csrf
           @method('PATCH')
           <textarea name="body" id="promptBody" style="width: 100%; min-height: 500px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 13px; padding: 12px; border: 1px solid #dadde1; border-radius: 8px; resize: vertical;">{{ $current->body }}</textarea>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
-            <form method="POST" action="{{ url('/slophub/admin/prompts/'.$current->id.'/reset') }}" style="display: inline;" onsubmit="return confirm('Nulstil til standard?')">
+            <form method="POST" action="{{ url('/simulation/admin/prompts/'.$current->id.'/reset') }}" style="display: inline;" onsubmit="return confirm('Nulstil til standard?')">
               @csrf
               <button type="submit" class="btn btn-secondary">Nulstil til standard</button>
             </form>

@@ -8,7 +8,7 @@
 @include('profiler._tabs')
 
 <div class="card">
-  <form method="GET" action="{{ url('/slophub/profiler') }}" class="filter-grid">
+  <form method="GET" action="{{ url('/simulation/profiler') }}" class="filter-grid">
     <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn, bio, job, subkultur..." style="padding: 8px 12px;">
     <select name="subculture" onchange="this.form.submit()">
       <option value="">Alle subkulturer</option>
@@ -37,7 +37,7 @@
   </form>
   @if ($q || $subculture || $party || $region || $age)
     <div style="margin-top: 10px;">
-      <a href="{{ url('/slophub/profiler') }}" style="color: #1877f2; font-size: 13px;">Nulstil filtre</a>
+      <a href="{{ url('/simulation/profiler') }}" style="color: #1877f2; font-size: 13px;">Nulstil filtre</a>
     </div>
   @endif
 </div>
@@ -50,8 +50,8 @@
 <div class="persona-grid">
   @foreach ($personas as $p)
     @include('partials._persona-card', [
-      'href'     => url('/slophub/profiler/'.$p['id']),
-      'thumbUrl' => url('/slophub/profiler/'.$p['id'].'/thumb'),
+      'href'     => url('/simulation/profiler/'.$p['id']),
+      'thumbUrl' => url('/simulation/profiler/'.$p['id'].'/thumb'),
     ])
   @endforeach
 </div>

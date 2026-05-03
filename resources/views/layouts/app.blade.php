@@ -99,7 +99,7 @@
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="logo">
-      <a href="{{ url('/slophub') }}">
+      <a href="{{ url('/simulation') }}">
         @if ($brandCourse?->logo_path)
           <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}">
         @else
@@ -110,23 +110,23 @@
     <nav class="nav">
       @auth @if (auth()->user()->currentCourse())
       @php $unread = auth()->user()->unreadFeedCount(); @endphp
-      <a href="{{ url('/slophub') }}" data-nav="feed" class="{{ request()->is('slophub') ? 'active' : '' }}"><span class="ico"><i class="fa-regular fa-newspaper"></i></span> Feed
+      <a href="{{ url('/simulation') }}" data-nav="feed" class="{{ request()->is('simulation') ? 'active' : '' }}"><span class="ico"><i class="fa-regular fa-newspaper"></i></span> Feed
         <span id="feedUnreadBadge" style="margin-left: auto; background: #e11d48; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; min-width: 20px; text-align: center; display: {{ $unread > 0 ? 'inline-block' : 'none' }};">{{ $unread > 99 ? '99+' : $unread }}</span>
       </a>
-      <a href="{{ url('/slophub/posts') }}" data-nav="mine" class="{{ request()->is('slophub/posts*') ? 'active' : '' }}"><span class="ico"><i class="fa-regular fa-pen-to-square"></i></span> Opslag</a>
-      <a href="{{ url('/slophub/profiler') }}" data-nav="profiler" class="{{ request()->is('slophub/profiler*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-users"></i></span> Profiler</a>
-      <a href="{{ url('/slophub/analyse') }}" data-nav="analyse" class="{{ request()->is('slophub/analyse*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chart-column"></i></span> Analyse</a>
-      <a href="{{ url('/slophub/mig') }}" data-nav="mig" class="{{ request()->is('slophub/mig*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-user"></i></span> Mig</a>
+      <a href="{{ url('/simulation/posts') }}" data-nav="mine" class="{{ request()->is('simulation/posts*') ? 'active' : '' }}"><span class="ico"><i class="fa-regular fa-pen-to-square"></i></span> Opslag</a>
+      <a href="{{ url('/simulation/profiler') }}" data-nav="profiler" class="{{ request()->is('simulation/profiler*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-users"></i></span> Profiler</a>
+      <a href="{{ url('/simulation/analyse') }}" data-nav="analyse" class="{{ request()->is('simulation/analyse*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chart-column"></i></span> Analyse</a>
+      <a href="{{ url('/simulation/mig') }}" data-nav="mig" class="{{ request()->is('simulation/mig*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-user"></i></span> Mig</a>
       @endif @endauth
       @auth @if (auth()->user()->is_admin)
       <div class="nav-section">Admin</div>
-      <a href="{{ url('/slophub/admin/populations') }}" data-nav="admin-populations" class="{{ request()->is('slophub/admin/populations*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-dna"></i></span> Populationer</a>
-      <a href="{{ url('/slophub/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('slophub/admin/algorithm*') || request()->is('slophub/admin/prompts*') || request()->is('slophub/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
-      <a href="{{ url('/slophub/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('slophub/admin/courses*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Kursusmanager</a>
+      <a href="{{ url('/simulation/admin/populations') }}" data-nav="admin-populations" class="{{ request()->is('simulation/admin/populations*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-dna"></i></span> Populationer</a>
+      <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/prompts*') || request()->is('simulation/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
+      <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Kursusmanager</a>
       @endif @endauth
     </nav>
     @auth
-      <form method="POST" action="{{ url('/slophub/logout') }}" style="margin-top: 8px; border-top: 1px solid #f0f2f5; padding-top: 8px;">
+      <form method="POST" action="{{ url('/simulation/logout') }}" style="margin-top: 8px; border-top: 1px solid #f0f2f5; padding-top: 8px;">
         @csrf
         <button type="submit" class="logout-btn" style="width: 100%; padding: 10px 12px; background: none; border: none; color: #65676b; cursor: pointer; font-weight: 600; font-size: 14px; text-align: left; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
           <span class="ico"><i class="fa-solid fa-right-from-bracket"></i></span> Log ud
@@ -146,7 +146,7 @@
   if (!badge) return;
   async function tick() {
     try {
-      const res = await fetch('{{ url("/slophub/unread-count") }}');
+      const res = await fetch('{{ url("/simulation/unread-count") }}');
       const data = await res.json();
       const n = data.unread || 0;
       if (n > 0) {

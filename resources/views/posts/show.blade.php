@@ -2,13 +2,13 @@
 @section('content')
 
 <div class="view-header">
-  <h1><a href="{{ url('/slophub/posts') }}" style="color: #1877f2;">← Mine opslag</a></h1>
+  <h1><a href="{{ url('/simulation/posts') }}" style="color: #1877f2;">← Mine opslag</a></h1>
   <div style="display: flex; gap: 8px; align-items: center;">
     <span id="liveBadge" style="display: inline-flex; align-items: center; gap: 8px; background: #e7f3ff; color: #1877f2; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">
       <span style="display: inline-block; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
       <span id="roundLabel">Runde {{ $post->round }}</span> · <span id="statusLabel">{{ $post->statusLabel() }}</span>
     </span>
-    <form method="POST" action="{{ url('/slophub/posts/'.$post->id) }}" onsubmit="return confirm('Slet opslag?')">
+    <form method="POST" action="{{ url('/simulation/posts/'.$post->id) }}" onsubmit="return confirm('Slet opslag?')">
       @csrf
       @method('DELETE')
       <button class="btn btn-danger">Slet</button>
@@ -146,8 +146,8 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.g
 
 <script>
 const POST_ID = {{ $post->id }};
-const FEED_URL = '{{ url("/slophub/posts/$post->id/feed") }}';
-const PERSONA_URL = '{{ url("/slophub/admin/personas") }}';
+const FEED_URL = '{{ url("/simulation/posts/$post->id/feed") }}';
+const PERSONA_URL = '{{ url("/simulation/admin/personas") }}';
 let lastSeenId = 0;
 const seenIds = new Set();
 
@@ -226,7 +226,7 @@ async function submitComment(event, parentId) {
   fd.append('body', body);
   if (parentId) fd.append('parent_id', parentId);
   try {
-    const res = await fetch(`/slophub/posts/${POST_ID}/comments`, {
+    const res = await fetch(`/simulation/posts/${POST_ID}/comments`, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
       body: fd,

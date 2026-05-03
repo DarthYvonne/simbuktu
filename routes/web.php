@@ -58,7 +58,7 @@ Route::post('/booking', function (\Illuminate\Http\Request $request) {
 Route::get('/tak', fn () => view('coming-soon-tak'));
 
 // Auth (public)
-Route::prefix('slophub')->group(function () {
+Route::prefix('simulation')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -67,7 +67,7 @@ Route::prefix('slophub')->group(function () {
 });
 
 // Authenticated
-Route::prefix('slophub')->middleware(['auth', 'course'])->group(function () {
+Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     Route::get('/', [PostController::class, 'publicFeed']);
     Route::get('/feed-data', [PostController::class, 'feedData']);
     Route::get('/unread-count', [PostController::class, 'unreadCount']);

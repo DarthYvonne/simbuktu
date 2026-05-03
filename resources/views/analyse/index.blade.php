@@ -3,7 +3,7 @@
 
 <div class="view-header">
   <h1>Analyse</h1>
-  <form method="GET" action="{{ url('/slophub/analyse') }}">
+  <form method="GET" action="{{ url('/simulation/analyse') }}">
     <select name="post" onchange="this.form.submit()" style="padding: 8px 12px; max-width: calc(100vw - 36px);">
       @foreach ($posts as $p)
         <option value="{{ $p->id }}" {{ $post && $post->id === $p->id ? 'selected' : '' }}>
@@ -163,7 +163,7 @@ window.__initSpread = async function () {
     const Sigma = s.Sigma || s.default || s;
     const createNodeImageProgram = ni ? (ni.createNodeImageProgram || ni.default) : null;
 
-    const res = await fetch('{{ url("/slophub/analyse/$post->id/spread") }}');
+    const res = await fetch('{{ url("/simulation/analyse/$post->id/spread") }}');
     const data = await res.json();
     if (data.nodes.length <= 1) { loading.textContent = 'Ingen spredningsdata endnu (vent på næste runde).'; return; }
 

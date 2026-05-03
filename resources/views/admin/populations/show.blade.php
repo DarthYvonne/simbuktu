@@ -3,7 +3,7 @@
 
 <div class="view-header">
   <h1>
-    <a href="{{ url('/slophub/admin/populations') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
+    <a href="{{ url('/simulation/admin/populations') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
     {{ $population->name }}
   </h1>
 </div>
@@ -19,7 +19,7 @@
 @endif
 
 <div style="max-width: 760px;">
-  <form method="POST" action="{{ url('/slophub/admin/populations/'.$population->id) }}" class="card">
+  <form method="POST" action="{{ url('/simulation/admin/populations/'.$population->id) }}" class="card">
     @csrf @method('PATCH')
 
     <div style="margin-bottom: 14px;">
@@ -37,7 +37,7 @@
     <div style="margin-bottom: 16px; padding: 10px 12px; background: #f0f7ff; border: 1px solid #cfe2ff; border-radius: 6px; font-size: 13px; color: #1c1e21;">
       <i class="fa-solid fa-circle-info" style="color:#1877f2; margin-right:4px;"></i>
       Demografiske vægte (alder, køn, region, uddannelse osv.) konfigureres på fanen
-      <a href="{{ url('/slophub/admin/populations/'.$population->id.'/demografi') }}" style="font-weight:600; color:#1877f2;">Demografi</a>.
+      <a href="{{ url('/simulation/admin/populations/'.$population->id.'/demografi') }}" style="font-weight:600; color:#1877f2;">Demografi</a>.
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -49,7 +49,7 @@
     </div>
   </form>
 
-  <form id="deletePopForm" method="POST" action="{{ url('/slophub/admin/populations/'.$population->id) }}" style="display:none;">
+  <form id="deletePopForm" method="POST" action="{{ url('/simulation/admin/populations/'.$population->id) }}" style="display:none;">
     @csrf @method('DELETE')
   </form>
 </div>

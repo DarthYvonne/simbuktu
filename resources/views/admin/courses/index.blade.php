@@ -18,7 +18,7 @@
   @foreach ($courses as $course)
     @php $isActive = $course->id === $activeId; @endphp
     <div class="course-row {{ $isActive ? 'active' : '' }}">
-      <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id.'/switch') }}" class="course-row-switch">
+      <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id.'/switch') }}" class="course-row-switch">
         @csrf
         <button type="submit" class="course-row-btn">
           <div class="course-name">
@@ -54,7 +54,7 @@
           </div>
         </button>
       </form>
-      <a href="{{ url('/slophub/admin/courses/'.$course->id) }}" class="details-link" title="Indstillinger"><i class="fa-solid fa-chevron-right"></i></a>
+      <a href="{{ url('/simulation/admin/courses/'.$course->id) }}" class="details-link" title="Indstillinger"><i class="fa-solid fa-chevron-right"></i></a>
     </div>
   @endforeach
 
@@ -102,7 +102,7 @@
 </style>
 
 <div class="modal-backdrop" id="createModal" onclick="if(event.target===this) closeCreate()">
-  <form method="POST" action="{{ url('/slophub/admin/courses') }}" class="modal-box">
+  <form method="POST" action="{{ url('/simulation/admin/courses') }}" class="modal-box">
     @csrf
     <h3>Opret kursus</h3>
     <label>Kursusnavn</label>

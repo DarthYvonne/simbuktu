@@ -11,7 +11,7 @@ class LoginController extends Controller
 {
     public function show()
     {
-        if (Auth::check()) return redirect('/slophub');
+        if (Auth::check()) return redirect('/simulation');
         return view('auth.login');
     }
 
@@ -27,7 +27,7 @@ class LoginController extends Controller
         }
 
         $request->session()->regenerate();
-        return redirect()->intended('/slophub');
+        return redirect()->intended('/simulation');
     }
 
     public function logout(Request $request)
@@ -35,6 +35,6 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/slophub/login');
+        return redirect('/simulation/login');
     }
 }

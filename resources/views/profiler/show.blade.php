@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="view-header">
-  <h1><a href="{{ url('/slophub/profiler') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Profiler</a></h1>
+  <h1><a href="{{ url('/simulation/profiler') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Profiler</a></h1>
 </div>
 
 <style>
@@ -49,7 +49,7 @@
   <div class="profile-body">
     <div style="display: flex; gap: 18px; align-items: flex-end;">
       @if (!empty($p['image_file']))
-        <img class="profile-avatar" src="{{ url('/slophub/profiler/'.$p['id'].'/image') }}">
+        <img class="profile-avatar" src="{{ url('/simulation/profiler/'.$p['id'].'/image') }}">
       @else
         <div class="profile-avatar-placeholder">{{ strtoupper(substr($p['name'] ?? '?', 0, 2)) }}</div>
       @endif
@@ -112,7 +112,7 @@
           <div class="mini-post">
             <div class="mini-post-head">
               @if (!empty($p['image_file']))
-                <img src="{{ url('/slophub/profiler/'.$p['id'].'/thumb') }}">
+                <img src="{{ url('/simulation/profiler/'.$p['id'].'/thumb') }}">
               @else
                 <div class="ph">{{ strtoupper(substr($p['name'] ?? '?', 0, 2)) }}</div>
               @endif
@@ -133,9 +133,9 @@
       @else
         <div class="friend-grid">
           @foreach ($friends as $f)
-            <a class="friend-item" href="{{ url('/slophub/profiler/'.$f['id']) }}">
+            <a class="friend-item" href="{{ url('/simulation/profiler/'.$f['id']) }}">
               @if (!empty($f['image_file']))
-                <img src="{{ url('/slophub/profiler/'.$f['id'].'/thumb') }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                <img src="{{ url('/simulation/profiler/'.$f['id'].'/thumb') }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
               @else
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: #e4e6eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0;">{{ strtoupper(substr($f['name'] ?? '?', 0, 2)) }}</div>
               @endif

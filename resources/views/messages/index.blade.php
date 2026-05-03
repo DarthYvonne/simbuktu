@@ -24,14 +24,14 @@
   <div class="empty-state">
     <i class="fa-regular fa-message" style="font-size: 40px; color: #dadde1; margin-bottom: 12px; display: block;"></i>
     Du har ikke skrevet med nogen endnu.<br>
-    <a href="{{ url('/slophub/profiler') }}">Find en persona</a> og klik på <em>Send besked</em>.
+    <a href="{{ url('/simulation/profiler') }}">Find en persona</a> og klik på <em>Send besked</em>.
   </div>
 @else
   <div class="conv-list">
     @foreach ($conversations as $c)
       @php $last = $previews[$c->id] ?? null; @endphp
-      <a href="{{ url('/slophub/beskeder/' . $c->id) }}" class="conv-item">
-        <img src="{{ url('/slophub/profiler/' . $c->persona_id . '/thumb') }}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'{{ strtoupper(substr($c->persona_name, 0, 2)) }}'}))">
+      <a href="{{ url('/simulation/beskeder/' . $c->id) }}" class="conv-item">
+        <img src="{{ url('/simulation/profiler/' . $c->persona_id . '/thumb') }}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'{{ strtoupper(substr($c->persona_name, 0, 2)) }}'}))">
         <div class="info">
           <div class="name">{{ $c->persona_name }}</div>
           <div class="preview">

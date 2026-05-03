@@ -33,7 +33,7 @@ class ContextController extends Controller
         $mode = $request->input('context_mode');
         $course->context_mode = in_array($mode, ['auto', 'manual']) ? $mode : 'auto';
         $course->save();
-        return redirect('/slophub/admin/context')->with('success', 'Mode opdateret.');
+        return redirect('/simulation/admin/context')->with('success', 'Mode opdateret.');
     }
 
     public function saveManual(Request $request)
@@ -43,7 +43,7 @@ class ContextController extends Controller
         $course->manual_context = $request->input('manual_context');
         $course->context_mode = 'manual';
         $course->save();
-        return redirect('/slophub/admin/context')->with('success', 'Manuel kontekst gemt.');
+        return redirect('/simulation/admin/context')->with('success', 'Manuel kontekst gemt.');
     }
 
     public function buildDigest()
@@ -52,9 +52,9 @@ class ContextController extends Controller
         try {
             $this->fetcher->fetchAll();
             $this->digester->refresh();
-            return redirect('/slophub/admin/context')->with('success', 'Opsamling lavet.');
+            return redirect('/simulation/admin/context')->with('success', 'Opsamling lavet.');
         } catch (\Throwable $e) {
-            return redirect('/slophub/admin/context')->with('error', 'Fejl: ' . $e->getMessage());
+            return redirect('/simulation/admin/context')->with('error', 'Fejl: ' . $e->getMessage());
         }
     }
 }

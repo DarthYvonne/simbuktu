@@ -109,7 +109,7 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
 <div class="view-header">
   <h1>Feed</h1>
   <div class="feed-actions">
-    <a href="{{ url('/slophub/beskeder') }}" class="feed-iconbtn" title="Beskeder" aria-label="Beskeder">
+    <a href="{{ url('/simulation/beskeder') }}" class="feed-iconbtn" title="Beskeder" aria-label="Beskeder">
       <i class="fa-regular fa-envelope"></i>
       <span class="badge" id="hdrMessagesBadge">0</span>
     </a>
@@ -135,7 +135,7 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
               <a class="alert-item" data-key="{{ $key }}" data-post-id="{{ $a['post_id'] }}" href="#">
                 <div class="alert-avatar-wrap">
                   @if (!empty($a['persona']) && !empty($a['persona']['image_file']))
-                    <img src="{{ url('/slophub/profiler/'.$a['persona']['id'].'/thumb') }}">
+                    <img src="{{ url('/simulation/profiler/'.$a['persona']['id'].'/thumb') }}">
                   @else
                     <div class="ph">{{ strtoupper(substr($a['persona_name'], 0, 2)) }}</div>
                   @endif
@@ -179,7 +179,7 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
 @if ($posts->isEmpty())
   <div class="empty-feed">
     <h3 style="color: #1c1e21; margin-bottom: 8px;">Ingen opslag endnu</h3>
-    <p>Vær den første. <a href="{{ url('/slophub/posts/create') }}" style="color: #1877f2;">Skriv et opslag</a>.</p>
+    <p>Vær den første. <a href="{{ url('/simulation/posts/create') }}" style="color: #1877f2;">Skriv et opslag</a>.</p>
   </div>
 @else
   @foreach ($posts as $post)
@@ -317,7 +317,7 @@ async function openReactions(postId) {
   document.getElementById('rxTitle').textContent = 'Reaktioner';
   modal.classList.add('open');
   try {
-    const res = await fetch(`/slophub/posts/${postId}/reactions`);
+    const res = await fetch(`/simulation/posts/${postId}/reactions`);
     const data = await res.json();
     renderReactions(data);
   } catch (e) { document.getElementById('rxTabs').innerHTML = '<div style="padding:10px;color:#b91c1c;font-size:13px;">Kunne ikke hente.</div>'; }
@@ -337,7 +337,7 @@ function renderReactions(data) {
   });
   tabs.innerHTML = html;
 
-  const PERSONA_URL = '/slophub/profiler';
+  const PERSONA_URL = '/simulation/profiler';
   const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   function renderList(type) {
     const items = type === 'all' ? allPersonas : (data.personas[type] || []).map(p => ({...p, reaction: type}));
@@ -369,9 +369,9 @@ function renderReactions(data) {
 
 <script>
 (function () {
-  const FEED_URL = '{{ url("/slophub/feed-data") }}';
-  const PROFILER_URL = '{{ url("/slophub/profiler") }}';
-  const POSTS_URL = '{{ url("/slophub/posts") }}';
+  const FEED_URL = '{{ url("/simulation/feed-data") }}';
+  const PROFILER_URL = '{{ url("/simulation/profiler") }}';
+  const POSTS_URL = '{{ url("/simulation/posts") }}';
   const reactionIcon = {like:'thumbs-up', love:'heart', haha:'face-laugh-squint', wow:'face-surprise', sad:'face-sad-tear', angry:'face-angry'};
   const reactionColor = {like:'#1877f2', love:'#e0245e', haha:'#f7b928', wow:'#f7b928', sad:'#3b82f6', angry:'#e9710f'};
 
@@ -462,7 +462,7 @@ function renderReactions(data) {
     notifBtn.setAttribute('aria-expanded', !wasOpen);
     if (!wasOpen) {
       try {
-        await fetch('{{ url("/slophub/mark-feed-seen") }}', {
+        await fetch('{{ url("/simulation/mark-feed-seen") }}', {
           method: 'POST',
           headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
         });
@@ -480,7 +480,7 @@ function renderReactions(data) {
 
   async function pollCounts() {
     try {
-      const res = await fetch('{{ url("/slophub/unread-count") }}');
+      const res = await fetch('{{ url("/simulation/unread-count") }}');
       const data = await res.json();
       setBadge(notifBadge, data.unread || 0);
       setBadge(msgBadge, data.messages || 0);
@@ -638,7 +638,7 @@ async function submitComment(event, postId, parentId) {
   fd.append('body', body);
   if (parentId) fd.append('parent_id', parentId);
   try {
-    const res = await fetch(`/slophub/posts/${postId}/comments`, {
+    const res = await fetch(`/simulation/posts/${postId}/comments`, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
       body: fd,
@@ -670,7 +670,7 @@ async function loadComments(postId) {
   const wrap = document.getElementById('comments-' + postId);
   if (!wrap) return;
   try {
-    const res = await fetch(`/slophub/posts/${postId}/feed`);
+    const res = await fetch(`/simulation/posts/${postId}/feed`);
     const data = await res.json();
     renderComments(wrap, data.comments);
   } catch (e) { wrap.innerHTML = '<div style="color:#b91c1c;padding:6px;font-size:12px;">Kunne ikke hente kommentarer.</div>'; }
@@ -690,7 +690,7 @@ function renderComments(wrap, comments) {
     if (s < 604800) return Math.round(s / 86400) + ' d siden';
     return Math.round(s / 604800) + ' u siden';
   };
-  const PERSONA_URL = '/slophub/profiler';
+  const PERSONA_URL = '/simulation/profiler';
   const childrenOf = {};
   const topLevel = [];
   comments.forEach(c => {
@@ -761,7 +761,7 @@ async function sendCommentReaction(commentId, type, el) {
   const picker = el.closest('.cm-react-picker');
   if (picker) picker.classList.remove('open');
   try {
-    const res = await fetch(`/slophub/comments/${commentId}/react`, {
+    const res = await fetch(`/simulation/comments/${commentId}/react`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
       body: JSON.stringify({ type }),

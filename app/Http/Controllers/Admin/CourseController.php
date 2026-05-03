@@ -35,7 +35,7 @@ class CourseController extends Controller
         $user = Auth::user();
         $user->active_course_id = $course->id;
         $user->save();
-        return redirect('/slophub/admin/courses/'.$course->id)->with('success', 'Kursus oprettet.');
+        return redirect('/simulation/admin/courses/'.$course->id)->with('success', 'Kursus oprettet.');
     }
 
     public function show(Course $course)
@@ -114,13 +114,13 @@ class CourseController extends Controller
         $course->update($data);
         $tab = $request->input('_tab');
         $anchor = $tab ? '#'.$tab : '';
-        return redirect('/slophub/admin/courses/'.$course->id.$anchor)->with('success', 'Kursus opdateret.');
+        return redirect('/simulation/admin/courses/'.$course->id.$anchor)->with('success', 'Kursus opdateret.');
     }
 
     public function destroy(Course $course)
     {
         $course->delete();
-        return redirect('/slophub/admin/courses')->with('success', 'Kursus slettet.');
+        return redirect('/simulation/admin/courses')->with('success', 'Kursus slettet.');
     }
 
     public function setPopulation(Request $request, Course $course)
@@ -161,7 +161,7 @@ class CourseController extends Controller
 
         $course->update(['population_id' => $newId]);
         $msg     = $activityCount > 0 ? 'Population skiftet. Al aktivitet er slettet.' : 'Population gemt.';
-        $target  = $newId ? "/slophub/admin/populations/{$newId}/personas" : '/slophub/admin/populations';
+        $target  = $newId ? "/simulation/admin/populations/{$newId}/personas" : '/simulation/admin/populations';
         return redirect($target)->with('success', $msg);
     }
 

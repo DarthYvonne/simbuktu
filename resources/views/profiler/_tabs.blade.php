@@ -1,7 +1,7 @@
 @php
 $tabs = [
-  ['Galleri', url('/slophub/profiler'), 'slophub/profiler'],
-  ['Graf', url('/slophub/profiler/graph'), 'slophub/profiler/graph'],
+  ['Galleri', url('/simulation/profiler'), 'simulation/profiler'],
+  ['Graf', url('/simulation/profiler/graph'), 'simulation/profiler/graph'],
 ];
 @endphp
 <div style="display: flex; gap: 2px; border-bottom: 1px solid #dadde1; margin-bottom: 14px;">

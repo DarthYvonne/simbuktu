@@ -157,7 +157,7 @@ class PersonaController extends Controller
             if (is_file($img)) unlink($img);
             $persona->delete();
         }
-        return redirect("/slophub/admin/populations/{$population->id}/personas")->with('success', 'Persona slettet.');
+        return redirect("/simulation/admin/populations/{$population->id}/personas")->with('success', 'Persona slettet.');
     }
 
     public function clear(Population $population)
@@ -167,6 +167,6 @@ class PersonaController extends Controller
             foreach (glob("{$dir}/*.png") as $f) unlink($f);
         }
         Persona::where('population_id', $population->id)->delete();
-        return redirect("/slophub/admin/populations/{$population->id}/personas")->with('success', 'Alle personas slettet.');
+        return redirect("/simulation/admin/populations/{$population->id}/personas")->with('success', 'Alle personas slettet.');
     }
 }

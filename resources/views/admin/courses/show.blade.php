@@ -3,17 +3,17 @@
 
 @php $isActive = auth()->user()->currentCourse()?->id === $course->id; @endphp
 <div class="view-header">
-  <h1><a href="{{ url('/slophub/admin/courses') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Kurser</a> <span style="font-weight: 400; color: #1c1e21;">· {{ $course->name }}</span></h1>
+  <h1><a href="{{ url('/simulation/admin/courses') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Kurser</a> <span style="font-weight: 400; color: #1c1e21;">· {{ $course->name }}</span></h1>
   <div style="display: flex; gap: 8px; align-items: center;">
     @if ($isActive)
       <span style="background: #dcfce7; color: #166534; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 14px;">Aktivt kursus</span>
     @else
-      <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id.'/switch') }}">
+      <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id.'/switch') }}">
         @csrf
         <button class="btn btn-primary"><i class="fa-solid fa-right-left"></i> Skift til dette kursus</button>
       </form>
     @endif
-    <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id) }}" onsubmit="return confirm('Slet kurset? ALLE opslag og tilmeldinger slettes.')">
+    <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id) }}" onsubmit="return confirm('Slet kurset? ALLE opslag og tilmeldinger slettes.')">
       @csrf
       @method('DELETE')
       <button class="btn btn-danger">Slet kursus</button>
@@ -60,7 +60,7 @@
 
 {{-- INFO --}}
 <div class="tab-pane active" data-pane="info">
-  <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id) }}" class="km-panel">
+  <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id) }}" class="km-panel">
     @csrf
     @method('PATCH')
     <input type="hidden" name="_tab" value="info">
@@ -99,7 +99,7 @@
 
 {{-- BRANDING --}}
 <div class="tab-pane" data-pane="branding">
-  <form method="POST" action="{{ url('/slophub/admin/courses/'.$course->id) }}" enctype="multipart/form-data" class="km-panel">
+  <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id) }}" enctype="multipart/form-data" class="km-panel">
     @csrf
     @method('PATCH')
     <input type="hidden" name="_tab" value="branding">

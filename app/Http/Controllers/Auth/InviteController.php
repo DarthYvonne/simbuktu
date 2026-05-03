@@ -47,6 +47,6 @@ class InviteController extends Controller
         $user->save();
 
         Auth::login($user, true);
-        return redirect('/slophub');
+        return redirect('/simulation');
     }
 }

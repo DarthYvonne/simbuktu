@@ -78,10 +78,10 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
 
 <div class="view-header">
   <div class="posts-tabs">
-    <a href="{{ url('/slophub/posts') }}" class="{{ ($view ?? 'mine') === 'mine' ? 'active' : '' }}">Mine opslag</a>
-    <a href="{{ url('/slophub/posts/all') }}" class="{{ ($view ?? 'mine') === 'all' ? 'active' : '' }}">Alles opslag</a>
+    <a href="{{ url('/simulation/posts') }}" class="{{ ($view ?? 'mine') === 'mine' ? 'active' : '' }}">Mine opslag</a>
+    <a href="{{ url('/simulation/posts/all') }}" class="{{ ($view ?? 'mine') === 'all' ? 'active' : '' }}">Alles opslag</a>
   </div>
-  <a href="{{ url('/slophub/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a>
+  <a href="{{ url('/simulation/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a>
 </div>
 
 @if (($view ?? 'mine') === 'all')
@@ -106,7 +106,7 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
     @if (($view ?? 'mine') === 'all')
       <p>Ingen på kurset har skrevet et opslag endnu.</p>
     @else
-      <p>Skriv dit første for at starte en simulering.<br><br><a href="{{ url('/slophub/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a></p>
+      <p>Skriv dit første for at starte en simulering.<br><br><a href="{{ url('/simulation/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a></p>
     @endif
   </div>
 @else
@@ -124,7 +124,7 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
           {{ $_name }}
           <small>{{ $post->created_at->diffForHumans() }} · Runde {{ $post->round }}</small>
         </div>
-        <a href="{{ url('/slophub/posts/'.$post->id.'/feedback') }}" class="feedback-link">Feedback</a>
+        <a href="{{ url('/simulation/posts/'.$post->id.'/feedback') }}" class="feedback-link">Feedback</a>
         @if ($post->user_id === auth()->id() || auth()->user()->is_admin)
           <a href="#" class="slet-link" onclick="event.preventDefault(); openDelete({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})">Slet</a>
         @endif
@@ -244,7 +244,7 @@ async function openReactions(postId) {
   document.getElementById('rxList').innerHTML = '';
   modal.classList.add('open');
   try {
-    const res = await fetch(`/slophub/posts/${postId}/reactions`);
+    const res = await fetch(`/simulation/posts/${postId}/reactions`);
     const data = await res.json();
     renderReactions(data);
   } catch { document.getElementById('rxTabs').innerHTML = '<div style="padding:10px;color:#b91c1c;font-size:13px;">Kunne ikke hente.</div>'; }
@@ -263,7 +263,7 @@ function renderReactions(data) {
   });
   tabs.innerHTML = html;
 
-  const PERSONA_URL = '/slophub/profiler';
+  const PERSONA_URL = '/simulation/profiler';
   const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   function renderList(type) {
     const items = type === 'all' ? allPersonas : (data.personas[type] || []).map(p => ({...p, reaction: type}));
@@ -284,7 +284,7 @@ function renderReactions(data) {
 
 function openDelete(postId, snippet) {
   document.getElementById('deleteSnippet').textContent = snippet;
-  document.getElementById('deleteForm').action = '/slophub/posts/' + postId;
+  document.getElementById('deleteForm').action = '/simulation/posts/' + postId;
   document.getElementById('deleteModal').classList.add('open');
 }
 function closeDelete() { document.getElementById('deleteModal').classList.remove('open'); }
@@ -321,7 +321,7 @@ async function loadComments(postId) {
   const wrap = document.getElementById('comments-' + postId);
   if (!wrap) return;
   try {
-    const res = await fetch(`/slophub/posts/${postId}/feed`);
+    const res = await fetch(`/simulation/posts/${postId}/feed`);
     const data = await res.json();
     renderComments(wrap, data.comments);
   } catch { wrap.innerHTML = '<div style="color:#b91c1c;padding:6px;font-size:12px;">Kunne ikke hente kommentarer.</div>'; }
@@ -329,7 +329,7 @@ async function loadComments(postId) {
 function renderComments(wrap, comments) {
   if (!comments || comments.length === 0) { wrap.innerHTML = '<div style="color:#65676b;padding:6px;font-size:12px;">Ingen kommentarer endnu.</div>'; return; }
   const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const PERSONA_URL = '/slophub/profiler';
+  const PERSONA_URL = '/simulation/profiler';
   const childrenOf = {};
   const topLevel = [];
   comments.forEach(c => {
