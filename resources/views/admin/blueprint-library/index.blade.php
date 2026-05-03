@@ -15,22 +15,43 @@
   <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
+@php
+$catLabels = [
+  'demografi'    => 'Demografi',
+  'psykometri'   => 'Psykometri',
+  'politik'      => 'Politik',
+  'sprog_adfaerd'=> 'Sprog & adfærd',
+  'subkultur'    => 'Subkultur',
+  'egne'         => 'Egne dimensioner',
+];
+@endphp
+
 @if ($parameters->isEmpty())
   <div style="text-align: center; padding: 60px 20px; color: #65676b;">
     <i class="fa-solid fa-sliders" style="font-size: 48px; margin-bottom: 16px; display: block; opacity: .3;"></i>
     <p>Ingen dimensioner i biblioteket endnu.</p>
   </div>
 @else
-  <div style="display: grid; gap: 8px; max-width: 860px;">
-    @foreach ($parameters as $p)
-      <a href="{{ url('/simulation/admin/blueprint-library/'.$p->id) }}"
-         style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #dadde1; border-radius:8px; padding:12px 16px; text-decoration:none; color:inherit;">
-        <span style="font-weight:700; font-size:15px; color:#1c1e21;">{{ $p->name }}</span>
-        @if ($p->description)
-          <span style="color:#65676b; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;">{{ $p->description }}</span>
-        @endif
-        <span style="margin-left:auto; color:#65676b; font-size:12px;">{{ count($p->facets) }} facetter</span>
-      </a>
+  <div style="max-width: 860px;">
+    @foreach ($parameters as $catKey => $group)
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px; font-weight:700; color:#65676b; text-transform:uppercase; letter-spacing:.4px; padding:0 4px 6px;">
+          {{ $catLabels[$catKey] ?? ucfirst($catKey) }}
+          <span style="color:#9ca3af; font-weight:500;">· {{ $group->count() }}</span>
+        </div>
+        <div style="display:grid; gap:6px;">
+          @foreach ($group as $p)
+            <a href="{{ url('/simulation/admin/blueprint-library/'.$p->id) }}"
+               style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #dadde1; border-radius:8px; padding:10px 14px; text-decoration:none; color:inherit;">
+              <span style="font-weight:600; font-size:14px; color:#1c1e21;">{{ $p->name }}</span>
+              @if ($p->description)
+                <span style="color:#65676b; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;">{{ $p->description }}</span>
+              @endif
+              <span style="margin-left:auto; color:#65676b; font-size:12px;">{{ count($p->facets) }} facetter</span>
+            </a>
+          @endforeach
+        </div>
+      </div>
     @endforeach
   </div>
 @endif
@@ -44,6 +65,17 @@
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Navn *</label>
         <input type="text" name="name" required autofocus placeholder="fx empati, verbositet, partiskhed_dk"
           style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Kategori</label>
+        <select name="category" style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+          <option value="">Egne dimensioner</option>
+          <option value="demografi">Demografi</option>
+          <option value="psykometri">Psykometri</option>
+          <option value="politik">Politik</option>
+          <option value="sprog_adfaerd">Sprog & adfærd</option>
+          <option value="subkultur">Subkultur</option>
+        </select>
       </div>
       <div style="margin-bottom:14px;">
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Beskrivelse</label>

@@ -37,6 +37,18 @@
       <input type="text" name="name" required value="{{ old('name', $parameter->name) }}"
         style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
     </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Kategori</label>
+      @php $cat = old('category', $parameter->category); @endphp
+      <select name="category" style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+        <option value="" {{ $cat ? '' : 'selected' }}>Egne dimensioner</option>
+        <option value="demografi" {{ $cat === 'demografi' ? 'selected' : '' }}>Demografi</option>
+        <option value="psykometri" {{ $cat === 'psykometri' ? 'selected' : '' }}>Psykometri</option>
+        <option value="politik" {{ $cat === 'politik' ? 'selected' : '' }}>Politik</option>
+        <option value="sprog_adfaerd" {{ $cat === 'sprog_adfaerd' ? 'selected' : '' }}>Sprog & adfærd</option>
+        <option value="subkultur" {{ $cat === 'subkultur' ? 'selected' : '' }}>Subkultur</option>
+      </select>
+    </div>
     <div>
       <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Beskrivelse</label>
       <input type="text" name="description" value="{{ old('description', $parameter->description) }}"

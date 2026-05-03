@@ -11,7 +11,8 @@ class BlueprintLibraryController extends Controller
 {
     public function index()
     {
-        $parameters = LibraryParameter::orderBy('name')->get();
+        $parameters = LibraryParameter::orderBy('sort_order')->orderBy('name')->get()
+            ->groupBy(fn ($p) => $p->category ?: 'egne');
         return view('admin.blueprint-library.index', compact('parameters'));
     }
 
@@ -43,13 +44,23 @@ class BlueprintLibraryController extends Controller
     private function validatePayload(Request $request, ?int $ignoreId = null): array
     {
         $data = $request->validate([
-            'name'            => ['required', 'string', 'max:64', Rule::unique('library_parameters', 'name')->ignore($ignoreId)],
+            'name'            => ['required', 'string', 'max:64'],
+            'category'        => 'nullable|string|max:64',
             'description'     => 'nullable|string|max:500',
             'facets'          => 'required|array|min:2',
             'facets.*.name'   => 'required|string|max:64',
             'facets.*.text'   => 'required|string|max:5000',
             'facets.*.weight' => 'nullable|integer|min:0|max:100',
         ]);
+        $exists = LibraryParameter::where('name', $data['name'])
+            ->where('category', $data['category'] ?? null)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->exists();
+        if ($exists) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => 'En dimension med dette navn findes allerede i denne kategori.',
+            ]);
+        }
         $data['facets'] = array_values(array_map(
             fn ($f) => [
                 'name'   => trim($f['name']),
