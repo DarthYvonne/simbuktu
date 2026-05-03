@@ -88,8 +88,8 @@ class CmsController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
-        CmsPage::create($data);
-        return redirect('/cms')->with('status', 'Side oprettet.');
+        $page = CmsPage::create($data);
+        return $this->afterSave($request, $page, 'Side oprettet.');
     }
 
     public function edit(CmsPage $page)
@@ -100,7 +100,15 @@ class CmsController extends Controller
     public function update(Request $request, CmsPage $page)
     {
         $page->update($this->validated($request, $page->id));
-        return redirect('/cms')->with('status', 'Side opdateret.');
+        return $this->afterSave($request, $page, 'Side opdateret.');
+    }
+
+    private function afterSave(Request $request, CmsPage $page, string $msg)
+    {
+        if ($request->boolean('save_and_preview')) {
+            return redirect($page->url())->with('status', $msg);
+        }
+        return redirect('/cms/'.$page->id.'/edit')->with('status', $msg);
     }
 
     public function destroy(CmsPage $page)
