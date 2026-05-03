@@ -28,6 +28,8 @@ Route::get('/lovestormlab', fn () => view('lovestormlab'));
 // Simple CMS (admin-only)
 Route::prefix('cms')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/',                [CmsController::class, 'index']);
+    Route::get('/settings',        [CmsController::class, 'settings']);
+    Route::post('/settings',       [CmsController::class, 'saveSettings']);
     Route::get('/create',          [CmsController::class, 'create']);
     Route::post('/',               [CmsController::class, 'store']);
     Route::get('/{page}/edit',     [CmsController::class, 'edit']);

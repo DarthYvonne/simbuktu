@@ -58,6 +58,7 @@
         <h1><a href="/cms">Simbuktu CMS</a></h1>
         <nav>
             <a href="/cms">Sider</a>
+            <a href="/cms/settings">Forside</a>
             <a href="/" target="_blank">Vis website ↗</a>
         </nav>
     </div>

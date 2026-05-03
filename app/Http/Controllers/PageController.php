@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\CmsPage;
+use App\Models\CmsSetting;
 
 class PageController extends Controller
 {
     public function home()
     {
-        return view('landing');
+        $heroImage = CmsSetting::get('home_hero_image', 'img/hero-feed.png');
+        return view('landing', compact('heroImage'));
     }
 
     public function show(string $slug)

@@ -3,11 +3,53 @@
 namespace App\Http\Controllers;
 
 use App\Models\CmsPage;
+use App\Models\CmsSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class CmsController extends Controller
 {
+    public function settings()
+    {
+        $heroImage = CmsSetting::get('home_hero_image');
+        return view('cms.settings', compact('heroImage'));
+    }
+
+    public function saveSettings(Request $request)
+    {
+        $request->validate([
+            'hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'remove_hero' => 'nullable|boolean',
+        ]);
+
+        if ($request->boolean('remove_hero')) {
+            $this->deleteCurrentHero();
+            CmsSetting::set('home_hero_image', null);
+            return redirect('/cms/settings')->with('status', 'Hero-billede fjernet.');
+        }
+
+        if ($request->hasFile('hero_image')) {
+            $this->deleteCurrentHero();
+            $file = $request->file('hero_image');
+            $name = 'hero-'.now()->format('YmdHis').'.'.$file->getClientOriginalExtension();
+            $dest = public_path('img/uploads');
+            if (!is_dir($dest)) mkdir($dest, 0755, true);
+            $file->move($dest, $name);
+            CmsSetting::set('home_hero_image', 'img/uploads/'.$name);
+        }
+
+        return redirect('/cms/settings')->with('status', 'Indstillinger gemt.');
+    }
+
+    private function deleteCurrentHero(): void
+    {
+        $current = CmsSetting::get('home_hero_image');
+        if ($current && str_starts_with($current, 'img/uploads/')) {
+            $path = public_path($current);
+            if (is_file($path)) @unlink($path);
+        }
+    }
+
     public function index()
     {
         $pages = CmsPage::orderBy('sort_order')->get();

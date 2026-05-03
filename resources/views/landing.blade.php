@@ -96,7 +96,7 @@
         </div>
 
         <div class="hero-right">
-            <img src="{{ asset('img/hero-feed.png') }}" alt="Simbuktu simulerede feeds">
+            <img src="{{ asset($heroImage ?? 'img/hero-feed.png') }}" alt="Simbuktu simulerede feeds">
         </div>
     </section>
 

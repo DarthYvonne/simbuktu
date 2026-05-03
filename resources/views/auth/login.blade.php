@@ -25,7 +25,7 @@
 <body>
 <form class="box" method="POST" action="{{ url('/simulation/login') }}">
   @csrf
-  <div class="logo"><img src="{{ url('/img/slophub-logo.png') }}" alt="SlopHub"></div>
+  <div class="logo"><img src="{{ asset('img/simbuktu-logo.png') }}" alt="Simbuktu"></div>
   <h1>Log ind</h1>
   @if ($errors->any())<div class="err">{{ $errors->first() }}</div>@endif
   <label>Email</label>
