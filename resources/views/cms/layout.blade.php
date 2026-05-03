@@ -60,7 +60,7 @@
         <nav>
             <a href="/cms">Sider</a>
             <a href="/cms/settings">Forside</a>
-            <a href="/" target="_blank">Vis website ↗</a>
+            <a href="/">Vis website</a>
         </nav>
     </div>
     <div class="cms-main">

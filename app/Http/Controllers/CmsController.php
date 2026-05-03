@@ -33,17 +33,27 @@ class CmsController extends Controller
             'reset_home_content'   => 'nullable|boolean',
         ]);
 
-        if ($request->has('hero_headline')) {
-            CmsSetting::set('home_hero_headline',    $request->input('hero_headline'));
-            CmsSetting::set('home_hero_subhead',     $request->input('hero_subhead'));
-            CmsSetting::set('home_hero_button_text', $request->input('hero_button_text'));
-            CmsSetting::set('home_hero_button_url',  $request->input('hero_button_url'));
-        }
-
         if ($request->boolean('remove_hero')) {
             $this->deleteCurrentHero();
             CmsSetting::set('home_hero_image', null);
             return redirect('/cms/settings')->with('status', 'Hero-billede fjernet.');
+        }
+
+        if ($request->boolean('reset_home_content')) {
+            CmsSetting::set('home_content', null);
+            return redirect('/cms/settings')->with('status', 'Indhold nulstillet.');
+        }
+
+        foreach ([
+            'home_hero_headline'    => 'hero_headline',
+            'home_hero_subhead'     => 'hero_subhead',
+            'home_hero_button_text' => 'hero_button_text',
+            'home_hero_button_url'  => 'hero_button_url',
+            'home_content'          => 'home_content',
+        ] as $key => $field) {
+            if ($request->has($field)) {
+                CmsSetting::set($key, $request->input($field));
+            }
         }
 
         if ($request->hasFile('hero_image')) {
@@ -56,13 +66,11 @@ class CmsController extends Controller
             CmsSetting::set('home_hero_image', 'img/uploads/'.$name);
         }
 
-        if ($request->boolean('reset_home_content')) {
-            CmsSetting::set('home_content', null);
-        } elseif ($request->has('home_content')) {
-            CmsSetting::set('home_content', $request->input('home_content'));
+        if ($request->boolean('save_and_preview')) {
+            return redirect('/')->with('status', 'Forside gemt.');
         }
 
-        return redirect('/cms/settings')->with('status', 'Indstillinger gemt.');
+        return redirect('/cms/settings')->with('status', 'Forside gemt.');
     }
 
     private function deleteCurrentHero(): void
