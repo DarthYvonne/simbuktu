@@ -6,10 +6,12 @@
     <title>@yield('title', 'Simbuktu | Troværdige Simulationer')</title>
 
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Stack Sans Headline', system-ui, sans-serif; }
         body { background-color: #ffffff; color: #2c3e50; line-height: 1.5; }
         a { color: inherit; }
 
