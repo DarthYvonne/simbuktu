@@ -21,6 +21,8 @@
   </button>
 </div>
 
+@include('admin._personligheder_tabs')
+
 @if (session('success'))
   <div class="alert alert-success">{{ session('success') }}</div>
 @endif
