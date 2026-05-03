@@ -83,11 +83,16 @@ class PersonaController extends Controller
         $friends = array_values(array_filter(array_map(fn ($fid) => $byId[$fid] ?? null, $friendIds)));
 
         $cover = app(\App\Services\CoverPicker::class)->pickFor($persona);
+        $personaModel = \App\Models\Persona::find($id);
+        $course = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
+        $courseBlueprint = $course?->blueprint;
         return view('admin.personas.show', [
-            'population' => $population,
-            'p'          => $persona,
-            'friends'    => $friends,
-            'cover'      => $cover,
+            'population'      => $population,
+            'p'               => $persona,
+            'friends'         => $friends,
+            'cover'           => $cover,
+            'personaBp'       => $personaModel?->blueprint_id,
+            'courseBlueprint' => $courseBlueprint,
         ]);
     }
 

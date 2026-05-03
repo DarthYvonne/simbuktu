@@ -91,7 +91,16 @@
     @forelse (($p['dimensions'] ?? []) as $d)
       <div class="attr-row"><span>{{ $d['dimension'] ?? '' }}</span><strong>{{ $d['facet'] ?? '' }}</strong></div>
     @empty
-      <div style="font-size:12px; color:#65676b; padding: 6px 0;">Ingen personlighed tilknyttet kurset.</div>
+      <div style="font-size:12px; color:#65676b; padding: 6px 0; line-height: 1.5;">
+        @if ($courseBlueprint && !$personaBp)
+          Denne persona blev genereret før <strong>{{ $courseBlueprint->name }}</strong> blev knyttet til kurset.<br>
+          Slet personaen og generér igen for at få den nye personlighedsstruktur.
+        @elseif ($courseBlueprint && $personaBp && $personaBp != $courseBlueprint->id)
+          Denne persona blev genereret med en anden personlighedsstruktur end den nuværende (<strong>{{ $courseBlueprint->name }}</strong>).
+        @else
+          Ingen personlighed tilknyttet kurset.
+        @endif
+      </div>
     @endforelse
   </div>
 
