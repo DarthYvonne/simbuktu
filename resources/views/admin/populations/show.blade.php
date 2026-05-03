@@ -51,7 +51,7 @@
     <div class="card" style="margin-top: 14px;">
       <label style="display: block; font-weight: 600; font-size: 13px; color: #65676b; margin-bottom: 4px;">Personlighed</label>
       <div style="display: flex; gap: 8px; align-items: stretch;">
-        <select id="bpSelect" onchange="onBpChange(this)"
+        <select id="bpSelect" onchange="onBpChange(this)" data-original="{{ $course->blueprint_id ?? '' }}"
           style="flex: 1; padding: 9px 12px; border: 1px solid #dadde1; border-radius: 6px; font-size: 14px; font-family: inherit;">
           <option value="" {{ $course->blueprint_id ? '' : 'selected' }}>Ingen</option>
           @foreach ($blueprints as $bp)
@@ -79,17 +79,37 @@
 </div>
 
 <script>
+// "+ Ny" is the only branch that needs to act immediately (it creates a blueprint
+// and redirects). Picking an existing blueprint just stages the selection — it's
+// committed when the user presses Gem.
 function onBpChange(sel) {
   if (sel.value === '__new__') {
     const name = prompt('Navn på den nye personlighed:');
-    if (!name || !name.trim()) { sel.value = '{{ $course?->blueprint_id ?? '' }}'; return; }
+    if (!name || !name.trim()) { sel.value = sel.dataset.original; return; }
     document.getElementById('bpNewName').value = name.trim();
     document.getElementById('bpNewForm').submit();
-    return;
   }
-  document.getElementById('bpSetId').value = sel.value;
-  document.getElementById('bpSetForm').submit();
 }
+
+// Hook the population form's submit so the blueprint selection is saved alongside.
+(function () {
+  const popForm = document.querySelector('form.card[action$="populations/{{ $population->id }}"]');
+  const sel     = document.getElementById('bpSelect');
+  if (!popForm || !sel) return;
+
+  popForm.addEventListener('submit', async (e) => {
+    if (sel.value === '__new__' || sel.value === sel.dataset.original) return;
+    e.preventDefault();
+    const setForm = document.getElementById('bpSetForm');
+    const fd = new FormData(setForm);
+    fd.set('blueprint_id', sel.value);
+    try {
+      await fetch(setForm.action, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+    } catch (_) {}
+    sel.dataset.original = sel.value;
+    popForm.submit();
+  });
+})();
 </script>
 
 @endsection
