@@ -179,6 +179,8 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::delete('/blueprints/{blueprint}',              [BlueprintController::class, 'destroy']);
         Route::post('/blueprints/{blueprint}/promote',        [BlueprintController::class, 'promote']);
 
+        Route::get('/api-check', [\App\Http\Controllers\Admin\ApiCheckController::class, 'index']);
+
         Route::get('/usage', [\App\Http\Controllers\Admin\UsageController::class, 'index']);
 
         Route::get('/algorithm', [AlgorithmController::class, 'index']);
