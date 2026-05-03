@@ -121,6 +121,7 @@
       @auth @if (auth()->user()->is_admin)
       <div class="nav-section">Admin</div>
       <a href="{{ url('/simulation/admin/populations') }}" data-nav="admin-populations" class="{{ request()->is('simulation/admin/populations*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-dna"></i></span> Populationer</a>
+      <a href="{{ url('/simulation/admin/blueprint-library') }}" data-nav="admin-blueprint-library" class="{{ request()->is('simulation/admin/blueprint-library*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-layer-group"></i></span> Blueprint-bibliotek</a>
       <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/prompts*') || request()->is('simulation/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
       <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Kursusmanager</a>
       @endif @endauth

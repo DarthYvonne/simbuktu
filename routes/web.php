@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AlgorithmController;
+use App\Http\Controllers\Admin\BlueprintLibraryController;
 use App\Http\Controllers\Admin\ContextController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\PersonaController;
@@ -158,6 +159,12 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
             Route::post('/personlighed/{rule}/reset',  [PersonalityController::class, 'reset']);
             Route::post('/personlighed/reset-all',     [PersonalityController::class, 'resetAll']);
         });
+
+        Route::get('/blueprint-library',                      [BlueprintLibraryController::class, 'index']);
+        Route::post('/blueprint-library',                     [BlueprintLibraryController::class, 'store']);
+        Route::get('/blueprint-library/{parameter}',          [BlueprintLibraryController::class, 'edit']);
+        Route::patch('/blueprint-library/{parameter}',        [BlueprintLibraryController::class, 'update']);
+        Route::delete('/blueprint-library/{parameter}',       [BlueprintLibraryController::class, 'destroy']);
 
         Route::get('/usage', [\App\Http\Controllers\Admin\UsageController::class, 'index']);
 
