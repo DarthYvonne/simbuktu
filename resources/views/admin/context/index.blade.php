@@ -55,90 +55,128 @@
 
 @if ($mode === 'auto')
 
-<div class="ak-card">
-  <div class="ak-row">
-    <div>
-      <h3>Aktuel opsamling</h3>
-      <div class="ak-sub">Distilleret fra DR · TV2 · Politiken (sidste 14 dage).</div>
-    </div>
-    <form method="POST" action="{{ url('/simulation/admin/context/build') }}">
-      @csrf
-      <button class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Lav ny opsamling</button>
-    </form>
-  </div>
+<style>
+.ak-subtabs { display:flex; gap:2px; border-bottom:1px solid #dadde1; margin-bottom:14px; }
+.ak-subtabs button { background:none; border:none; padding:10px 18px; border-bottom:3px solid transparent; color:#65676b; font-weight:600; font-size:14px; cursor:pointer; font-family:inherit; }
+.ak-subtabs button.active { color:#1877f2; border-bottom-color:#1877f2; }
+.ak-pane { display:none; }
+.ak-pane.active { display:block; }
+.ak-headlines .h { padding:6px 0; border-bottom:1px solid #f0f2f5; font-size:13px; }
+.ak-headlines .h:last-child { border:none; }
+.ak-headlines .meta { color:#65676b; font-size:11px; text-transform:uppercase; }
+</style>
 
-  @if (!$digest)
-    <div class="ak-sub" style="padding:8px 0;">Ingen opsamling endnu — klik "Lav ny opsamling".</div>
-  @else
-    @php
-    $ongoing = \App\Services\News\NewsDigester::toArray($digest['ongoing_situations'] ?? []);
-    $breaking = \App\Services\News\NewsDigester::toArray($digest['recent_breaking'] ?? []);
-    @endphp
-    <div class="ak-sub" style="margin-bottom:10px;">Genereret {{ \Carbon\Carbon::parse($digest['generated_at'])->diffForHumans() }} fra {{ $digest['headline_count'] ?? 0 }} overskrifter.</div>
-
-    @if (!empty($ongoing))
-      <div class="ak-bullet-block">
-        <h4>Igangværende</h4>
-        <ul>@foreach ($ongoing as $s)<li>{{ $s }}</li>@endforeach</ul>
-      </div>
-    @endif
-    @if (!empty($breaking))
-      <div class="ak-bullet-block warm">
-        <h4>Senest (1-2 døgn)</h4>
-        <ul>@foreach ($breaking as $s)<li>{{ $s }}</li>@endforeach</ul>
-      </div>
-    @endif
-  @endif
+<div class="ak-subtabs">
+  <button type="button" class="active" data-pane="opsamling">Aktuel opsamling</button>
+  <button type="button" data-pane="raw">Rå overskrifter <span style="color:#9ca3af; font-weight:400;">· {{ $totalHeadlines }}</span></button>
+  <button type="button" data-pane="prompt">Prompt</button>
 </div>
 
-<div class="ak-card">
-  <div class="ak-row" style="margin-bottom:6px;">
-    <div>
-      <h3>Sådan distilleres nyhederne</h3>
-      <div class="ak-sub">Promptet der omdanner overskrifter til opsamlingen ovenfor. Gælder hele systemet.</div>
+<div class="ak-pane active" data-pane="opsamling">
+  <div class="ak-card">
+    <div class="ak-row">
+      <div>
+        <h3>Aktuel opsamling</h3>
+        <div class="ak-sub">Distilleret fra DR · TV2 · Politiken (sidste 14 dage).</div>
+      </div>
+      <form method="POST" action="{{ url('/simulation/admin/context/build') }}">
+        @csrf
+        <button class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Lav ny opsamling</button>
+      </form>
     </div>
-    <div style="display:flex; gap:8px; align-items:center;">
-      @if ($newsOverridden)
-        <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:#dbeafe; color:#1e40af; font-weight:600;">Egen</span>
-      @else
-        <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:#f0f2f5; color:#65676b; font-weight:600;">Standard</span>
+
+    @if (!$digest)
+      <div class="ak-sub" style="padding:8px 0;">Ingen opsamling endnu — klik "Lav ny opsamling".</div>
+    @else
+      @php
+      $ongoing = \App\Services\News\NewsDigester::toArray($digest['ongoing_situations'] ?? []);
+      $breaking = \App\Services\News\NewsDigester::toArray($digest['recent_breaking'] ?? []);
+      @endphp
+      <div class="ak-sub" style="margin-bottom:10px;">Genereret {{ \Carbon\Carbon::parse($digest['generated_at'])->diffForHumans() }} fra {{ $digest['headline_count'] ?? 0 }} overskrifter.</div>
+
+      @if (!empty($ongoing))
+        <div class="ak-bullet-block">
+          <h4>Igangværende</h4>
+          <ul>@foreach ($ongoing as $s)<li>{{ $s }}</li>@endforeach</ul>
+        </div>
       @endif
-      @if ($newsOverridden)
-        <form method="POST" action="{{ url('/simulation/admin/context/news-prompt/reset') }}" onsubmit="return confirm('Nulstil prompt til standard?')">
-          @csrf
-          <button type="submit" style="background:none; border:1px solid #dadde1; border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; color:#65676b;"><i class="fa-solid fa-rotate-left"></i> Standard</button>
-        </form>
+      @if (!empty($breaking))
+        <div class="ak-bullet-block warm">
+          <h4>Senest (1-2 døgn)</h4>
+          <ul>@foreach ($breaking as $s)<li>{{ $s }}</li>@endforeach</ul>
+        </div>
       @endif
-    </div>
+    @endif
   </div>
-  @if (!empty($newsPlaceholders))
-    <div class="ak-pills" style="margin-bottom:8px;">
-      @foreach ($newsPlaceholders as $ph)
-        <span class="ak-pill">@{{{{ $ph }}}}</span>
-      @endforeach
-    </div>
-  @endif
-  <form method="POST" action="{{ url('/simulation/admin/context/news-prompt') }}">
-    @csrf
-    <textarea name="body" class="ak-prompt-textarea">{{ $newsBody }}</textarea>
-    <div class="ak-tip">Når du gemmer kører den nye prompt på næste "Lav ny opsamling".</div>
-    <div style="display:flex; justify-content:flex-end; margin-top:10px;">
-      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Gem prompt</button>
-    </div>
-  </form>
 </div>
 
-<details class="ak-card ak-headlines">
-  <summary>Rå overskrifter — seneste {{ $headlines->count() }} af {{ $totalHeadlines }} i buffer</summary>
-  <div style="margin-top:10px;">
-    @foreach ($headlines as $h)
+<div class="ak-pane ak-headlines" data-pane="raw">
+  <div class="ak-card">
+    <div class="ak-row" style="margin-bottom:8px;">
+      <div>
+        <h3>Rå overskrifter</h3>
+        <div class="ak-sub">Seneste {{ $headlines->count() }} af {{ $totalHeadlines }} i buffer.</div>
+      </div>
+    </div>
+    @forelse ($headlines as $h)
       <div class="h">
         <span class="meta">{{ $h->source }} · {{ $h->published_at?->format('d/m H:i') }}</span>
         <div><a href="{{ $h->url }}" target="_blank" style="color:#1c1e21;">{{ $h->title }}</a></div>
       </div>
-    @endforeach
+    @empty
+      <div class="ak-sub" style="padding:8px 0;">Ingen overskrifter endnu — overskrifter hentes løbende.</div>
+    @endforelse
   </div>
-</details>
+</div>
+
+<div class="ak-pane" data-pane="prompt">
+  <div class="ak-card">
+    <div class="ak-row" style="margin-bottom:6px;">
+      <div>
+        <h3>Sådan distilleres nyhederne</h3>
+        <div class="ak-sub">Promptet der omdanner overskrifter til opsamlingen. Gælder hele systemet.</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        @if ($newsOverridden)
+          <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:#dbeafe; color:#1e40af; font-weight:600;">Egen</span>
+        @else
+          <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:#f0f2f5; color:#65676b; font-weight:600;">Standard</span>
+        @endif
+        @if ($newsOverridden)
+          <form method="POST" action="{{ url('/simulation/admin/context/news-prompt/reset') }}" onsubmit="return confirm('Nulstil prompt til standard?')">
+            @csrf
+            <button type="submit" style="background:none; border:1px solid #dadde1; border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; color:#65676b;"><i class="fa-solid fa-rotate-left"></i> Standard</button>
+          </form>
+        @endif
+      </div>
+    </div>
+    @if (!empty($newsPlaceholders))
+      <div class="ak-pills" style="margin-bottom:8px;">
+        @foreach ($newsPlaceholders as $ph)
+          <span class="ak-pill">@{{{{ $ph }}}}</span>
+        @endforeach
+      </div>
+    @endif
+    <form method="POST" action="{{ url('/simulation/admin/context/news-prompt') }}">
+      @csrf
+      <textarea name="body" class="ak-prompt-textarea">{{ $newsBody }}</textarea>
+      <div class="ak-tip">Når du gemmer kører den nye prompt på næste "Lav ny opsamling".</div>
+      <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Gem prompt</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.ak-subtabs button[data-pane]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.pane;
+    document.querySelectorAll('.ak-subtabs button').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.ak-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === key));
+  });
+});
+</script>
 
 @else
 
