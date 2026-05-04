@@ -53,7 +53,7 @@ class BlueprintLibraryController extends Controller
             'facets'                     => 'required|array|min:2',
             'facets.*.id'                => 'nullable|string|max:64',
             'facets.*.name'              => 'required|string|max:64',
-            'facets.*.text'              => 'required|string|max:5000',
+            'facets.*.text'              => 'nullable|string|max:5000',
             'facets.*.weight'            => 'nullable|integer|min:0|max:100',
             'facets.*.value'             => 'nullable|string|max:64',
         ]);
@@ -72,9 +72,9 @@ class BlueprintLibraryController extends Controller
             fn ($f) => [
                 'id'     => $f['id'] ?? (string) Str::uuid(),
                 'name'   => trim($f['name']),
-                'text'   => trim($f['text']),
+                'text'   => trim((string) ($f['text'] ?? '')),
                 'weight' => (int) ($f['weight'] ?? 0),
-                'value'  => trim($f['value'] ?? '') ?: null,
+                'value'  => trim((string) ($f['value'] ?? '')) ?: null,
             ],
             $data['facets']
         ));

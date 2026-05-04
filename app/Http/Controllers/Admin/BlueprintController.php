@@ -71,7 +71,7 @@ class BlueprintController extends Controller
             'parameters.*.facets'               => 'required|array|min:2',
             'parameters.*.facets.*.id'          => 'nullable|string|max:64',
             'parameters.*.facets.*.name'        => 'required|string|max:64',
-            'parameters.*.facets.*.text'        => 'required|string|max:5000',
+            'parameters.*.facets.*.text'        => 'nullable|string|max:5000',
             'parameters.*.facets.*.weight'      => 'nullable|integer|min:0|max:100',
             'parameters.*.facets.*.value'       => 'nullable|string|max:64',
         ]);
@@ -81,9 +81,9 @@ class BlueprintController extends Controller
                 fn ($f) => [
                     'id'     => $f['id'] ?? (string) Str::uuid(),
                     'name'   => trim($f['name']),
-                    'text'   => trim($f['text']),
+                    'text'   => trim((string) ($f['text'] ?? '')),
                     'weight' => (int) ($f['weight'] ?? 0),
-                    'value'  => trim($f['value'] ?? '') ?: null,
+                    'value'  => trim((string) ($f['value'] ?? '')) ?: null,
                 ],
                 $p['facets']
             ));

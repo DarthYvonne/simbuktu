@@ -117,7 +117,7 @@ function addFacet(name = '', text = '', weight = 0, id = '', value = '') {
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
-    <textarea name="facets[${i}][text]" required rows="4" placeholder="Håndskreven tekst"
+    <textarea name="facets[${i}][text]" rows="4" placeholder="Håndskreven tekst (valgfri på demografi-dimensioner)"
       style="width:100%; padding:8px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
   `;
   wrap.appendChild(div);
