@@ -146,7 +146,7 @@
 
     <div data-pane="prompt" style="display: none;">
       <div style="font-size: 12px; color: #65676b; margin-bottom: 8px; line-height: 1.5;">
-        Sådan ser LLM'en personaen. Felter som <code>{{ '{{post_text}}' }}</code> erstattes med rigtigt indhold ved kald.
+        Sådan ser LLM'en personaen. Felter som <code>@{{post_text}}</code> erstattes med rigtigt indhold ved kald.
       </div>
       <div style="margin-bottom: 14px;">
         <div style="font-weight: 600; font-size: 13px; margin-bottom: 6px;">Kommentar på opslag <span style="color: #65676b; font-weight: 400;">(comment.compose)</span></div>
