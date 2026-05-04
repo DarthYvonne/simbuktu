@@ -31,17 +31,21 @@
 .bp-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
 .bp-side { position: sticky; top: 14px; background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 8px; max-height: calc(100vh - 40px); overflow-y: auto; }
 .bp-side h4 { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 10px 4px; }
-.bp-dim { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: #1c1e21; cursor: pointer; }
-.bp-dim:hover { background: #f0f2f5; }
-.bp-dim.active { background: #e7f3ff; color: #1877f2; font-weight: 600; }
+.bp-dim { display: flex; align-items: center; gap: 6px; padding: 9px 10px; font-size: 13px; color: #1c1e21; cursor: pointer; border-top: 1px solid #f0f2f5; }
+.bp-dim:first-child { border-top: none; }
+.bp-dim:hover { background: #f7f8fa; }
+.bp-dim.active { background: #e7f3ff; color: #1877f2; font-weight: 600; border-radius: 6px; }
+.bp-dim.active + .bp-dim { border-top-color: transparent; }
 .bp-dim .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bp-dim .meta { font-size: 11px; color: #65676b; }
 .bp-dim.active .meta { color: #1877f2; }
 .bp-dim .lib-icon { font-size: 10px; color: #65676b; }
-.bp-side-actions { display: flex; flex-direction: column; gap: 4px; padding: 8px 4px 4px; margin-top: 6px; border-top: 1px solid #f0f2f5; }
+.bp-side-actions { display: flex; flex-direction: column; gap: 4px; padding: 4px 4px 8px; margin-bottom: 4px; border-bottom: 1px solid #f0f2f5; }
 .bp-side-actions button { background: none; border: none; text-align: left; padding: 7px 10px; font-size: 13px; color: #1c1e21; cursor: pointer; border-radius: 6px; font-family: inherit; display: flex; align-items: center; gap: 8px; }
 .bp-side-actions button:hover { background: #f0f2f5; }
 .bp-side-actions button .ico { width: 14px; color: #65676b; }
+.bp-add-facet { background: none; border: none; color: #1877f2; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-family: inherit; }
+.bp-add-facet:hover { background: #e7f3ff; }
 
 /* Picker modal: category-grouped */
 .bp-picker-cat { margin-bottom: 14px; }
@@ -138,12 +142,12 @@
 
 <div class="bp-layout">
   <aside class="bp-side">
-    <h4>Dimensioner</h4>
-    <div id="dim-list"></div>
     <div class="bp-side-actions">
       <button type="button" onclick="openPicker()"><span class="ico"><i class="fa-solid fa-layer-group"></i></span> Fra biblioteket</button>
       <button type="button" onclick="addCustomDimension()"><span class="ico"><i class="fa-solid fa-plus"></i></span> Ny dimension</button>
     </div>
+    <h4>Dimensioner</h4>
+    <div id="dim-list"></div>
   </aside>
 
   <div class="bp-content" id="dim-editor"></div>
@@ -306,7 +310,6 @@ function renderEditor() {
             <input type="checkbox" ${p.show_on_profile ? 'checked' : ''} onchange="updateDim('show_on_profile', this.checked)" style="margin:0;">
             Vis på profil
           </label>
-          <button type="button" onclick="addFacet()" title="Tilføj facet"><i class="fa-solid fa-plus"></i></button>
           <button type="button" onclick="distributeEqually()" title="Fordel vægte jævnt">Fordel jævnt</button>
           <button type="button" onclick="distributeNormal()" title="Normalfordel vægte">Normalfordel</button>
           <button type="button" onclick="removeDim()" style="color:#b91c1c;" title="Fjern dimension"><i class="fa-solid fa-trash"></i></button>
@@ -315,6 +318,7 @@ function renderEditor() {
       <div>${facetRows}</div>
       <div class="bp-card-foot">
         <span class="bp-sum ${sumClass}">${sumLabel}</span>
+        <button type="button" class="bp-add-facet" onclick="addFacet()"><i class="fa-solid fa-plus"></i> Tilføj facet</button>
       </div>
     </div>
   `;
