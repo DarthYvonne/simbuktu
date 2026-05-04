@@ -96,7 +96,7 @@
 const existing = @json($parameter->facets ?? []);
 let facetIdx = 0;
 
-function addFacet(name = '', text = '', weight = 0, id = '', lengthBias = '') {
+function addFacet(name = '', text = '', weight = 0, id = '', value = '') {
   const wrap = document.getElementById('facets');
   const i = facetIdx++;
   const div = document.createElement('div');
@@ -106,15 +106,8 @@ function addFacet(name = '', text = '', weight = 0, id = '', lengthBias = '') {
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
       <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
-      <select name="facets[${i}][length_bias]" title="Bias kommentarlængde for personas der får denne facet"
-        style="padding:6px 8px; border:1px solid #dadde1; border-radius:4px; font-size:12px; font-family:inherit; color:#65676b;">
-        <option value="">Længde: —</option>
-        <option value="very_short">Meget kort</option>
-        <option value="short">Kort</option>
-        <option value="medium">Mellem</option>
-        <option value="long">Lang</option>
-        <option value="very_long">Meget lang</option>
-      </select>
+      <input type="text" name="facets[${i}][value]" placeholder="Værdi (fx 16-24)" title="Demografi: 16-24 = uniform random int. 42 = literal. Tom = facet-navnet."
+        style="width:140px; padding:6px 8px; border:1px solid #dadde1; border-radius:4px; font-size:12px; font-family:inherit;">
       <div style="display:flex; align-items:center; gap:4px;">
         <input type="number" name="facets[${i}][weight]" min="0" max="100" step="1" oninput="updateSum()"
           style="width:64px; padding:6px 8px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit; text-align:right;">
@@ -129,9 +122,9 @@ function addFacet(name = '', text = '', weight = 0, id = '', lengthBias = '') {
   `;
   wrap.appendChild(div);
   div.querySelector('input[name$="[name]"]').value = name;
+  div.querySelector('input[name$="[value]"]').value = value || '';
   div.querySelector('input[type=number]').value = weight;
   div.querySelector('textarea').value = text;
-  div.querySelector('select').value = lengthBias || '';
   updateSum();
 }
 
@@ -193,7 +186,7 @@ function normalWeights(n) {
 }
 
 if (existing.length) {
-  existing.forEach(f => addFacet(f.name ?? '', f.text ?? '', f.weight ?? 0, f.id ?? '', f.length_bias ?? ''));
+  existing.forEach(f => addFacet(f.name ?? '', f.text ?? '', f.weight ?? 0, f.id ?? '', f.value ?? ''));
 } else {
   addFacet(); addFacet();
 }

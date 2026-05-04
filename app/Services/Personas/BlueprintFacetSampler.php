@@ -32,11 +32,30 @@ class BlueprintFacetSampler
                 'facet'           => $facet['name'] ?? '',
                 'text'            => $facet['text'] ?? '',
                 'type'            => $param['type'] ?? 'personality',
-                'length_bias'     => $facet['length_bias'] ?? null,
+                'value'           => $this->resolveValue($facet['value'] ?? null),
                 'show_on_profile' => (bool) ($param['show_on_profile'] ?? false),
             ];
         }
         return $out;
+    }
+
+    /**
+     * Turn a facet value-pattern into the persona's stored exact value.
+     * "16-24" → uniform random int in [16,24]. "42" → 42. Empty → null.
+     * Anything else is passed through verbatim.
+     */
+    private function resolveValue(?string $pattern): int|string|null
+    {
+        if ($pattern === null) return null;
+        $p = trim($pattern);
+        if ($p === '') return null;
+        if (preg_match('/^\d+$/', $p)) return (int) $p;
+        if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $p, $m)) {
+            $a = (int) $m[1]; $b = (int) $m[2];
+            if ($a > $b) [$a, $b] = [$b, $a];
+            return random_int($a, $b);
+        }
+        return $p;
     }
 
     /** Concatenate the sampled facet texts as a Danish bullet list. */

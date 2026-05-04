@@ -126,10 +126,15 @@ class GeneratePersonaJob implements ShouldQueue
         $byDim = [];
         foreach ($sampledFacets as $f) {
             if (($f['type'] ?? 'personality') !== 'demographic') continue;
-            $byDim[mb_strtolower(trim($f['dimension'] ?? ''))] = $f['facet'] ?? null;
+            $val = $f['value'] ?? null;
+            if ($val === null || $val === '') $val = $f['facet'] ?? null;
+            $byDim[mb_strtolower(trim($f['dimension'] ?? ''))] = $val;
         }
         $age = null;
-        if (!empty($byDim['alder']) && preg_match('/\d+/', $byDim['alder'], $m)) {
+        $rawAge = $byDim['alder'] ?? null;
+        if (is_int($rawAge)) {
+            $age = $rawAge;
+        } elseif (is_string($rawAge) && preg_match('/\d+/', $rawAge, $m)) {
             $age = (int) $m[0];
         }
         return [

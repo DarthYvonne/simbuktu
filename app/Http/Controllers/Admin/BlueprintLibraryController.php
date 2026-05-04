@@ -55,7 +55,7 @@ class BlueprintLibraryController extends Controller
             'facets.*.name'              => 'required|string|max:64',
             'facets.*.text'              => 'required|string|max:5000',
             'facets.*.weight'            => 'nullable|integer|min:0|max:100',
-            'facets.*.length_bias'       => 'nullable|in:very_short,short,medium,long,very_long',
+            'facets.*.value'             => 'nullable|string|max:64',
         ]);
         $data['type'] = $data['type'] ?? 'personality';
         $data['default_in_new_blueprints'] = (bool) ($data['default_in_new_blueprints'] ?? false);
@@ -70,11 +70,11 @@ class BlueprintLibraryController extends Controller
         }
         $data['facets'] = array_values(array_map(
             fn ($f) => [
-                'id'          => $f['id'] ?? (string) Str::uuid(),
-                'name'        => trim($f['name']),
-                'text'        => trim($f['text']),
-                'weight'      => (int) ($f['weight'] ?? 0),
-                'length_bias' => $f['length_bias'] ?: null,
+                'id'     => $f['id'] ?? (string) Str::uuid(),
+                'name'   => trim($f['name']),
+                'text'   => trim($f['text']),
+                'weight' => (int) ($f['weight'] ?? 0),
+                'value'  => trim($f['value'] ?? '') ?: null,
             ],
             $data['facets']
         ));

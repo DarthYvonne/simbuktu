@@ -55,32 +55,9 @@ class CommentPromptBuilder
 
     private function targetLength(array $persona, bool $isReply): string
     {
-        // Length comes from the strongest length_bias on any of the persona's sampled facets.
-        // No bias on any facet → 'medium' baseline.
-        $bias = $this->strongestLengthBias($persona['dimensions'] ?? []);
-        [$min, $max] = match ($bias) {
-            'very_short' => [2, 12],
-            'short'      => [5, 25],
-            'long'       => [40, 120],
-            'very_long'  => [80, 220],
-            default      => [10, 40],
-        };
+        [$min, $max] = [10, 40];
         if ($isReply) { $max = max($min + 2, (int) ($max * 0.7)); }
         $target = random_int($min, max($min, $max));
-        return $target <= 5 ? "{$target} (meget kort)" : (string) $target;
-    }
-
-    private function strongestLengthBias(array $dimensions): ?string
-    {
-        $rank = ['very_short' => 0, 'short' => 1, 'medium' => 2, 'long' => 3, 'very_long' => 4];
-        $picked = null;
-        $pickedDist = -1;
-        foreach ($dimensions as $d) {
-            $b = $d['length_bias'] ?? null;
-            if (!$b || !isset($rank[$b])) continue;
-            $dist = abs($rank[$b] - 2); // distance from 'medium' — strongest bias wins
-            if ($dist > $pickedDist) { $picked = $b; $pickedDist = $dist; }
-        }
-        return $picked;
+        return (string) $target;
     }
 }

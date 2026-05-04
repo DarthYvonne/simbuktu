@@ -58,7 +58,7 @@ class PersonaResolver
                 'facet'           => $facet['name'] ?? '',
                 'text'            => $facet['text'] ?? '',
                 'type'            => $param['type'] ?? 'personality',
-                'length_bias'     => $facet['length_bias'] ?? null,
+                'value'           => $d['value'] ?? null, // sticky exact value (rolled at gen time)
                 'show_on_profile' => (bool) ($param['show_on_profile'] ?? false),
             ];
         }
@@ -96,7 +96,8 @@ class PersonaResolver
             if (($r['type'] ?? 'personality') !== 'demographic') continue;
             $key = mb_strtolower(trim($r['dimension'] ?? ''));
             if ($key === '') continue;
-            $val = $r['facet'] ?? null;
+            $val = $this->displayValue($r);
+            if ($val === '') $val = null;
             $out[$key] = $val;
             if (isset($aliases[$key])) $out[$aliases[$key]] = $val;
         }
@@ -121,10 +122,18 @@ class PersonaResolver
         foreach ($resolvedDimensions as $r) {
             if (($r['type'] ?? 'personality') !== 'demographic') continue;
             $dim = trim((string) ($r['dimension'] ?? ''));
-            $val = trim((string) ($r['facet'] ?? ''));
+            $val = $this->displayValue($r);
             if ($dim !== '' && $val !== '') $lines[] = "{$dim}: {$val}";
         }
         return $lines ? '- ' . implode("\n- ", $lines) : '';
+    }
+
+    /** Persona-stored exact value if set, else the live facet name. */
+    public function displayValue(array $resolvedDimension): string
+    {
+        $v = $resolvedDimension['value'] ?? null;
+        if ($v !== null && $v !== '') return (string) $v;
+        return trim((string) ($resolvedDimension['facet'] ?? ''));
     }
 
     private function loadBlueprint(?int $id): ?Blueprint

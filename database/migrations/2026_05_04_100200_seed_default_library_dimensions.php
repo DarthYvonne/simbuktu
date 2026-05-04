@@ -89,29 +89,29 @@ return new class extends Migration
                 ['name' => 'ikke-vestlig indvandrer/efterkommer',  'text' => '', 'weight' => 10],
             ]],
 
-            // --- Personality (with length_bias, replacing the old keyword grep) ---
+            // --- Personality ---
             ['name' => 'Konflikthåndtering', 'category' => 'sprog_adfaerd', 'type' => 'personality', 'sort_order' => 100,
-             'description' => 'Hvordan personen agerer i konflikter — påvirker tone og kommentarlængde.',
+             'description' => 'Hvordan personen agerer i konflikter.',
              'facets' => [
-                ['name' => 'troll-toner',           'text' => 'driller, provokerer for sjov, kort og giftig — gerne med ironi og emojis', 'weight' => 10, 'length_bias' => 'very_short'],
-                ['name' => 'undvigende',            'text' => 'undgår direkte konflikt, mumler, halve sætninger, vag', 'weight' => 25, 'length_bias' => 'short'],
-                ['name' => 'passiv-aggressiv',      'text' => 'vrede pakket ind i høflighed — sukker, "bare en lille bemærkning", subtile stik', 'weight' => 25, 'length_bias' => 'short'],
-                ['name' => 'direkte konfronterende','text' => 'siger sin mening lige ud, uden filter — kan være hård men ærlig', 'weight' => 25, 'length_bias' => 'medium'],
-                ['name' => 'saglig-insisterende',   'text' => 'argumenterer udførligt og logisk, henviser til fakta, vil have det sidste ord', 'weight' => 15, 'length_bias' => 'long'],
+                ['name' => 'troll-toner',           'text' => 'driller, provokerer for sjov, kort og giftig — gerne med ironi og emojis', 'weight' => 10],
+                ['name' => 'undvigende',            'text' => 'undgår direkte konflikt, mumler, halve sætninger, vag', 'weight' => 25],
+                ['name' => 'passiv-aggressiv',      'text' => 'vrede pakket ind i høflighed — sukker, "bare en lille bemærkning", subtile stik', 'weight' => 25],
+                ['name' => 'direkte konfronterende','text' => 'siger sin mening lige ud, uden filter — kan være hård men ærlig', 'weight' => 25],
+                ['name' => 'saglig-insisterende',   'text' => 'argumenterer udførligt og logisk, henviser til fakta, vil have det sidste ord', 'weight' => 15],
             ]],
             ['name' => 'Sprogregister', 'category' => 'sprog_adfaerd', 'type' => 'personality', 'sort_order' => 110,
              'description' => 'Hvilket sprog personen bruger — slang, hverdag, akademisk.',
              'facets' => [
-                ['name' => 'slang-tungt',  'text' => 'bruger slang og forkortelser ("sq", "ka", "mig" i stedet for "jeg"), ufuldstændige sætninger', 'weight' => 30, 'length_bias' => 'short'],
-                ['name' => 'hverdagsdansk','text' => 'almindeligt talesprog, lidt sjusket, ikke pertentlig med kommaer', 'weight' => 55, 'length_bias' => 'medium'],
-                ['name' => 'akademisk',    'text' => 'korrekt og præcist sprog, hele sætninger, gerne lange og struktureret', 'weight' => 15, 'length_bias' => 'long'],
+                ['name' => 'slang-tungt',  'text' => 'bruger slang og forkortelser ("sq", "ka", "mig" i stedet for "jeg"), ufuldstændige sætninger', 'weight' => 30],
+                ['name' => 'hverdagsdansk','text' => 'almindeligt talesprog, lidt sjusket, ikke pertentlig med kommaer', 'weight' => 55],
+                ['name' => 'akademisk',    'text' => 'korrekt og præcist sprog, hele sætninger, gerne lange og struktureret', 'weight' => 15],
             ]],
             ['name' => 'Emoji-brug', 'category' => 'sprog_adfaerd', 'type' => 'personality', 'sort_order' => 120,
-             'description' => 'Hvor meget personen bruger emojis — påvirker stil og længde.',
+             'description' => 'Hvor meget personen bruger emojis.',
              'facets' => [
                 ['name' => 'ingen emoji',  'text' => 'bruger ikke emojis', 'weight' => 30],
-                ['name' => 'sparsom emoji','text' => 'enkelte emojis, mest 😂 eller 🙄', 'weight' => 50, 'length_bias' => 'short'],
-                ['name' => 'emoji-rigt',   'text' => 'mange emojis, gerne flere i træk, og VERSALER til at understrege', 'weight' => 20, 'length_bias' => 'very_short'],
+                ['name' => 'sparsom emoji','text' => 'enkelte emojis, mest 😂 eller 🙄', 'weight' => 50],
+                ['name' => 'emoji-rigt',   'text' => 'mange emojis, gerne flere i træk, og VERSALER til at understrege', 'weight' => 20],
             ]],
         ];
     }
