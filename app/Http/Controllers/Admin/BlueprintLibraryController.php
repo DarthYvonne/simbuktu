@@ -44,14 +44,18 @@ class BlueprintLibraryController extends Controller
     private function validatePayload(Request $request, ?int $ignoreId = null): array
     {
         $data = $request->validate([
-            'name'            => ['required', 'string', 'max:64'],
-            'category'        => 'nullable|string|max:64',
-            'description'     => 'nullable|string|max:500',
-            'facets'          => 'required|array|min:2',
-            'facets.*.name'   => 'required|string|max:64',
-            'facets.*.text'   => 'required|string|max:5000',
-            'facets.*.weight' => 'nullable|integer|min:0|max:100',
+            'name'                       => ['required', 'string', 'max:64'],
+            'category'                   => 'nullable|string|max:64',
+            'description'                => 'nullable|string|max:500',
+            'type'                       => 'nullable|in:personality,demographic',
+            'default_in_new_blueprints'  => 'nullable|boolean',
+            'facets'                     => 'required|array|min:2',
+            'facets.*.name'              => 'required|string|max:64',
+            'facets.*.text'              => 'required|string|max:5000',
+            'facets.*.weight'            => 'nullable|integer|min:0|max:100',
         ]);
+        $data['type'] = $data['type'] ?? 'personality';
+        $data['default_in_new_blueprints'] = (bool) ($data['default_in_new_blueprints'] ?? false);
         $exists = LibraryParameter::where('name', $data['name'])
             ->where('category', $data['category'] ?? null)
             ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))

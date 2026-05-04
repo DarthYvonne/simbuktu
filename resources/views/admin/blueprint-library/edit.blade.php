@@ -49,11 +49,26 @@
         <option value="subkultur" {{ $cat === 'subkultur' ? 'selected' : '' }}>Subkultur</option>
       </select>
     </div>
-    <div>
+    <div style="margin-bottom:14px;">
       <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Beskrivelse</label>
       <input type="text" name="description" value="{{ old('description', $parameter->description) }}"
         placeholder="Kort forklaring til biblioteks-pickeren"
         style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+    </div>
+    <div style="display:flex; gap:18px; align-items:flex-end;">
+      <div style="flex:1;">
+        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Type</label>
+        @php $type = old('type', $parameter->type ?? 'personality'); @endphp
+        <select name="type" style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+          <option value="personality" {{ $type === 'personality' ? 'selected' : '' }}>Personlighed (facet-tekst farver LLM'ens stemme)</option>
+          <option value="demographic" {{ $type === 'demographic' ? 'selected' : '' }}>Demografi (facet-navn er værdien — fx alder, region)</option>
+        </select>
+      </div>
+      <label style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:#f0f2f5; border-radius:6px; cursor:pointer; font-size:13px; user-select:none;">
+        <input type="hidden" name="default_in_new_blueprints" value="0">
+        <input type="checkbox" name="default_in_new_blueprints" value="1" {{ old('default_in_new_blueprints', $parameter->default_in_new_blueprints) ? 'checked' : '' }}>
+        <span><strong>Medtag som standard</strong> i nye blueprints</span>
+      </label>
     </div>
   </div>
 

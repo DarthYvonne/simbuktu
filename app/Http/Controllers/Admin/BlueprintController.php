@@ -23,7 +23,24 @@ class BlueprintController extends Controller
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
-        $data['parameters'] = [];
+        $defaults = LibraryParameter::where('default_in_new_blueprints', true)
+            ->orderBy('sort_order')->orderBy('name')
+            ->get(['id', 'name', 'description', 'type', 'facets']);
+        $data['parameters'] = $defaults->map(fn ($lib) => [
+            'name'                 => $lib->name,
+            'description'          => $lib->description,
+            'type'                 => $lib->type ?? 'personality',
+            'library_parameter_id' => $lib->id,
+            'show_on_profile'      => false,
+            'facets'               => array_map(
+                fn ($f) => [
+                    'name'   => $f['name'] ?? '',
+                    'text'   => $f['text'] ?? '',
+                    'weight' => (int) ($f['weight'] ?? 0),
+                ],
+                $lib->facets ?? []
+            ),
+        ])->all();
         $data['created_by'] = Auth::id();
         $blueprint = Blueprint::create($data);
         return redirect("/simulation/admin/blueprints/{$blueprint->id}")->with('success', 'Personlighed oprettet.');

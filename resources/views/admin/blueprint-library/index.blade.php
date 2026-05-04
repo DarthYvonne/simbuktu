@@ -46,6 +46,12 @@ $catLabels = [
             <a href="{{ url('/simulation/admin/blueprint-library/'.$p->id) }}"
                style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #dadde1; border-radius:8px; padding:10px 14px; text-decoration:none; color:inherit;">
               <span style="font-weight:600; font-size:14px; color:#1c1e21;">{{ $p->name }}</span>
+              @if ($p->type === 'demographic')
+                <span style="font-size:11px; padding:2px 7px; border-radius:10px; background:#e7f3ff; color:#1877f2; font-weight:600;">Demografi</span>
+              @endif
+              @if ($p->default_in_new_blueprints)
+                <span style="font-size:11px; padding:2px 7px; border-radius:10px; background:#dcfce7; color:#166534; font-weight:600;" title="Indsættes som standard i nye blueprints"><i class="fa-solid fa-check"></i> Standard</span>
+              @endif
               @if ($p->description)
                 <span style="color:#65676b; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;">{{ $p->description }}</span>
               @endif
@@ -83,6 +89,20 @@ $catLabels = [
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Beskrivelse</label>
         <input type="text" name="description" placeholder="Kort forklaring til biblioteks-pickeren"
           style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="margin-bottom:14px; display:flex; gap:12px; align-items:flex-end;">
+        <div style="flex:1;">
+          <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Type</label>
+          <select name="type" style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+            <option value="personality">Personlighed</option>
+            <option value="demographic">Demografi (facet-navn er værdien)</option>
+          </select>
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; padding:9px 10px; background:#f0f2f5; border-radius:6px; cursor:pointer; font-size:12px; user-select:none;">
+          <input type="hidden" name="default_in_new_blueprints" value="0">
+          <input type="checkbox" name="default_in_new_blueprints" value="1">
+          <span>Medtag som standard</span>
+        </label>
       </div>
       <div style="margin-bottom:14px;">
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:6px;">Facetter (mindst 2) *</label>
