@@ -96,12 +96,13 @@
 const existing = @json($parameter->facets ?? []);
 let facetIdx = 0;
 
-function addFacet(name = '', text = '', weight = 0) {
+function addFacet(name = '', text = '', weight = 0, id = '') {
   const wrap = document.getElementById('facets');
   const i = facetIdx++;
   const div = document.createElement('div');
   div.style.cssText = 'border:1px solid #dadde1; border-radius:6px; padding:10px; margin-bottom:8px; background:#f8f9fa;';
   div.innerHTML = `
+    <input type="hidden" name="facets[${i}][id]" value="${id}">
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
       <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
@@ -182,7 +183,7 @@ function normalWeights(n) {
 }
 
 if (existing.length) {
-  existing.forEach(f => addFacet(f.name ?? '', f.text ?? '', f.weight ?? 0));
+  existing.forEach(f => addFacet(f.name ?? '', f.text ?? '', f.weight ?? 0, f.id ?? ''));
 } else {
   addFacet(); addFacet();
 }

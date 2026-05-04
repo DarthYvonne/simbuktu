@@ -7,6 +7,7 @@ use App\Models\Blueprint;
 use App\Models\LibraryParameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BlueprintController extends Controller
 {
@@ -27,6 +28,7 @@ class BlueprintController extends Controller
             ->orderBy('sort_order')->orderBy('name')
             ->get(['id', 'name', 'description', 'type', 'facets']);
         $data['parameters'] = $defaults->map(fn ($lib) => [
+            'id'                   => (string) Str::uuid(),
             'name'                 => $lib->name,
             'description'          => $lib->description,
             'type'                 => $lib->type ?? 'personality',
@@ -34,6 +36,7 @@ class BlueprintController extends Controller
             'show_on_profile'      => false,
             'facets'               => array_map(
                 fn ($f) => [
+                    'id'     => (string) Str::uuid(),
                     'name'   => $f['name'] ?? '',
                     'text'   => $f['text'] ?? '',
                     'weight' => (int) ($f['weight'] ?? 0),
@@ -59,11 +62,14 @@ class BlueprintController extends Controller
             'name'                              => 'required|string|max:255',
             'description'                       => 'nullable|string',
             'parameters'                        => 'array',
+            'parameters.*.id'                   => 'nullable|string|max:64',
             'parameters.*.name'                 => 'required|string|max:64',
             'parameters.*.description'          => 'nullable|string|max:500',
+            'parameters.*.type'                 => 'nullable|in:personality,demographic',
             'parameters.*.library_parameter_id' => 'nullable|integer',
             'parameters.*.show_on_profile'      => 'nullable|boolean',
             'parameters.*.facets'               => 'required|array|min:2',
+            'parameters.*.facets.*.id'          => 'nullable|string|max:64',
             'parameters.*.facets.*.name'        => 'required|string|max:64',
             'parameters.*.facets.*.text'        => 'required|string|max:5000',
             'parameters.*.facets.*.weight'      => 'nullable|integer|min:0|max:100',
@@ -72,6 +78,7 @@ class BlueprintController extends Controller
         $data['parameters'] = array_values(array_map(function ($p, $i) use (&$errors) {
             $facets = array_values(array_map(
                 fn ($f) => [
+                    'id'     => $f['id'] ?? (string) Str::uuid(),
                     'name'   => trim($f['name']),
                     'text'   => trim($f['text']),
                     'weight' => (int) ($f['weight'] ?? 0),
@@ -83,8 +90,10 @@ class BlueprintController extends Controller
                 $errors["parameters.$i.facets"] = 'Summen af vægte for "'.($p['name'] ?: 'unavngivet').'" overstiger 100 % (er '.$sum.' %).';
             }
             return [
+                'id'                   => $p['id'] ?? (string) Str::uuid(),
                 'name'                 => trim($p['name']),
                 'description'          => $p['description'] ?? null,
+                'type'                 => $p['type'] ?? 'personality',
                 'library_parameter_id' => $p['library_parameter_id'] ?? null,
                 'show_on_profile'      => (bool) ($p['show_on_profile'] ?? false),
                 'facets'               => $facets,

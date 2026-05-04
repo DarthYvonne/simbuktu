@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LibraryParameter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class BlueprintLibraryController extends Controller
@@ -50,6 +51,7 @@ class BlueprintLibraryController extends Controller
             'type'                       => 'nullable|in:personality,demographic',
             'default_in_new_blueprints'  => 'nullable|boolean',
             'facets'                     => 'required|array|min:2',
+            'facets.*.id'                => 'nullable|string|max:64',
             'facets.*.name'              => 'required|string|max:64',
             'facets.*.text'              => 'required|string|max:5000',
             'facets.*.weight'            => 'nullable|integer|min:0|max:100',
@@ -67,6 +69,7 @@ class BlueprintLibraryController extends Controller
         }
         $data['facets'] = array_values(array_map(
             fn ($f) => [
+                'id'     => $f['id'] ?? (string) Str::uuid(),
                 'name'   => trim($f['name']),
                 'text'   => trim($f['text']),
                 'weight' => (int) ($f['weight'] ?? 0),

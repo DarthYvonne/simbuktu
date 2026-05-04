@@ -423,11 +423,14 @@ function buildFormData() {
   fd.append('name', document.getElementById('bp-name').value);
   fd.append('description', document.getElementById('bp-description').value);
   state.parameters.forEach((p, i) => {
+    if (p.id) fd.append(`parameters[${i}][id]`, p.id);
     fd.append(`parameters[${i}][name]`, p.name);
     fd.append(`parameters[${i}][description]`, p.description ?? '');
+    fd.append(`parameters[${i}][type]`, p.type ?? 'personality');
     if (p.library_parameter_id) fd.append(`parameters[${i}][library_parameter_id]`, p.library_parameter_id);
     fd.append(`parameters[${i}][show_on_profile]`, p.show_on_profile ? 1 : 0);
     p.facets.forEach((f, j) => {
+      if (f.id) fd.append(`parameters[${i}][facets][${j}][id]`, f.id);
       fd.append(`parameters[${i}][facets][${j}][name]`, f.name);
       fd.append(`parameters[${i}][facets][${j}][text]`, f.text);
       fd.append(`parameters[${i}][facets][${j}][weight]`, f.weight ?? 0);
