@@ -69,9 +69,9 @@
 .bp-card-head .actions button:hover { background: #fff; color: #1c1e21; }
 .bp-card-head .actions .profile-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #65676b; cursor: pointer; padding: 5px 8px; border: 1px solid #dadde1; border-radius: 6px; user-select: none; }
 .bp-card-head .actions .profile-toggle:hover { background: #fff; color: #1c1e21; }
-.bp-card-head .meta .dim-name-wrap { display: flex; align-items: center; gap: 4px; max-width: 480px; }
-.bp-card-head .meta .dim-name-wrap .dim-name { flex: 1; }
-.bp-card-head .meta .dim-name-lib { color: #65676b; font-size: 13px; flex-shrink: 0; padding-right: 4px; }
+.bp-card-head .meta .dim-name-wrap { display: flex; align-items: center; gap: 6px; }
+.bp-card-head .meta .dim-name-wrap .dim-name { width: auto; min-width: 160px; max-width: 480px; field-sizing: content; }
+.bp-card-head .meta .dim-name-lib { color: #65676b; font-size: 13px; flex-shrink: 0; }
 
 .bp-facet { display: grid; grid-template-columns: 180px 90px 1fr auto; gap: 12px; padding: 12px 16px; border-top: 1px solid #f0f2f5; align-items: start; }
 .bp-facet:first-child { border-top: none; }
