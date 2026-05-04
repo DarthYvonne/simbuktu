@@ -123,7 +123,7 @@
       <a href="{{ url('/simulation/admin/populations') }}" data-nav="admin-populations" class="{{ request()->is('simulation/admin/populations*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-dna"></i></span> Populationer</a>
       @php $personlighederActive = request()->is('simulation/admin/blueprints*') || request()->is('simulation/admin/blueprint-library*'); @endphp
       <a href="{{ url('/simulation/admin/blueprints') }}" data-nav="admin-personligheder" class="{{ $personlighederActive ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-id-card"></i></span> Personligheder</a>
-      <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/prompts*') || request()->is('simulation/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
+      <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/context*') || request()->is('simulation/admin/api-check*') || request()->is('simulation/admin/usage*') || request()->is('simulation/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
       <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Kursusmanager</a>
       @endif @endauth
     </nav>

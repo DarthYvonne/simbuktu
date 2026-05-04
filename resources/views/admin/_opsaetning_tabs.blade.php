@@ -2,7 +2,6 @@
 $tabs = [
   ['Simulation', url('/simulation/admin/algorithm'), 'simulation/admin/algorithm'],
   ['Aktuel kontekst', url('/simulation/admin/context'), 'simulation/admin/context'],
-  ['Prompts', url('/simulation/admin/prompts'), 'simulation/admin/prompts'],
   ['API-tjek', url('/simulation/admin/api-check'), 'simulation/admin/api-check'],
   ['Forbrug', url('/simulation/admin/usage'), 'simulation/admin/usage'],
 ];

@@ -193,6 +193,8 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::post('/context/mode', [ContextController::class, 'setMode']);
         Route::post('/context/manual', [ContextController::class, 'saveManual']);
         Route::post('/context/build', [ContextController::class, 'buildDigest']);
+        Route::post('/context/news-prompt', [ContextController::class, 'saveNewsPrompt']);
+        Route::post('/context/news-prompt/reset', [ContextController::class, 'resetNewsPrompt']);
 
         Route::get('/prompts/{key?}', [PromptController::class, 'index']);
         Route::patch('/prompts/{prompt}', [PromptController::class, 'update']);

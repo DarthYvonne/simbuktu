@@ -16,78 +16,125 @@
 
 @php $mode = $course->context_mode ?? 'auto'; @endphp
 
-<form method="POST" action="{{ url('/simulation/admin/context/mode') }}" class="card">
-  @csrf
-  <h3 style="margin-bottom: 10px;">Hvilken kontekst skal personas reagere ud fra?</h3>
-  <p style="color: #65676b; font-size: 13px; margin-bottom: 12px;">Valget gælder for dette kursus. Injiceres i alle prompts der styrer persona-reaktioner.</p>
-  <label style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid {{ $mode === 'auto' ? '#1877f2' : '#dadde1' }}; border-radius: 10px; margin-bottom: 10px; cursor: pointer;">
-    <input type="radio" name="context_mode" value="auto" {{ $mode === 'auto' ? 'checked' : '' }} onchange="this.form.submit()">
-    <div>
-      <strong>Automatisk — nyheds-digest</strong>
-      <div style="font-size: 13px; color: #65676b; line-height: 1.5;">Systemet henter overskrifter fra DR + TV2 + Politiken hver 30. minut. Hver 6. time distilleres de 14 dage til en "hvad fylder i dansk offentlighed"-opsummering. Personas refererer naturligt aktuelle begivenheder.</div>
+<style>
+.ak-card { background:#fff; border:1px solid #dadde1; border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+.ak-card h3 { margin:0 0 4px; font-size:15px; }
+.ak-sub { color:#65676b; font-size:13px; line-height:1.5; }
+.ak-mode-tabs { display:inline-flex; gap:2px; background:#f0f2f5; border-radius:8px; padding:3px; margin-bottom:14px; }
+.ak-mode-tabs button { background:none; border:none; padding:7px 16px; border-radius:6px; font-size:13px; font-weight:600; color:#65676b; cursor:pointer; font-family:inherit; }
+.ak-mode-tabs button.active { background:#fff; color:#1c1e21; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
+.ak-row { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.ak-pills { display:flex; gap:6px; flex-wrap:wrap; font-size:11px; }
+.ak-pill { display:inline-block; padding:2px 8px; border-radius:9px; background:#f0f2f5; color:#65676b; font-weight:600; font-family:monospace; }
+.ak-pill.active { background:#dbeafe; color:#1e40af; }
+.ak-bullet-block { background:#f7f8fa; border-radius:8px; padding:10px 14px; margin-bottom:8px; }
+.ak-bullet-block h4 { font-size:11px; font-weight:700; color:#65676b; text-transform:uppercase; letter-spacing:0.4px; margin:0 0 4px; }
+.ak-bullet-block ul { margin:0 0 0 18px; font-size:14px; line-height:1.55; }
+.ak-bullet-block.warm { background:#fef9e7; }
+.ak-bullet-block.warm h4 { color:#92400e; }
+.ak-prompt-textarea { width:100%; border:1px solid #dadde1; border-radius:6px; padding:12px 14px; font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace; font-size:12px; line-height:1.55; resize:vertical; min-height:300px; box-sizing:border-box; }
+.ak-prompt-textarea:focus { outline:none; border-color:#1877f2; box-shadow:0 0 0 2px #e7f3ff; }
+.ak-headlines summary { cursor:pointer; font-weight:600; font-size:13px; color:#65676b; padding:4px 0; }
+.ak-headlines .h { padding:6px 0; border-bottom:1px solid #f0f2f5; font-size:13px; }
+.ak-headlines .h:last-child { border:none; }
+.ak-headlines .meta { color:#65676b; font-size:11px; text-transform:uppercase; }
+.ak-tip { color:#65676b; font-size:12px; margin-top:8px; line-height:1.5; }
+</style>
+
+<div class="ak-card">
+  <h3>Hvilken kontekst skal personas reagere ud fra?</h3>
+  <div class="ak-sub">Vælg dette kursus' samtid. Indsættes som <code style="background:#f0f2f5; padding:1px 5px; border-radius:3px;">@{{current_context}}</code> i alle persona-prompts.</div>
+  <form method="POST" action="{{ url('/simulation/admin/context/mode') }}" id="mode-form" style="margin-top:12px;">
+    @csrf
+    <div class="ak-mode-tabs">
+      <button type="submit" name="context_mode" value="auto"   class="{{ $mode === 'auto'   ? 'active' : '' }}"><i class="fa-solid fa-rss"></i> Automatisk nyheds-digest</button>
+      <button type="submit" name="context_mode" value="manual" class="{{ $mode === 'manual' ? 'active' : '' }}"><i class="fa-solid fa-pen-to-square"></i> Manuel fri tekst</button>
     </div>
-  </label>
-  <label style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid {{ $mode === 'manual' ? '#1877f2' : '#dadde1' }}; border-radius: 10px; cursor: pointer;">
-    <input type="radio" name="context_mode" value="manual" {{ $mode === 'manual' ? 'checked' : '' }} onchange="this.form.submit()">
-    <div>
-      <strong>Manuel — fri tekst</strong>
-      <div style="font-size: 13px; color: #65676b; line-height: 1.5;">Du beskriver selv samtiden. Brug hvis du vil simulere en anden tid ("det er 2028, Grønland er uafhængigt"), et fiktivt scenarie, eller en specifik krise.</div>
-    </div>
-  </label>
-</form>
+  </form>
+</div>
 
 @if ($mode === 'auto')
 
-<div class="card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <h3 style="margin: 0;">Aktuel opsamling</h3>
-    <form method="POST" action="{{ url('/simulation/admin/context/build') }}" style="display: inline;">
+<div class="ak-card">
+  <div class="ak-row">
+    <div>
+      <h3>Aktuel opsamling</h3>
+      <div class="ak-sub">Distilleret fra DR · TV2 · Politiken (sidste 14 dage).</div>
+    </div>
+    <form method="POST" action="{{ url('/simulation/admin/context/build') }}">
       @csrf
-      <button class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Lav opsamling</button>
+      <button class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Lav ny opsamling</button>
     </form>
   </div>
 
   @if (!$digest)
-    <div style="color: #65676b; font-size: 13px; padding: 10px 0;">
-      Ingen opsamling endnu. Klik "Lav opsamling" — systemet henter nyheder og distillerer dem automatisk.
-    </div>
+    <div class="ak-sub" style="padding:8px 0;">Ingen opsamling endnu — klik "Lav ny opsamling".</div>
   @else
     @php
     $ongoing = \App\Services\News\NewsDigester::toArray($digest['ongoing_situations'] ?? []);
     $breaking = \App\Services\News\NewsDigester::toArray($digest['recent_breaking'] ?? []);
     @endphp
-    <div style="color: #65676b; font-size: 12px; margin-bottom: 12px;">Genereret {{ \Carbon\Carbon::parse($digest['generated_at'])->diffForHumans() }} fra {{ $digest['headline_count'] ?? 0 }} overskrifter.</div>
+    <div class="ak-sub" style="margin-bottom:10px;">Genereret {{ \Carbon\Carbon::parse($digest['generated_at'])->diffForHumans() }} fra {{ $digest['headline_count'] ?? 0 }} overskrifter.</div>
 
     @if (!empty($ongoing))
-      <div style="background: #f0f2f5; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px;">
-        <div style="font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;">Igangværende</div>
-        <ul style="margin-left: 18px; font-size: 14px; line-height: 1.6;">
-          @foreach ($ongoing as $s)
-            <li>{{ $s }}</li>
-          @endforeach
-        </ul>
+      <div class="ak-bullet-block">
+        <h4>Igangværende</h4>
+        <ul>@foreach ($ongoing as $s)<li>{{ $s }}</li>@endforeach</ul>
       </div>
     @endif
     @if (!empty($breaking))
-      <div style="background: #fef9e7; border-radius: 8px; padding: 12px 14px;">
-        <div style="font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;">Senest (1-2 døgn)</div>
-        <ul style="margin-left: 18px; font-size: 14px; line-height: 1.6;">
-          @foreach ($breaking as $s)
-            <li>{{ $s }}</li>
-          @endforeach
-        </ul>
+      <div class="ak-bullet-block warm">
+        <h4>Senest (1-2 døgn)</h4>
+        <ul>@foreach ($breaking as $s)<li>{{ $s }}</li>@endforeach</ul>
       </div>
     @endif
   @endif
 </div>
 
-<details class="card">
-  <summary style="cursor: pointer; font-weight: 600;">Se seneste {{ $headlines->count() }} rå overskrifter (i alt {{ $totalHeadlines }} i buffer)</summary>
-  <div style="margin-top: 10px;">
+<div class="ak-card">
+  <div class="ak-row" style="margin-bottom:6px;">
+    <div>
+      <h3>Sådan distilleres nyhederne</h3>
+      <div class="ak-sub">Promptet der omdanner overskrifter til opsamlingen ovenfor. Gælder hele systemet.</div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      @if ($newsOverridden)
+        <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:#dbeafe; color:#1e40af; font-weight:600;">Egen</span>
+      @else
+        <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:#f0f2f5; color:#65676b; font-weight:600;">Standard</span>
+      @endif
+      @if ($newsOverridden)
+        <form method="POST" action="{{ url('/simulation/admin/context/news-prompt/reset') }}" onsubmit="return confirm('Nulstil prompt til standard?')">
+          @csrf
+          <button type="submit" style="background:none; border:1px solid #dadde1; border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; color:#65676b;"><i class="fa-solid fa-rotate-left"></i> Standard</button>
+        </form>
+      @endif
+    </div>
+  </div>
+  @if (!empty($newsPlaceholders))
+    <div class="ak-pills" style="margin-bottom:8px;">
+      @foreach ($newsPlaceholders as $ph)
+        <span class="ak-pill">@{{{{ $ph }}}}</span>
+      @endforeach
+    </div>
+  @endif
+  <form method="POST" action="{{ url('/simulation/admin/context/news-prompt') }}">
+    @csrf
+    <textarea name="body" class="ak-prompt-textarea">{{ $newsBody }}</textarea>
+    <div class="ak-tip">Når du gemmer kører den nye prompt på næste "Lav ny opsamling".</div>
+    <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Gem prompt</button>
+    </div>
+  </form>
+</div>
+
+<details class="ak-card ak-headlines">
+  <summary>Rå overskrifter — seneste {{ $headlines->count() }} af {{ $totalHeadlines }} i buffer</summary>
+  <div style="margin-top:10px;">
     @foreach ($headlines as $h)
-      <div style="padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px;">
-        <span style="color: #65676b; font-size: 11px; text-transform: uppercase;">{{ $h->source }} · {{ $h->published_at?->format('d/m H:i') }}</span>
-        <div><a href="{{ $h->url }}" target="_blank" style="color: #1c1e21;">{{ $h->title }}</a></div>
+      <div class="h">
+        <span class="meta">{{ $h->source }} · {{ $h->published_at?->format('d/m H:i') }}</span>
+        <div><a href="{{ $h->url }}" target="_blank" style="color:#1c1e21;">{{ $h->title }}</a></div>
       </div>
     @endforeach
   </div>
@@ -95,12 +142,12 @@
 
 @else
 
-<form method="POST" action="{{ url('/simulation/admin/context/manual') }}" class="card">
+<form method="POST" action="{{ url('/simulation/admin/context/manual') }}" class="ak-card">
   @csrf
-  <h3 style="margin-bottom: 8px;">Manuel kontekst</h3>
-  <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Beskriv samtiden som personerne i dette kursus skal reagere ud fra. Indsættes direkte i alle persona-prompts.</p>
-  <textarea name="manual_context" style="width: 100%; min-height: 260px; padding: 12px 14px; border: 1px solid #dadde1; border-radius: 8px; font-family: inherit; font-size: 14px; line-height: 1.5;" placeholder="F.eks.:&#10;Det er efteråret 2026. Iran og Israel er i åben krig. Danmark har sendt F-35 jetfly...">{{ $course->manual_context }}</textarea>
-  <div style="text-align: right; margin-top: 10px;">
+  <h3>Manuel kontekst</h3>
+  <div class="ak-sub" style="margin-bottom:10px;">Beskriv samtiden personerne skal reagere ud fra. Indsættes direkte i alle persona-prompts.</div>
+  <textarea name="manual_context" class="ak-prompt-textarea" style="font-family:inherit; font-size:14px; min-height:260px;" placeholder="F.eks.:&#10;Det er efteråret 2026. Iran og Israel er i åben krig. Danmark har sendt F-35 jetfly...">{{ $course->manual_context }}</textarea>
+  <div style="display:flex; justify-content:flex-end; margin-top:10px;">
     <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Gem</button>
   </div>
 </form>
