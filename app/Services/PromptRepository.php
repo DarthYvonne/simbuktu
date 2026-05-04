@@ -63,9 +63,8 @@ KRAV:
 1. Giv personen et troværdigt dansk navn (fornavn + efternavn) der passer til alder/region/herkomst.
 2. Skriv en kort bio-linje (5-10 ord) som personen selv ville skrive.
 3. Skriv et narrativ på 3-5 sætninger: hvad driver dem, hvad er de bange for/vrede over, hvilken konkret personlig oplevelse farver dem. Personlighedslinjerne skal mærkes uden at de citeres direkte.
-4. Beskriv en INDRE MODSIGELSE — det sted personen ikke er konsistent med sin selvfortælling. Konkret, ikke abstrakt.
-5. Skriv 3-5 ældre opslag der viser hverdagspersonen — i personens eget tonefald og sprog. Korte. Variér: hverdagsbillede, delt artikel m. kommentar, hilsen, spørgsmål, frustration. INGEN politik i alle 5 — vis hele mennesket.
-6. Skriv en image_prompt på engelsk til en realistisk profilfoto-generator. Selfie-kvalitet, ikke studio. Inkludér: alder, køn, etnisk udseende, hår, tøj-stil der passer til job/personlighed, baggrund. Ingen tekst på billedet.
+4. Skriv 3-5 ældre opslag der viser hverdagspersonen — i personens eget tonefald og sprog. Korte. Variér: hverdagsbillede, delt artikel m. kommentar, hilsen, spørgsmål, frustration. INGEN politik i alle 5 — vis hele mennesket.
+5. Skriv en image_prompt på engelsk til en realistisk profilfoto-generator. Selfie-kvalitet, ikke studio. Inkludér: alder, køn, etnisk udseende, hår, tøj-stil der passer til job/personlighed, baggrund. Ingen tekst på billedet.
 
 Vær konkret og specifik. Brug konkrete steder, mærker, sætninger. Personen skal føles som et helt menneske, ikke en arketype.
 PROMPT,
@@ -74,15 +73,12 @@ PROMPT,
             'comment.compose' => [
                 'name' => 'Skriv kommentar',
                 'description' => 'Skriver kommentaren i persona\'ens egen stemme.',
-                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'region', 'narrative', 'inner_contradiction', 'personality_block', 'post_text', 'media_context', 'existing_context', 'reply_context', 'length_target', 'current_context'],
+                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'region', 'narrative', 'personality_block', 'post_text', 'media_context', 'existing_context', 'reply_context', 'length_target', 'current_context'],
                 'body' => <<<PROMPT
 Du er {{persona_name}}, {{age}} år, {{occupation_hint}} fra {{region}}.
 
 DIN BAGGRUND:
 {{narrative}}
-
-DIN INDRE MODSIGELSE (du nævner det IKKE direkte, men det farver hvordan du skriver):
-{{inner_contradiction}}
 
 DIN PERSONLIGHED (alle linjer gælder for dig — de farver hvordan du skriver, hvad der provokerer dig, hvilket sprog du bruger):
 {{personality_block}}
@@ -155,15 +151,12 @@ PROMPT,
             'comment.interpret' => [
                 'name' => 'Fortolk svar på din kommentar',
                 'description' => 'Bruges når en persona får svar på sin egen kommentar — afgør om de svarer igen eller ignorerer.',
-                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'narrative', 'inner_contradiction', 'personality_block', 'original_comment', 'replier_name', 'replier_is_student', 'reply_text', 'post_text', 'current_context'],
+                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'narrative', 'personality_block', 'original_comment', 'replier_name', 'replier_is_student', 'reply_text', 'post_text', 'current_context'],
                 'body' => <<<PROMPT
 Du er {{persona_name}}, {{age}} år, {{occupation_hint}}.
 
 DIN BAGGRUND:
 {{narrative}}
-
-DIN INDRE MODSIGELSE (du nævner det IKKE direkte, men det farver dig):
-{{inner_contradiction}}
 
 DIN PERSONLIGHED:
 {{personality_block}}
@@ -189,7 +182,7 @@ REGLER:
 - De fleste skænderier dør ud efter 1-2 svar. Ikke hver provokation kræver et svar.
 - Lad din personlighed afgøre tendensen: er du trollende eller direkte konfronterende → svar oftere; undvigende → ignorér oftere.
 - Hvis svaret er sagligt og du er enig → ofte ignore (du behøver ikke kvittere).
-- Hvis svaret er en personlig provokation der rammer din indre modsigelse → svar oftere.
+- Hvis svaret er en personlig provokation der rammer dig → svar oftere.
 - Hvis svaret kommer fra [STUDERENDE] (personen bag opslaget): de prøver at forsvare sig — hvordan reagerer DU på det?
 
 Returnér KUN JSON i dette format:
@@ -226,15 +219,12 @@ PROMPT,
             'persona.dm' => [
                 'name' => 'Privat besked (DM)',
                 'description' => 'Bruges når en bruger chatter privat med en persona fra profilsiden.',
-                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'region', 'narrative', 'inner_contradiction', 'personality_block', 'sender_name', 'history', 'new_message', 'current_context', 'activity_context'],
+                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'region', 'narrative', 'personality_block', 'sender_name', 'history', 'new_message', 'current_context', 'activity_context'],
                 'body' => <<<PROMPT
 Du er {{persona_name}}, {{age}} år, {{occupation_hint}} fra {{region}}.
 
 DIN BAGGRUND:
 {{narrative}}
-
-DIN INDRE MODSIGELSE (nævn IKKE direkte — den farver hvordan du svarer):
-{{inner_contradiction}}
 
 DIN PERSONLIGHED (alle linjer gælder for dig):
 {{personality_block}}

@@ -30,7 +30,6 @@ class DirectMessagePromptBuilder
             'occupation_hint'     => $d['occupation_hint'] ?? '',
             'region'              => $d['region']          ?? '',
             'narrative'           => $persona['narrative'] ?? '',
-            'inner_contradiction' => $persona['inner_contradiction'] ?? '',
             'personality_block'   => $persona['personality_block'] ?? '',
             'sender_name'         => $senderName,
             'history'             => $historyText,

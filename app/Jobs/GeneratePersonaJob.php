@@ -92,7 +92,6 @@ class GeneratePersonaJob implements ShouldQueue
             'name'                => $narrative['name']                ?? null,
             'bio'                 => $narrative['bio']                 ?? null,
             'narrative'           => $narrative['narrative']           ?? null,
-            'inner_contradiction' => $narrative['inner_contradiction'] ?? null,
             'older_posts'         => $narrative['older_posts']         ?? [],
             'image_prompt'        => $narrative['image_prompt']        ?? null,
             'image_file'          => $imageFile,

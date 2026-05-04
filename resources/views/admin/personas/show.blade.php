@@ -81,8 +81,6 @@
     <div class="narrative-box">
       <strong>Hvem er {{ explode(' ', $p['name'])[0] }}?</strong><br>
       {{ $p['narrative'] }}
-      <br><br>
-      <strong>Indre modsigelse:</strong> {{ $p['inner_contradiction'] }}
     </div>
 
   </div>

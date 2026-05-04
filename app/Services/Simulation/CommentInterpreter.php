@@ -31,7 +31,6 @@ class CommentInterpreter
             'age'                 => $persona['demographics']['age']             ?? '',
             'occupation_hint'     => $persona['demographics']['occupation_hint'] ?? '',
             'narrative'           => $persona['narrative'] ?? '',
-            'inner_contradiction' => $persona['inner_contradiction'] ?? '',
             'personality_block'   => $persona['personality_block'] ?? '',
             'original_comment'    => $original->body,
             'replier_name'        => $reply->persona_name,

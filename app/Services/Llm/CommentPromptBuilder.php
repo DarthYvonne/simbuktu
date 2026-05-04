@@ -45,7 +45,6 @@ class CommentPromptBuilder
             'occupation_hint'     => $d['occupation_hint'] ?? '',
             'region'              => $d['region']          ?? '',
             'narrative'           => $persona['narrative'] ?? '',
-            'inner_contradiction' => $persona['inner_contradiction'] ?? '',
             'personality_block'   => $persona['personality_block'] ?? '',
             'post_text'           => $postText,
             'media_context'       => $mediaContext,

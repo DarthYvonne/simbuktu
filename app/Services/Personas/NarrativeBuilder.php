@@ -22,7 +22,6 @@ class NarrativeBuilder
                 'name' => ['type' => 'string'],
                 'bio' => ['type' => 'string'],
                 'narrative' => ['type' => 'string'],
-                'inner_contradiction' => ['type' => 'string'],
                 'older_posts' => [
                     'type' => 'array',
                     'minItems' => 3,
@@ -31,7 +30,7 @@ class NarrativeBuilder
                 ],
                 'image_prompt' => ['type' => 'string'],
             ],
-            'required' => ['name', 'bio', 'narrative', 'inner_contradiction', 'older_posts', 'image_prompt'],
+            'required' => ['name', 'bio', 'narrative', 'older_posts', 'image_prompt'],
         ];
 
         $json = $this->gemini->generateText($prompt, config('gemini.narrative_model'), $schema, [

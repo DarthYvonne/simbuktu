@@ -32,7 +32,6 @@ class BatchReactionDecider
                 'age'                 => $p['demographics']['age']             ?? '',
                 'job'                 => $p['demographics']['occupation_hint'] ?? '',
                 'personlighed'        => $p['personality_block'] ?? '',
-                'inner_contradiction' => $p['inner_contradiction'] ?? '',
             ];
         }
 
