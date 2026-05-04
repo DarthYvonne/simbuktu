@@ -8,13 +8,16 @@ use Illuminate\Support\Collection;
 
 class PersonaRepository
 {
-    public function __construct(private ?int $populationId = null)
+    private PersonaResolver $resolver;
+
+    public function __construct(private ?int $populationId = null, ?PersonaResolver $resolver = null)
     {
+        $this->resolver = $resolver ?? new PersonaResolver();
     }
 
     public function forPopulation(Population $population): static
     {
-        return new static($population->id);
+        return new static($population->id, $this->resolver);
     }
 
     private function query(): \Illuminate\Database\Eloquent\Builder
@@ -28,12 +31,15 @@ class PersonaRepository
 
     public function all(): array
     {
-        return $this->query()->get()->map->toFullArray()->all();
+        return $this->query()->get()
+            ->map(fn ($p) => $this->resolver->resolve($p->toFullArray()))
+            ->all();
     }
 
     public function find(string $id): ?array
     {
-        return Persona::find($id)?->toFullArray();
+        $p = Persona::find($id);
+        return $p ? $this->resolver->resolve($p->toFullArray()) : null;
     }
 
     public function filter(string $q = '', ?string $region = null, ?string $ageBucket = null): Collection
@@ -47,6 +53,6 @@ class PersonaRepository
             $query->whereBetween('age', [$min, $max]);
         }
 
-        return $query->get()->map->toFullArray();
+        return $query->get()->map(fn ($p) => $this->resolver->resolve($p->toFullArray()));
     }
 }

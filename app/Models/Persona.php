@@ -27,6 +27,8 @@ class Persona extends Model
 
     public function toFullArray(): array
     {
-        return $this->persona_data ?? [];
+        $data = $this->persona_data ?? [];
+        $data['blueprint_id'] = $this->blueprint_id;
+        return $data;
     }
 }
