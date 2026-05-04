@@ -106,7 +106,7 @@ function addFacet(name = '', text = '', weight = 0, id = '', value = '') {
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
       <input type="text" name="facets[${i}][name]" required placeholder="Facet-navn (fx lav, anekdotisk)"
         style="flex:1; padding:6px 10px; border:1px solid #dadde1; border-radius:4px; font-size:13px; font-family:inherit;">
-      <input type="text" name="facets[${i}][value]" placeholder="Værdi (fx 16-24)" title="Demografi: 16-24 = uniform random int. 42 = literal. Tom = facet-navnet."
+      <input type="text" name="facets[${i}][value]" placeholder="Værdi (fx 16-24)" title="Demografi: 16-24 = uniform random int. 42 = literal. Tom = facet-navnet." class="facet-value-input"
         style="width:140px; padding:6px 8px; border:1px solid #dadde1; border-radius:4px; font-size:12px; font-family:inherit;">
       <div style="display:flex; align-items:center; gap:4px;">
         <input type="number" name="facets[${i}][weight]" min="0" max="100" step="1" oninput="updateSum()"
@@ -126,6 +126,7 @@ function addFacet(name = '', text = '', weight = 0, id = '', value = '') {
   div.querySelector('input[type=number]').value = weight;
   div.querySelector('textarea').value = text;
   updateSum();
+  updateValueVisibility();
 }
 
 function getWeights() {
@@ -185,11 +186,20 @@ function normalWeights(n) {
   return floored;
 }
 
+function updateValueVisibility() {
+  const isDemo = document.querySelector('select[name="type"]')?.value === 'demographic';
+  document.querySelectorAll('.facet-value-input').forEach(el => {
+    el.style.display = isDemo ? '' : 'none';
+  });
+}
+document.querySelector('select[name="type"]')?.addEventListener('change', updateValueVisibility);
+
 if (existing.length) {
   existing.forEach(f => addFacet(f.name ?? '', f.text ?? '', f.weight ?? 0, f.id ?? '', f.value ?? ''));
 } else {
   addFacet(); addFacet();
 }
+updateValueVisibility();
 </script>
 
 @endsection

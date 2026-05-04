@@ -265,12 +265,13 @@ function renderEditor() {
   if (!p) return;
 
   const facetCount = (p.facets || []).length;
+  const isDemographic = (p.type || 'personality') === 'demographic';
   const facetRows = p.facets.map((f, fi) => `
     <div class="bp-facet" data-fi="${fi}">
       <div class="bp-facet-name">
         <input type="text" value="${escapeHtml(f.name)}" placeholder="Facet-navn (fx lav, anekdotisk)" oninput="updateFacet(${fi}, 'name', this.value)">
-        <input type="text" value="${escapeHtml(f.value ?? '')}" placeholder="Værdi (fx 16-24, 14, eller tom)" oninput="updateFacet(${fi}, 'value', this.value)" title="Demografi: 16-24 = uniform random int. 42 = literal. Tom = brug facet-navnet."
-          style="margin-top:4px; padding:5px 7px; border:1px solid #dadde1; border-radius:4px; font-size:11px; font-family:inherit; color:#1c1e21; width:100%;">
+        ${isDemographic ? `<input type="text" value="${escapeHtml(f.value ?? '')}" placeholder="Værdi (fx 16-24, 14, eller tom)" oninput="updateFacet(${fi}, 'value', this.value)" title="16-24 = uniform random int. 42 = literal. Tom = brug facet-navnet."
+          style="margin-top:4px; padding:5px 7px; border:1px solid #dadde1; border-radius:4px; font-size:11px; font-family:inherit; color:#1c1e21; width:100%;">` : ''}
       </div>
       <div class="bp-facet-weight">
         <input type="number" min="0" max="100" step="1" value="${f.weight ?? 0}" oninput="updateFacet(${fi}, 'weight', this.value)">
