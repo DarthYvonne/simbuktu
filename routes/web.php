@@ -180,6 +180,8 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::post('/blueprints/{blueprint}/promote',        [BlueprintController::class, 'promote']);
         Route::get('/blueprints/{blueprint}/prompts',         [BlueprintController::class, 'editPrompts']);
         Route::patch('/blueprints/{blueprint}/prompts',       [BlueprintController::class, 'updatePrompts']);
+        Route::get('/blueprints/{blueprint}/om',              [BlueprintController::class, 'editOm']);
+        Route::patch('/blueprints/{blueprint}/meta',          [BlueprintController::class, 'updateMeta']);
 
         Route::get('/api-check', [\App\Http\Controllers\Admin\ApiCheckController::class, 'index']);
 

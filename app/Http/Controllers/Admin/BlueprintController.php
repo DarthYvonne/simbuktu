@@ -116,6 +116,21 @@ class BlueprintController extends Controller
         return redirect('/simulation/admin/blueprints')->with('success', 'Personlighed slettet.');
     }
 
+    public function editOm(Blueprint $blueprint)
+    {
+        return view('admin.blueprints.om', compact('blueprint'));
+    }
+
+    public function updateMeta(Request $request, Blueprint $blueprint)
+    {
+        $data = $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+        $blueprint->update($data);
+        return redirect("/simulation/admin/blueprints/{$blueprint->id}/om")->with('success', 'Gemt.');
+    }
+
     public function editPrompts(Blueprint $blueprint)
     {
         $defaults = (new \App\Services\PromptRepository())->defaults();

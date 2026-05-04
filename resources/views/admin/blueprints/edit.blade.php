@@ -1,27 +1,16 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="bp-header">
-  <a href="{{ url('/simulation/admin/blueprints') }}" class="bp-back" title="Tilbage til personligheder"><i class="fa-solid fa-arrow-left"></i></a>
-  <div class="bp-header-meta">
-    <input type="text" id="bp-name" class="bp-name-inline" value="{{ $blueprint->name }}" placeholder="Personlighedens navn">
-    <input type="text" id="bp-description" class="bp-desc-inline" value="{{ $blueprint->description }}" placeholder="Kort beskrivelse (valgfri)">
-  </div>
-  <div class="bp-header-actions">
-    <button type="button" class="btn btn-secondary" style="font-size:12px; color:#b91c1c;"
-      onclick="if(confirm('Slet denne personlighed?')) document.getElementById('delete-form').submit()">
-      <i class="fa-solid fa-trash"></i> Slet
-    </button>
-    <button type="button" class="btn btn-primary" id="save-btn" onclick="saveBlueprint()">
-      <i class="fa-solid fa-floppy-disk"></i> Gem
-    </button>
-  </div>
-</div>
+@include('admin.blueprints._header')
 
-<div class="bp-tabs">
-  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}" class="active">Dimensioner</a>
-  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}">Prompts</a>
-</div>
+@component('admin.blueprints._subtabs', ['blueprint' => $blueprint])
+  <button type="button" class="btn btn-primary" id="save-btn" onclick="saveBlueprint()">
+    <i class="fa-solid fa-floppy-disk"></i> Gem dimensioner
+  </button>
+@endcomponent
+
+<input type="hidden" id="bp-name" value="{{ $blueprint->name }}">
+<input type="hidden" id="bp-description" value="{{ $blueprint->description }}">
 
 <style>
 .bp-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:10px; }
