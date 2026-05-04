@@ -86,6 +86,13 @@ class PersonaController extends Controller
         $personaModel = \App\Models\Persona::find($id);
         $course = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
         $courseBlueprint = $course?->blueprint;
+
+        $samplePost = '[OPSLAGET som personaen ville reagere på indsættes her]';
+        $commentPrompt = app(\App\Services\Llm\CommentPromptBuilder::class)
+            ->build($persona, $samplePost, [], null, null, null, $course);
+        $dmPrompt = app(\App\Services\Llm\DirectMessagePromptBuilder::class)
+            ->build($persona, [], '[BESKEDEN fra brugeren indsættes her]', 'Bruger');
+
         return view('admin.personas.show', [
             'population'      => $population,
             'p'               => $persona,
@@ -93,6 +100,8 @@ class PersonaController extends Controller
             'cover'           => $cover,
             'personaBp'       => $personaModel?->blueprint_id,
             'courseBlueprint' => $courseBlueprint,
+            'commentPrompt'   => $commentPrompt,
+            'dmPrompt'        => $dmPrompt,
         ]);
     }
 

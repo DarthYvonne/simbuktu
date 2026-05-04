@@ -117,6 +117,7 @@
     <div class="tabs">
       <button class="active" data-tab="opslag">Opslag</button>
       <button data-tab="venner">Venner ({{ count($friends ?? []) }})</button>
+      <button data-tab="prompt">Prompt</button>
     </div>
 
     <div data-pane="opslag">
@@ -141,6 +142,20 @@
           </div>
         @endforeach
       @endif
+    </div>
+
+    <div data-pane="prompt" style="display: none;">
+      <div style="font-size: 12px; color: #65676b; margin-bottom: 8px; line-height: 1.5;">
+        Sådan ser LLM'en personaen. Felter som <code>{{ '{{post_text}}' }}</code> erstattes med rigtigt indhold ved kald.
+      </div>
+      <div style="margin-bottom: 14px;">
+        <div style="font-weight: 600; font-size: 13px; margin-bottom: 6px;">Kommentar på opslag <span style="color: #65676b; font-weight: 400;">(comment.compose)</span></div>
+        <pre style="background: #f0f2f5; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; max-height: 420px; overflow-y: auto; margin: 0;">{{ $commentPrompt }}</pre>
+      </div>
+      <div>
+        <div style="font-weight: 600; font-size: 13px; margin-bottom: 6px;">Direkte besked <span style="color: #65676b; font-weight: 400;">(persona.dm)</span></div>
+        <pre style="background: #f0f2f5; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; max-height: 420px; overflow-y: auto; margin: 0;">{{ $dmPrompt }}</pre>
+      </div>
     </div>
 
     <div data-pane="venner" style="display: none;">
