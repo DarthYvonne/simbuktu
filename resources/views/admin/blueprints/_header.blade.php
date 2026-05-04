@@ -16,7 +16,7 @@ $bpHeaderCourse = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
       <div style="font-size: 13px; color: #65676b;">Komplette persona-skabeloner: en ordnet liste af dimensioner med håndskrevne facetter.</div>
     @endif
   </div>
-  <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
+  <button class="btn btn-secondary" onclick="document.getElementById('createModal').style.display='flex'">
     <i class="fa-solid fa-plus"></i> Ny personlighed
   </button>
 </div>

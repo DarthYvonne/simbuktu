@@ -64,10 +64,14 @@
 .bp-card-head input.dim-desc { display: block; width: 100%; max-width: 480px; margin-top: 4px; font-size: 13px; color: #65676b; padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-family: inherit; }
 .bp-card-head input.dim-desc:hover { border-color: #dadde1; background: #fff; }
 .bp-card-head input.dim-desc:focus { outline: none; border-color: #1877f2; background: #fff; box-shadow: 0 0 0 2px #e7f3ff; }
-.bp-card-head .actions { display: flex; gap: 6px; flex-shrink: 0; }
+.bp-card-head .actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
 .bp-card-head .actions button { background: none; border: 1px solid #dadde1; border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: #65676b; white-space: nowrap; }
 .bp-card-head .actions button:hover { background: #fff; color: #1c1e21; }
-.bp-card-head .actions .lib-badge { font-size: 11px; color: #65676b; background: #fff; border: 1px solid #dadde1; border-radius: 10px; padding: 3px 9px; align-self: center; }
+.bp-card-head .actions .profile-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #65676b; cursor: pointer; padding: 5px 8px; border: 1px solid #dadde1; border-radius: 6px; user-select: none; }
+.bp-card-head .actions .profile-toggle:hover { background: #fff; color: #1c1e21; }
+.bp-card-head .meta .dim-name-wrap { display: flex; align-items: center; gap: 4px; max-width: 480px; }
+.bp-card-head .meta .dim-name-wrap .dim-name { flex: 1; }
+.bp-card-head .meta .dim-name-lib { color: #65676b; font-size: 13px; flex-shrink: 0; padding-right: 4px; }
 
 .bp-facet { display: grid; grid-template-columns: 180px 90px 1fr auto; gap: 12px; padding: 12px 16px; border-top: 1px solid #f0f2f5; align-items: start; }
 .bp-facet:first-child { border-top: none; }
@@ -292,35 +296,34 @@ function renderEditor() {
   else if (sum === 100) { sumLabel = `Sum: 100%`;                   sumClass = 'ok'; }
   else                  { sumLabel = `Sum: ${sum}% — ${100 - sum}% får ingen tekst`; sumClass = 'gap'; }
 
-  const libBadge = p.library_parameter_id
-    ? '<span class="lib-badge"><i class="fa-solid fa-layer-group" style="font-size:9px;"></i> Fra biblioteket</span>'
+  const libIcon = p.library_parameter_id
+    ? '<i class="fa-solid fa-layer-group dim-name-lib" title="Fra biblioteket"></i>'
     : '';
 
   wrap.innerHTML = `
     <div class="bp-card">
       <div class="bp-card-head">
         <div class="meta">
-          <input type="text" class="dim-name" value="${escapeHtml(p.name)}" placeholder="Dimensionens navn (fx empati)" oninput="updateDim('name', this.value)">
+          <div class="dim-name-wrap">
+            <input type="text" class="dim-name" value="${escapeHtml(p.name)}" placeholder="Dimensionens navn (fx empati)" oninput="updateDim('name', this.value)">
+            ${libIcon}
+          </div>
           <input type="text" class="dim-desc" value="${escapeHtml(p.description ?? '')}" placeholder="Kort beskrivelse" oninput="updateDim('description', this.value)">
         </div>
         <div class="actions">
-          ${libBadge}
-          <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#65676b; cursor:pointer; padding:5px 8px; border:1px solid #dadde1; border-radius:6px;" title="Vis sampled facet som badge på persona-profilen">
+          <label class="profile-toggle" title="Vis sampled facet som badge på persona-profilen">
             <input type="checkbox" ${p.show_on_profile ? 'checked' : ''} onchange="updateDim('show_on_profile', this.checked)" style="margin:0;">
             Vis på profil
           </label>
-          <button type="button" onclick="openPromote()" title="Gem til biblioteket"><i class="fa-solid fa-arrow-up"></i> Til bibliotek</button>
+          <button type="button" onclick="addFacet()" title="Tilføj facet"><i class="fa-solid fa-plus"></i></button>
+          <button type="button" onclick="distributeEqually()" title="Fordel vægte jævnt">Fordel jævnt</button>
+          <button type="button" onclick="distributeNormal()" title="Normalfordel vægte">Normalfordel</button>
           <button type="button" onclick="removeDim()" style="color:#b91c1c;" title="Fjern dimension"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
       <div>${facetRows}</div>
       <div class="bp-card-foot">
         <span class="bp-sum ${sumClass}">${sumLabel}</span>
-        <span style="display:flex; gap:8px; align-items:center;">
-          <button type="button" onclick="distributeEqually()" style="color:#65676b; font-weight:600;">Fordel jævnt</button>
-          <button type="button" onclick="distributeNormal()" style="color:#65676b; font-weight:600;">Normalfordel</button>
-          <button type="button" onclick="addFacet()"><i class="fa-solid fa-plus"></i> Tilføj facet</button>
-        </span>
       </div>
     </div>
   `;
