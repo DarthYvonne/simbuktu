@@ -3,6 +3,7 @@
 namespace App\Services\Simulation;
 
 use App\Models\Post;
+use App\Services\BlueprintPrompts;
 use App\Services\Llm\LlmRouter;
 use App\Services\Personas\PersonaResolver;
 use App\Services\PromptRepository;
@@ -53,7 +54,12 @@ class BatchReactionDecider
             }
         }
 
-        $prompt = $this->prompts->render('reaction.batch', [
+        // Use the blueprint of the first persona in the batch as the override source.
+        // Mixing blueprints in one batch is uncommon; if it happens, the first wins.
+        $bpId = null;
+        foreach ($personas as $p) { if (!empty($p['blueprint_id'])) { $bpId = $p['blueprint_id']; break; } }
+        $prompts = BlueprintPrompts::overlay($this->prompts, $bpId);
+        $prompt = $prompts->render('reaction.batch', [
             'post_text' => $post->body,
             'post_context' => $postContext,
             'existing_comments' => $commentsContext,

@@ -2,6 +2,7 @@
 
 namespace App\Services\Llm;
 
+use App\Services\BlueprintPrompts;
 use App\Services\Personas\PersonaResolver;
 use App\Services\PromptRepository;
 
@@ -24,7 +25,8 @@ class DirectMessagePromptBuilder
             $historyText = "(ingen tidligere beskeder — dette er den første besked)\n";
         }
 
-        return $this->prompts->render('persona.dm', [
+        $prompts = BlueprintPrompts::overlay($this->prompts, $persona['blueprint_id'] ?? null);
+        return $prompts->render('persona.dm', [
             'persona_name'        => $persona['name'] ?? '',
             'attributes_block'    => $this->resolver->buildAttributesBlock($persona['dimensions'] ?? []),
             'narrative'           => $persona['narrative'] ?? '',

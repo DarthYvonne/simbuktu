@@ -55,10 +55,7 @@ class GeneratePersonaJob implements ShouldQueue
         $resolver = new PersonaResolver();
         $attributesBlock = $resolver->buildAttributesBlock($sampledFacets);
 
-        $prompts = new PromptRepository();
-        if ($population?->narrative_prompt) {
-            $prompts = $prompts->withOverride('persona.narrative', $population->narrative_prompt);
-        }
+        $prompts = \App\Services\BlueprintPrompts::overlay(new PromptRepository(), $blueprint?->id);
 
         $gemini   = new GeminiClient(config('gemini'));
         $narrator = new NarrativeBuilder($gemini, $prompts);

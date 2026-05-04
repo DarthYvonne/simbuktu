@@ -17,6 +17,13 @@
   </div>
 </div>
 
+<div style="display:inline-flex; gap:2px; background:#f0f2f5; border-radius:8px; padding:3px; margin-bottom:14px;">
+  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}"
+     style="padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#1c1e21; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.06);">Dimensioner</a>
+  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}"
+     style="padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#65676b;">Prompts</a>
+</div>
+
 <style>
 .bp-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
 .bp-side { position: sticky; top: 14px; background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 8px; max-height: calc(100vh - 40px); overflow-y: auto; }

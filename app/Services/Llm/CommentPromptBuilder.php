@@ -2,6 +2,7 @@
 
 namespace App\Services\Llm;
 
+use App\Services\BlueprintPrompts;
 use App\Services\Personas\PersonaResolver;
 use App\Services\PromptRepository;
 
@@ -39,7 +40,8 @@ class CommentPromptBuilder
             $mediaContext .= "\n[LINK VEDHÆFTET: \"{$linkPreview['title']}\"{$desc} (fra {$linkPreview['site_name']})]\n";
         }
 
-        return $this->prompts->render('comment.compose', [
+        $prompts = BlueprintPrompts::overlay($this->prompts, $persona['blueprint_id'] ?? null);
+        return $prompts->render('comment.compose', [
             'persona_name'        => $persona['name'] ?? '',
             'attributes_block'    => $this->resolver->buildAttributesBlock($persona['dimensions'] ?? []),
             'narrative'           => $persona['narrative'] ?? '',

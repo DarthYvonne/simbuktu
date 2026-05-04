@@ -178,6 +178,8 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::patch('/blueprints/{blueprint}',               [BlueprintController::class, 'update']);
         Route::delete('/blueprints/{blueprint}',              [BlueprintController::class, 'destroy']);
         Route::post('/blueprints/{blueprint}/promote',        [BlueprintController::class, 'promote']);
+        Route::get('/blueprints/{blueprint}/prompts',         [BlueprintController::class, 'editPrompts']);
+        Route::patch('/blueprints/{blueprint}/prompts',       [BlueprintController::class, 'updatePrompts']);
 
         Route::get('/api-check', [\App\Http\Controllers\Admin\ApiCheckController::class, 'index']);
 

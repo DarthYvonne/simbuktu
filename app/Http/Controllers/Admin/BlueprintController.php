@@ -116,6 +116,49 @@ class BlueprintController extends Controller
         return redirect('/simulation/admin/blueprints')->with('success', 'Personlighed slettet.');
     }
 
+    public function editPrompts(Blueprint $blueprint)
+    {
+        $defaults = (new \App\Services\PromptRepository())->defaults();
+        $rows = [];
+        foreach (Blueprint::PROMPT_KEYS as $key) {
+            $def = $defaults[$key] ?? null;
+            if (!$def) continue;
+            $override = $blueprint->prompt_overrides[$key] ?? null;
+            $rows[] = [
+                'key'         => $key,
+                'name'        => $def['name'] ?? $key,
+                'description' => $def['description'] ?? '',
+                'default'     => $def['body'] ?? '',
+                'current'     => $override ?: ($def['body'] ?? ''),
+                'overridden'  => is_string($override) && trim($override) !== '',
+                'placeholders'=> $def['placeholders'] ?? [],
+            ];
+        }
+        return view('admin.blueprints.prompts', compact('blueprint', 'rows'));
+    }
+
+    public function updatePrompts(Request $request, Blueprint $blueprint)
+    {
+        $data = $request->validate([
+            'prompts'   => 'array',
+            'prompts.*' => 'nullable|string|max:20000',
+        ]);
+        $defaults = (new \App\Services\PromptRepository())->defaults();
+        $overrides = $blueprint->prompt_overrides ?? [];
+        foreach ($data['prompts'] ?? [] as $key => $body) {
+            if (!in_array($key, Blueprint::PROMPT_KEYS, true)) continue;
+            $body = trim((string) $body);
+            $defaultBody = $defaults[$key]['body'] ?? '';
+            if ($body === '' || $body === $defaultBody) {
+                unset($overrides[$key]);
+            } else {
+                $overrides[$key] = $body;
+            }
+        }
+        $blueprint->update(['prompt_overrides' => $overrides ?: null]);
+        return back()->with('success', 'Prompts gemt.');
+    }
+
     public function promote(Request $request, Blueprint $blueprint)
     {
         $data = $request->validate([

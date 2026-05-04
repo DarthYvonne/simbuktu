@@ -4,6 +4,7 @@ namespace App\Services\Simulation;
 
 use App\Models\Comment;
 use App\Models\Post;
+use App\Services\BlueprintPrompts;
 use App\Services\Llm\LlmRouter;
 use App\Services\News\NewsContextService;
 use App\Services\Personas\PersonaResolver;
@@ -28,7 +29,8 @@ class CommentInterpreter
         $course = $post->course;
         $current = $course ? app(NewsContextService::class)->current($course) : '';
 
-        $prompt = $this->prompts->render('comment.interpret', [
+        $prompts = BlueprintPrompts::overlay($this->prompts, $persona['blueprint_id'] ?? null);
+        $prompt = $prompts->render('comment.interpret', [
             'persona_name'        => $persona['name'] ?? '',
             'attributes_block'    => $this->resolver->buildAttributesBlock($persona['dimensions'] ?? []),
             'narrative'           => $persona['narrative'] ?? '',
