@@ -253,7 +253,12 @@ class PostController extends Controller
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('posts', 'public');
             $data['image_path'] = $path;
-            $data['image_description'] = $this->imageDescriber->describe(Storage::disk('public')->path($path), Auth::user()?->currentCourse()?->id);
+            $course = Auth::user()?->currentCourse();
+            $data['image_description'] = $this->imageDescriber->describe(
+                Storage::disk('public')->path($path),
+                $course?->id,
+                $course?->blueprint_id,
+            );
         } else {
             // Only fetch link preview if no image was uploaded
             $url = $this->linkPreview->extractFirstUrl($request->input('body'));

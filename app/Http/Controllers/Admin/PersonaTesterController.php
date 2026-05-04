@@ -64,7 +64,12 @@ class PersonaTesterController extends Controller
         $imageDescription = null;
         if ($request->hasFile('image')) {
             $imagePath        = $request->file('image')->store('tester', 'public');
-            $imageDescription = $this->imageDescriber->describe(Storage::disk('public')->path($imagePath));
+            $course = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
+            $imageDescription = $this->imageDescriber->describe(
+                Storage::disk('public')->path($imagePath),
+                $course?->id,
+                $course?->blueprint_id,
+            );
         }
 
         $linkPreview = null;

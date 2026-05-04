@@ -21,6 +21,8 @@ class Blueprint extends Model
         'comment.interpret',
         'persona.dm',
         'reaction.batch',
+        'image.describe_post',
+        'image.profile',
     ];
 
     public function creator(): BelongsTo
