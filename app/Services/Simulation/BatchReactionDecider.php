@@ -4,6 +4,7 @@ namespace App\Services\Simulation;
 
 use App\Models\Post;
 use App\Services\Llm\LlmRouter;
+use App\Services\Personas\PersonaResolver;
 use App\Services\PromptRepository;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,7 @@ class BatchReactionDecider
     public function __construct(
         private LlmRouter $llm,
         private PromptRepository $prompts,
+        private PersonaResolver $resolver,
     ) {
     }
 
@@ -23,15 +25,14 @@ class BatchReactionDecider
     {
         if (empty($personas)) return [];
 
-        // Build persona summaries: identity + personality block from blueprint
+        // Build persona summaries: identity + attributes + personality block from live blueprint
         $personaList = [];
         foreach ($personas as $p) {
             $personaList[] = [
-                'id'                  => $p['id'],
-                'name'                => $p['name'] ?? '',
-                'age'                 => $p['demographics']['age']             ?? '',
-                'job'                 => $p['demographics']['occupation_hint'] ?? '',
-                'personlighed'        => $p['personality_block'] ?? '',
+                'id'           => $p['id'],
+                'name'         => $p['name'] ?? '',
+                'attributter'  => $this->resolver->buildAttributesBlock($p['dimensions'] ?? []),
+                'personlighed' => $p['personality_block'] ?? '',
             ];
         }
 

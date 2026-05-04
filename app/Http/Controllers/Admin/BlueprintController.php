@@ -73,15 +73,17 @@ class BlueprintController extends Controller
             'parameters.*.facets.*.name'        => 'required|string|max:64',
             'parameters.*.facets.*.text'        => 'required|string|max:5000',
             'parameters.*.facets.*.weight'      => 'nullable|integer|min:0|max:100',
+            'parameters.*.facets.*.length_bias' => 'nullable|in:very_short,short,medium,long,very_long',
         ]);
         $errors = [];
         $data['parameters'] = array_values(array_map(function ($p, $i) use (&$errors) {
             $facets = array_values(array_map(
                 fn ($f) => [
-                    'id'     => $f['id'] ?? (string) Str::uuid(),
-                    'name'   => trim($f['name']),
-                    'text'   => trim($f['text']),
-                    'weight' => (int) ($f['weight'] ?? 0),
+                    'id'          => $f['id'] ?? (string) Str::uuid(),
+                    'name'        => trim($f['name']),
+                    'text'        => trim($f['text']),
+                    'weight'      => (int) ($f['weight'] ?? 0),
+                    'length_bias' => $f['length_bias'] ?: null,
                 ],
                 $p['facets']
             ));

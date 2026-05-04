@@ -58,13 +58,49 @@ class PersonaResolver
                 'facet'           => $facet['name'] ?? '',
                 'text'            => $facet['text'] ?? '',
                 'type'            => $param['type'] ?? 'personality',
+                'length_bias'     => $facet['length_bias'] ?? null,
                 'show_on_profile' => (bool) ($param['show_on_profile'] ?? false),
             ];
         }
 
         $persona['dimensions'] = $resolved;
         $persona['personality_block'] = $this->buildPersonalityBlock($resolved);
+        $persona['demographics'] = array_merge(
+            $persona['demographics'] ?? [],
+            $this->buildDemographicsMap($resolved),
+        );
         return $persona;
+    }
+
+    /**
+     * Back-compat view of sampled demographic dimensions as a flat map keyed
+     * by Danish dimension name (alder, køn, region…) — and additionally by
+     * the legacy field names many views still read.
+     */
+    public function buildDemographicsMap(array $resolvedDimensions): array
+    {
+        $aliases = [
+            'alder'     => 'age',
+            'køn'       => 'gender',
+            'kon'       => 'gender',
+            'region'    => 'region',
+            'bytype'    => 'city_type',
+            'uddannelse'=> 'education',
+            'herkomst'  => 'heritage',
+            'familie'   => 'family',
+            'erhverv'   => 'occupation_hint',
+            'indkomst'  => 'income_bracket',
+        ];
+        $out = [];
+        foreach ($resolvedDimensions as $r) {
+            if (($r['type'] ?? 'personality') !== 'demographic') continue;
+            $key = mb_strtolower(trim($r['dimension'] ?? ''));
+            if ($key === '') continue;
+            $val = $r['facet'] ?? null;
+            $out[$key] = $val;
+            if (isset($aliases[$key])) $out[$aliases[$key]] = $val;
+        }
+        return $out;
     }
 
     public function buildPersonalityBlock(array $resolvedDimensions): string
@@ -74,6 +110,19 @@ class PersonaResolver
             if (($r['type'] ?? 'personality') !== 'personality') continue;
             $text = trim((string) ($r['text'] ?? ''));
             if ($text !== '') $lines[] = $text;
+        }
+        return $lines ? '- ' . implode("\n- ", $lines) : '';
+    }
+
+    /** Bullet list of demographic-typed dimensions: "- Alder: 14\n- Region: Hovedstaden" */
+    public function buildAttributesBlock(array $resolvedDimensions): string
+    {
+        $lines = [];
+        foreach ($resolvedDimensions as $r) {
+            if (($r['type'] ?? 'personality') !== 'demographic') continue;
+            $dim = trim((string) ($r['dimension'] ?? ''));
+            $val = trim((string) ($r['facet'] ?? ''));
+            if ($dim !== '' && $val !== '') $lines[] = "{$dim}: {$val}";
         }
         return $lines ? '- ' . implode("\n- ", $lines) : '';
     }

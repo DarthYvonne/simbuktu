@@ -84,13 +84,20 @@
 
 <div class="profile-grid">
   <div class="panel">
-    <h3>Demografi</h3>
-    <div class="attr-row"><span>Bytype</span><strong>{{ $p['demographics']['city_type'] ?? '—' }}</strong></div>
-    <div class="attr-row"><span>Herkomst</span><strong>{{ $p['demographics']['heritage'] ?? '—' }}</strong></div>
-    <div class="attr-row"><span>Uddannelse</span><strong>{{ $p['demographics']['education'] ?? '—' }}</strong></div>
+    @php
+      $dims = $p['dimensions'] ?? [];
+      $demoDims = collect($dims)->filter(fn ($d) => ($d['type'] ?? 'personality') === 'demographic');
+      $persDims = collect($dims)->filter(fn ($d) => ($d['type'] ?? 'personality') === 'personality');
+    @endphp
+    @if ($demoDims->isNotEmpty())
+      <h3>Demografi</h3>
+      @foreach ($demoDims as $d)
+        <div class="attr-row"><span>{{ $d['dimension'] ?? '' }}</span><strong>{{ $d['facet'] ?? '—' }}</strong></div>
+      @endforeach
+    @endif
 
     <h3 style="margin-top: 18px;">Personlighed</h3>
-    @forelse (($p['dimensions'] ?? []) as $d)
+    @forelse ($persDims as $d)
       <div class="attr-row"><span>{{ $d['dimension'] ?? '' }}</span><strong>{{ $d['facet'] ?? '' }}</strong></div>
     @empty
       <div style="font-size:12px; color:#65676b; padding: 6px 0;">Ingen personlighed tilknyttet.</div>

@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\Post;
 use App\Services\Llm\LlmRouter;
 use App\Services\News\NewsContextService;
+use App\Services\Personas\PersonaResolver;
 use App\Services\PromptRepository;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +15,7 @@ class CommentInterpreter
     public function __construct(
         private LlmRouter $llm,
         private PromptRepository $prompts,
+        private PersonaResolver $resolver,
     ) {
     }
 
@@ -28,8 +30,7 @@ class CommentInterpreter
 
         $prompt = $this->prompts->render('comment.interpret', [
             'persona_name'        => $persona['name'] ?? '',
-            'age'                 => $persona['demographics']['age']             ?? '',
-            'occupation_hint'     => $persona['demographics']['occupation_hint'] ?? '',
+            'attributes_block'    => $this->resolver->buildAttributesBlock($persona['dimensions'] ?? []),
             'narrative'           => $persona['narrative'] ?? '',
             'personality_block'   => $persona['personality_block'] ?? '',
             'original_comment'    => $original->body,

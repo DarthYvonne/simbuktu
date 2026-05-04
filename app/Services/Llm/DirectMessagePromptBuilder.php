@@ -2,19 +2,19 @@
 
 namespace App\Services\Llm;
 
+use App\Services\Personas\PersonaResolver;
 use App\Services\PromptRepository;
 
 class DirectMessagePromptBuilder
 {
-    public function __construct(private ?PromptRepository $prompts = null)
+    public function __construct(private ?PromptRepository $prompts = null, private ?PersonaResolver $resolver = null)
     {
         $this->prompts ??= new PromptRepository();
+        $this->resolver ??= new PersonaResolver();
     }
 
     public function build(array $persona, array $history, string $newMessage, string $senderName, ?string $currentContext = null, string $activityContext = ''): string
     {
-        $d = $persona['demographics'] ?? [];
-
         $historyText = '';
         foreach ($history as $m) {
             $who = $m['role'] === 'persona' ? $persona['name'] : $senderName;
@@ -26,9 +26,7 @@ class DirectMessagePromptBuilder
 
         return $this->prompts->render('persona.dm', [
             'persona_name'        => $persona['name'] ?? '',
-            'age'                 => $d['age']             ?? '',
-            'occupation_hint'     => $d['occupation_hint'] ?? '',
-            'region'              => $d['region']          ?? '',
+            'attributes_block'    => $this->resolver->buildAttributesBlock($persona['dimensions'] ?? []),
             'narrative'           => $persona['narrative'] ?? '',
             'personality_block'   => $persona['personality_block'] ?? '',
             'sender_name'         => $senderName,

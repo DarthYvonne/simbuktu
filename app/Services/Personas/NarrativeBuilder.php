@@ -42,17 +42,8 @@ class NarrativeBuilder
 
     private function prompt(array $p): string
     {
-        $d = $p['demographics'] ?? [];
         return $this->prompts->render('persona.narrative', [
-            'age'               => $d['age']             ?? '',
-            'gender'            => $d['gender']          ?? '',
-            'region'            => $d['region']          ?? '',
-            'city_type'         => $d['city_type']       ?? '',
-            'education'         => $d['education']       ?? '',
-            'occupation_hint'   => $d['occupation_hint'] ?? '',
-            'income_bracket'    => $d['income_bracket']  ?? '',
-            'family'            => $d['family']          ?? '',
-            'heritage'          => $d['heritage']        ?? '',
+            'attributes_block'  => $p['attributes_block'] ?? '',
             'personality_block' => $p['personality_block'] ?? '',
         ]);
     }

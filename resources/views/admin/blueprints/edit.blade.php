@@ -269,6 +269,15 @@ function renderEditor() {
     <div class="bp-facet" data-fi="${fi}">
       <div class="bp-facet-name">
         <input type="text" value="${escapeHtml(f.name)}" placeholder="Facet-navn (fx lav, anekdotisk)" oninput="updateFacet(${fi}, 'name', this.value)">
+        <select onchange="updateFacet(${fi}, 'length_bias', this.value)" title="Kommentarlængde-bias for personas der får denne facet"
+          style="margin-top:4px; padding:5px 7px; border:1px solid #dadde1; border-radius:4px; font-size:11px; font-family:inherit; color:#65676b; width:100%;">
+          <option value="" ${!f.length_bias ? 'selected' : ''}>Længde: —</option>
+          <option value="very_short" ${f.length_bias === 'very_short' ? 'selected' : ''}>Meget kort</option>
+          <option value="short" ${f.length_bias === 'short' ? 'selected' : ''}>Kort</option>
+          <option value="medium" ${f.length_bias === 'medium' ? 'selected' : ''}>Mellem</option>
+          <option value="long" ${f.length_bias === 'long' ? 'selected' : ''}>Lang</option>
+          <option value="very_long" ${f.length_bias === 'very_long' ? 'selected' : ''}>Meget lang</option>
+        </select>
       </div>
       <div class="bp-facet-weight">
         <input type="number" min="0" max="100" step="1" value="${f.weight ?? 0}" oninput="updateFacet(${fi}, 'weight', this.value)">
@@ -434,6 +443,7 @@ function buildFormData() {
       fd.append(`parameters[${i}][facets][${j}][name]`, f.name);
       fd.append(`parameters[${i}][facets][${j}][text]`, f.text);
       fd.append(`parameters[${i}][facets][${j}][weight]`, f.weight ?? 0);
+      fd.append(`parameters[${i}][facets][${j}][length_bias]`, f.length_bias ?? '');
     });
   });
   return fd;

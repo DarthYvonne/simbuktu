@@ -47,20 +47,18 @@ class PromptRepository
             'persona.narrative' => [
                 'name' => 'Opret persona',
                 'description' => 'Finder på en persona — navn, baggrund, personlighed.',
-                'placeholders' => ['age', 'gender', 'region', 'city_type', 'education', 'occupation_hint', 'income_bracket', 'family', 'heritage', 'personality_block'],
+                'placeholders' => ['attributes_block', 'personality_block'],
                 'body' => <<<PROMPT
 Du genererer en troværdig dansk SoMe-persona til et undervisningsværktøj om krisekommunikation.
 
-DEMOGRAFI:
-- Alder: {{age}}, Køn: {{gender}}, Region: {{region}} ({{city_type}})
-- Uddannelse: {{education}}, Erhverv: {{occupation_hint}}, Indkomst: {{income_bracket}}
-- Familie: {{family}}, Herkomst: {{heritage}}
+ATTRIBUTTER (samplet fra blueprintens demografiske dimensioner — alle linjer gælder for personen):
+{{attributes_block}}
 
 PERSONLIGHED (håndskreven personlighedsstruktur for dette kursus — alle linjer gælder for denne persona):
 {{personality_block}}
 
 KRAV:
-1. Giv personen et troværdigt dansk navn (fornavn + efternavn) der passer til alder/region/herkomst.
+1. Giv personen et troværdigt dansk navn (fornavn + efternavn) der passer til attributterne ovenfor.
 2. Skriv en kort bio-linje (5-10 ord) som personen selv ville skrive.
 3. Skriv et narrativ på 3-5 sætninger: hvad driver dem, hvad er de bange for/vrede over, hvilken konkret personlig oplevelse farver dem. Personlighedslinjerne skal mærkes uden at de citeres direkte.
 4. Skriv 3-5 ældre opslag der viser hverdagspersonen — i personens eget tonefald og sprog. Korte. Variér: hverdagsbillede, delt artikel m. kommentar, hilsen, spørgsmål, frustration. INGEN politik i alle 5 — vis hele mennesket.
@@ -73,9 +71,12 @@ PROMPT,
             'comment.compose' => [
                 'name' => 'Skriv kommentar',
                 'description' => 'Skriver kommentaren i persona\'ens egen stemme.',
-                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'region', 'narrative', 'personality_block', 'post_text', 'media_context', 'existing_context', 'reply_context', 'length_target', 'current_context'],
+                'placeholders' => ['persona_name', 'attributes_block', 'narrative', 'personality_block', 'post_text', 'media_context', 'existing_context', 'reply_context', 'length_target', 'current_context'],
                 'body' => <<<PROMPT
-Du er {{persona_name}}, {{age}} år, {{occupation_hint}} fra {{region}}.
+Du er {{persona_name}}.
+
+DINE ATTRIBUTTER:
+{{attributes_block}}
 
 DIN BAGGRUND:
 {{narrative}}
@@ -151,9 +152,12 @@ PROMPT,
             'comment.interpret' => [
                 'name' => 'Fortolk svar på din kommentar',
                 'description' => 'Bruges når en persona får svar på sin egen kommentar — afgør om de svarer igen eller ignorerer.',
-                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'narrative', 'personality_block', 'original_comment', 'replier_name', 'replier_is_student', 'reply_text', 'post_text', 'current_context'],
+                'placeholders' => ['persona_name', 'attributes_block', 'narrative', 'personality_block', 'original_comment', 'replier_name', 'replier_is_student', 'reply_text', 'post_text', 'current_context'],
                 'body' => <<<PROMPT
-Du er {{persona_name}}, {{age}} år, {{occupation_hint}}.
+Du er {{persona_name}}.
+
+DINE ATTRIBUTTER:
+{{attributes_block}}
 
 DIN BAGGRUND:
 {{narrative}}
@@ -219,9 +223,12 @@ PROMPT,
             'persona.dm' => [
                 'name' => 'Privat besked (DM)',
                 'description' => 'Bruges når en bruger chatter privat med en persona fra profilsiden.',
-                'placeholders' => ['persona_name', 'age', 'occupation_hint', 'region', 'narrative', 'personality_block', 'sender_name', 'history', 'new_message', 'current_context', 'activity_context'],
+                'placeholders' => ['persona_name', 'attributes_block', 'narrative', 'personality_block', 'sender_name', 'history', 'new_message', 'current_context', 'activity_context'],
                 'body' => <<<PROMPT
-Du er {{persona_name}}, {{age}} år, {{occupation_hint}} fra {{region}}.
+Du er {{persona_name}}.
+
+DINE ATTRIBUTTER:
+{{attributes_block}}
 
 DIN BAGGRUND:
 {{narrative}}

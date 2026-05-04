@@ -3,9 +3,8 @@ $base = '/simulation/admin/populations/'.$population->id;
 $path = request()->path();
 
 $subtabs = [
-  ['Indstillinger', url($base),                $path === ltrim($base, '/')],
-  ['Demografi',     url("$base/demografi"),    str_starts_with($path, ltrim("$base/demografi", '/'))],
-  ['Prompts',       url("$base/prompts"),      str_starts_with($path, ltrim("$base/prompts", '/'))],
+  ['Indstillinger', url($base),           $path === ltrim($base, '/')],
+  ['Prompts',       url("$base/prompts"), str_starts_with($path, ltrim("$base/prompts", '/'))],
 ];
 @endphp
 <div style="display: inline-flex; gap: 2px; background: #f0f2f5; border-radius: 8px; padding: 3px; margin-bottom: 16px;">

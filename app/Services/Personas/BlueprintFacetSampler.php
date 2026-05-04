@@ -32,6 +32,7 @@ class BlueprintFacetSampler
                 'facet'           => $facet['name'] ?? '',
                 'text'            => $facet['text'] ?? '',
                 'type'            => $param['type'] ?? 'personality',
+                'length_bias'     => $facet['length_bias'] ?? null,
                 'show_on_profile' => (bool) ($param['show_on_profile'] ?? false),
             ];
         }
