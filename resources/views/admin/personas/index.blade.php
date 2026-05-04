@@ -106,28 +106,39 @@
 <div class="card">
   <div class="gen-row">
     <div style="position: relative;">
-      <div class="split-btn">
-        <button type="button" class="main" id="genQuickBtn">
-          <i class="fa-solid fa-plus"></i> Generér <span id="genCountLabel">10</span> personas
-        </button>
-        <button type="button" class="more" id="genOptsBtn" title="Indstillinger">
-          <i class="fa-solid fa-caret-down"></i>
-        </button>
-      </div>
-      <div id="genPopover" class="popover" style="display: none; top: 42px; left: 0;">
-        <div style="margin-bottom: 10px;">
-          <label>Antal</label>
-          <input type="number" id="genCount" value="10" min="1" max="50">
+      @if ($courseBlueprint)
+        <div class="split-btn">
+          <button type="button" class="main" id="genQuickBtn">
+            <i class="fa-solid fa-plus"></i> Generér <span id="genCountLabel">10</span> personas
+          </button>
+          <button type="button" class="more" id="genOptsBtn" title="Indstillinger">
+            <i class="fa-solid fa-caret-down"></i>
+          </button>
         </div>
-        <div style="margin-bottom: 12px;">
-          <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; color: #1c1e21; cursor: pointer;">
-            <input type="checkbox" id="genSkipImages" style="margin: 0;"> Spring billeder over
-          </label>
+        <div id="genPopover" class="popover" style="display: none; top: 42px; left: 0;">
+          <div style="margin-bottom: 10px;">
+            <label>Antal</label>
+            <input type="number" id="genCount" value="10" min="1" max="50">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; color: #1c1e21; cursor: pointer;">
+              <input type="checkbox" id="genSkipImages" style="margin: 0;"> Spring billeder over
+            </label>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button type="button" class="btn btn-secondary" style="font-size: 12px;" onclick="closeGenPopover()">Luk</button>
+          </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 6px;">
-          <button type="button" class="btn btn-secondary" style="font-size: 12px;" onclick="closeGenPopover()">Luk</button>
+      @else
+        <div style="display:flex; gap:10px; align-items:center; padding:12px 14px; background:#fef9e7; border:1px solid #fde68a; border-radius:8px; font-size:13px; color:#92400e; line-height:1.5;">
+          <i class="fa-solid fa-circle-exclamation" style="font-size:16px;"></i>
+          <div>
+            Vælg først en personlighed for kurset under
+            <a href="{{ url('/simulation/admin/courses') }}" style="color:#92400e; font-weight:700; text-decoration:underline;">Kursusmanager</a>
+            — så kan du generere personas her.
+          </div>
         </div>
-      </div>
+      @endif
     </div>
     <form method="POST" action="{{ url("$base/personas/generate") }}" id="genForm" style="display: none;">
       @csrf

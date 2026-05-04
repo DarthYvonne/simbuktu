@@ -1,30 +1,44 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="view-header">
-  <h1>
-    <a href="{{ url('/simulation/admin/blueprints') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
-    <span style="font-weight:400;color:#65676b;">Personlighed:</span> {{ $blueprint->name }}
-  </h1>
-  <div style="display:flex; gap:8px;">
+<div class="bp-header">
+  <a href="{{ url('/simulation/admin/blueprints') }}" class="bp-back" title="Tilbage til personligheder"><i class="fa-solid fa-arrow-left"></i></a>
+  <div class="bp-header-meta">
+    <input type="text" id="bp-name" class="bp-name-inline" value="{{ $blueprint->name }}" placeholder="Personlighedens navn">
+    <input type="text" id="bp-description" class="bp-desc-inline" value="{{ $blueprint->description }}" placeholder="Kort beskrivelse (valgfri)">
+  </div>
+  <div class="bp-header-actions">
     <button type="button" class="btn btn-secondary" style="font-size:12px; color:#b91c1c;"
       onclick="if(confirm('Slet denne personlighed?')) document.getElementById('delete-form').submit()">
       <i class="fa-solid fa-trash"></i> Slet
     </button>
     <button type="button" class="btn btn-primary" id="save-btn" onclick="saveBlueprint()">
-      <i class="fa-solid fa-floppy-disk"></i> Gem personlighed
+      <i class="fa-solid fa-floppy-disk"></i> Gem
     </button>
   </div>
 </div>
 
-<div style="display:inline-flex; gap:2px; background:#f0f2f5; border-radius:8px; padding:3px; margin-bottom:14px;">
-  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}"
-     style="padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#1c1e21; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.06);">Dimensioner</a>
-  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}"
-     style="padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#65676b;">Prompts</a>
+<div class="bp-tabs">
+  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}" class="active">Dimensioner</a>
+  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}">Prompts</a>
 </div>
 
 <style>
+.bp-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:10px; }
+.bp-back { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; color:#1877f2; text-decoration:none; flex-shrink:0; margin-top:2px; }
+.bp-back:hover { background:#e7f3ff; }
+.bp-header-meta { flex:1; min-width:0; }
+.bp-name-inline { display:block; width:100%; font-size:24px; font-weight:800; letter-spacing:-0.3px; color:#1c1e21; padding:4px 8px; border:1px solid transparent; border-radius:6px; background:transparent; font-family:inherit; }
+.bp-name-inline:hover { border-color:#dadde1; background:#fff; }
+.bp-name-inline:focus { outline:none; border-color:#1877f2; background:#fff; box-shadow:0 0 0 2px #e7f3ff; }
+.bp-desc-inline { display:block; width:100%; margin-top:2px; font-size:13px; color:#65676b; padding:4px 8px; border:1px solid transparent; border-radius:6px; background:transparent; font-family:inherit; }
+.bp-desc-inline:hover { border-color:#dadde1; background:#fff; }
+.bp-desc-inline:focus { outline:none; border-color:#1877f2; background:#fff; box-shadow:0 0 0 2px #e7f3ff; }
+.bp-header-actions { display:flex; gap:8px; flex-shrink:0; }
+.bp-tabs { display:inline-flex; gap:2px; background:#f0f2f5; border-radius:8px; padding:3px; margin-bottom:14px; }
+.bp-tabs a { padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#65676b; }
+.bp-tabs a.active { color:#1c1e21; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
+
 .bp-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
 .bp-side { position: sticky; top: 14px; background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 8px; max-height: calc(100vh - 40px); overflow-y: auto; }
 .bp-side h4 { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 10px 4px; }
@@ -131,17 +145,6 @@
 </style>
 
 <div id="save-toast" style="display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%); background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; z-index:2000; box-shadow:0 4px 16px rgba(0,0,0,0.1);"></div>
-
-<div class="bp-meta-card">
-  <div class="row">
-    <label>Navn</label>
-    <input type="text" id="bp-name" value="{{ $blueprint->name }}" placeholder="fx Klima-shitstorm">
-  </div>
-  <div class="row">
-    <label>Beskrivelse</label>
-    <input type="text" id="bp-description" value="{{ $blueprint->description }}" placeholder="Valgfri kort beskrivelse">
-  </div>
-</div>
 
 <div class="bp-layout">
   <aside class="bp-side">

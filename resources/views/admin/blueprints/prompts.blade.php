@@ -1,19 +1,33 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="view-header">
-  <h1>
-    <a href="{{ url('/simulation/admin/blueprints') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
-    <span style="font-weight:400;color:#65676b;">Personlighed:</span> {{ $blueprint->name }}
-  </h1>
+<style>
+.bp-header { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+.bp-back { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; color:#1877f2; text-decoration:none; flex-shrink:0; }
+.bp-back:hover { background:#e7f3ff; }
+.bp-header-meta { flex:1; min-width:0; }
+.bp-header-meta .t { font-size:24px; font-weight:800; letter-spacing:-0.3px; color:#1c1e21; }
+.bp-header-meta .t .lbl { font-weight:400; color:#65676b; font-size:14px; margin-right:6px; }
+.bp-header-meta .d { font-size:13px; color:#65676b; margin-top:2px; }
+.bp-tabs { display:inline-flex; gap:2px; background:#f0f2f5; border-radius:8px; padding:3px; margin-bottom:14px; }
+.bp-tabs a { padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#65676b; }
+.bp-tabs a.active { color:#1c1e21; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
+</style>
+
+<div class="bp-header">
+  <a href="{{ url('/simulation/admin/blueprints') }}" class="bp-back" title="Tilbage til personligheder"><i class="fa-solid fa-arrow-left"></i></a>
+  <div class="bp-header-meta">
+    <div class="t"><span class="lbl">Personlighed:</span>{{ $blueprint->name }}</div>
+    @if ($blueprint->description)
+      <div class="d">{{ $blueprint->description }}</div>
+    @endif
+  </div>
   <button type="submit" form="prompts-form" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Gem prompts</button>
 </div>
 
-<div style="display:inline-flex; gap:2px; background:#f0f2f5; border-radius:8px; padding:3px; margin-bottom:14px;">
-  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}"
-     style="padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#65676b;">Dimensioner</a>
-  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}"
-     style="padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; color:#1c1e21; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.06);">Prompts</a>
+<div class="bp-tabs">
+  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}">Dimensioner</a>
+  <a href="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}" class="active">Prompts</a>
 </div>
 
 @if (session('success'))

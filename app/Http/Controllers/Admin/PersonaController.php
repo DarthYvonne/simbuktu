@@ -57,6 +57,7 @@ class PersonaController extends Controller
             'population'     => $population,
             'allPopulations' => Population::withCount('personas')->orderBy('name')->get(),
             'course'         => $course,
+            'courseBlueprint'=> $course?->blueprint,
             'activityCount'  => $activityCount,
             'personas'       => $personas,
             'count'          => $personas->count(),
@@ -129,6 +130,9 @@ class PersonaController extends Controller
         }
 
         $blueprintId = \Illuminate\Support\Facades\Auth::user()?->currentCourse()?->blueprint_id;
+        if (!$blueprintId) {
+            return back()->with('error', 'Vælg en personlighed for kurset, før du kan generere personas.');
+        }
 
         $prefix = "personas:gen:{$population->id}";
         Cache::put("{$prefix}:queued",     $count, 3600);
