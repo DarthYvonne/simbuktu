@@ -18,8 +18,6 @@
   <a href="{{ url('/simulation/posts/create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nyt opslag</a>
 </div>
 
-<h2 style="font-size: 15px; font-weight: 600; color: #65676b; margin-bottom: 12px;">Feedback</h2>
-
 <style>
 .fb-layout { display: grid; grid-template-columns: minmax(320px, 480px) 1fr; gap: 20px; align-items: start; }
 @media (max-width: 960px) { .fb-layout { grid-template-columns: 1fr; } }
