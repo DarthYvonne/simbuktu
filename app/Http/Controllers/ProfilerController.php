@@ -36,7 +36,9 @@ class ProfilerController extends Controller
     public function show(string $id)
     {
         $persona = $this->repo->find($id);
-        abort_unless($persona, 404);
+        if (!$persona) {
+            return response()->view('profiler.deleted', [], 404);
+        }
 
         $friendIds = \App\Models\Friendship::friendIdsOf($id);
         $all = $this->repo->all();

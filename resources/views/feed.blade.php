@@ -13,6 +13,8 @@
 .pc-comment .bubble { background: #f0f2f5; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
 .pc-comment .bubble .nm { font-weight: 600; }
 .pc-comment .bubble .nm a { color: #050505; }
+.pc-comment .bubble a.mention { color: #1877f2; font-weight: 600; text-decoration: none; }
+.pc-comment .bubble a.mention:hover { text-decoration: underline; }
 .pc-comment .cm-meta { font-size: 11px; color: #65676b; padding: 2px 12px; }
 .pc-comment.thread { margin-left: 28px; border-left: 2px solid #e4e6eb; padding-left: 10px; }
 .pc-comment.student .bubble { background: #e7f3ff; }
@@ -67,6 +69,12 @@
 .pc-stats .reactions { display: inline-flex; align-items: center; gap: 4px; }
 .pc-stats .reactions .emoji { display: inline-flex; }
 .pc-stats .reactions .emoji i { font-size: 14px; margin-right: 4px; }
+.pc-stat-icon { display: none; }
+@media (max-width: 600px) {
+  .pc-stats-text { display: inline-flex; gap: 14px; align-items: center; }
+  .pc-stat-icon { display: inline-block; margin-right: 4px; }
+  .pc-stat-label, .pc-stat-sep { display: none; }
+}
 .pc-actions { display: flex; padding: 4px 8px; border-top: 1px solid #f0f2f5; }
 .pc-actions a { flex: 1; text-align: center; padding: 8px; border-radius: 6px; color: #65676b; font-weight: 600; font-size: 14px; }
 .pc-actions a:hover { background: #f0f2f5; }
@@ -228,10 +236,8 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
             <span style="margin-left: 6px;" data-role="reaction-total">{{ $post->reactionTotal() }}</span>
           @endif
         </span>
-        <span>
-          Set af <span data-role="reach">{{ $post->reach }}</span>
-          · <span class="comments-toggle" onclick="toggleComments({{ $post->id }})"><span data-role="comments">{{ $post->comments_count }}</span> kommentarer</span>
-          · <span data-role="shares">{{ $post->shares ?? 0 }}</span> delinger
+        <span class="pc-stats-text">
+          <span class="pc-stat-item"><i class="fa-regular fa-eye pc-stat-icon"></i><span class="pc-stat-label">Set af </span><span data-role="reach">{{ $post->reach }}</span></span><span class="pc-stat-sep"> · </span><span class="pc-stat-item comments-toggle" onclick="toggleComments({{ $post->id }})"><i class="fa-regular fa-comment pc-stat-icon"></i><span data-role="comments">{{ $post->comments_count }}</span><span class="pc-stat-label"> kommentarer</span></span><span class="pc-stat-sep"> · </span><span class="pc-stat-item"><i class="fa-solid fa-share pc-stat-icon"></i><span data-role="shares">{{ $post->shares ?? 0 }}</span><span class="pc-stat-label"> delinger</span></span>
         </span>
       </div>
 
@@ -698,6 +704,31 @@ function renderComments(wrap, comments) {
     else topLevel.push(c);
   });
   const postId = wrap.id.replace('comments-', '');
+
+  // Build mention link table: any persona who has commented in this thread
+  // can be @-tagged by name in another comment's body.
+  const mentionToId = {};
+  const escNames = [];
+  const seenPids = new Set();
+  comments.forEach(c => {
+    if (!c.persona_id || c.from_student || seenPids.has(c.persona_id)) return;
+    seenPids.add(c.persona_id);
+    const esc = escapeHtml(c.persona_name);
+    mentionToId[esc] = c.persona_id;
+    escNames.push(esc);
+  });
+  escNames.sort((a, b) => b.length - a.length);
+  const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const mentionRe = escNames.length
+    ? new RegExp(`(?<![\\p{L}\\p{N}])(${escNames.map(escapeRegex).join('|')})(?![\\p{L}\\p{N}])`, 'gu')
+    : null;
+  const linkifyMentions = body => {
+    if (!mentionRe) return body;
+    return body.replace(mentionRe, m => {
+      const id = mentionToId[m];
+      return id ? `<a class="mention" href="${PERSONA_URL}/${id}">${m}</a>` : m;
+    });
+  };
   const renderOne = (c, depth) => {
     const kids = (childrenOf[c.id] || []).map(k => renderOne(k, depth + 1)).join('');
     const classes = ['pc-comment'];
@@ -736,7 +767,7 @@ function renderComments(wrap, comments) {
     return `<div class="${classes.join(' ')}" id="comment-${c.id}">
       ${avatar}
       <div style="flex:1; min-width:0;">
-        <div class="bubble">${nameLink}<div>${escapeHtml(c.body)}</div>${rxPills}</div>
+        <div class="bubble">${nameLink}<div>${linkifyMentions(escapeHtml(c.body))}</div>${rxPills}</div>
         <div class="cm-meta">${timeAgoDa(c.created_at)}${replyLink}${reactBtn}</div>
         ${kids}
       </div>
