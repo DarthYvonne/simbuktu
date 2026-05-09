@@ -47,6 +47,17 @@
 .friend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .friend-item { display: flex; gap: 8px; align-items: center; padding: 6px 8px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #1c1e21; }
 .friend-item:hover { background: #e7f3ff; }
+.profile-id-row { display: flex; gap: 18px; align-items: flex-end; }
+.profile-id-text { flex: 1; padding-bottom: 10px; }
+@media (max-width: 600px) {
+  .profile-cover { height: 110px; }
+  .profile-body { padding: 0 16px 16px; margin-top: -50px; }
+  .profile-id-row { flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+  .profile-id-text { padding-bottom: 0; }
+  .profile-avatar, .profile-avatar-placeholder { width: 120px; height: 120px; }
+  .profile-avatar-placeholder { font-size: 36px; }
+  .profile-name { font-size: 24px; margin-top: 4px; }
+}
 </style>
 
 <div class="profile-header">
@@ -56,13 +67,13 @@
     @endif
   </div>
   <div class="profile-body">
-    <div style="display: flex; gap: 18px; align-items: flex-end;">
+    <div class="profile-id-row">
       @if (!empty($p['image_file']))
         <img class="profile-avatar" src="{{ url("$base/personas/".$p['id']."/image") }}">
       @else
         <div class="profile-avatar-placeholder">{{ strtoupper(substr($p['name'] ?? '?', 0, 2)) }}</div>
       @endif
-      <div style="flex: 1; padding-bottom: 10px;">
+      <div class="profile-id-text">
         <div class="profile-name">{{ $p['name'] }}, {{ $p['demographics']['age'] }}</div>
         <div class="profile-meta">{{ $p['demographics']['occupation_hint'] }} · {{ $p['demographics']['region'] }} · {{ $p['demographics']['family'] }}</div>
         <div class="profile-bio">"{{ $p['bio'] }}"</div>
