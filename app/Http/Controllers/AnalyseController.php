@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Services\Llm\LlmRouter;
 use App\Services\Personas\PersonaRepository;
+use App\Services\PromptRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AnalyseController extends Controller
 {
-    public function __construct(private PersonaRepository $repo)
-    {
+    public function __construct(
+        private PersonaRepository $repo,
+        private LlmRouter $llm,
+        private PromptRepository $prompts,
+    ) {
     }
 
     public function index(Request $request)
@@ -26,6 +32,7 @@ class AnalyseController extends Controller
             'posts' => $posts,
             'post' => $post,
             'data' => $data,
+            'sentiment' => ($post?->intelligence ?? [])['sentiment'] ?? null,
         ]);
     }
 
@@ -204,6 +211,66 @@ class AnalyseController extends Controller
                 'discovery' => ['color' => $colors['discovery'], 'label' => 'Tilfældig discovery'],
             ],
         ]);
+    }
+
+    public function sentiment(int $postId)
+    {
+        $post = Post::findOrFail($postId);
+        $comments = $post->comments()->get(['id', 'persona_name', 'body']);
+
+        if ($comments->isEmpty()) {
+            return response()->json(['error' => 'Ingen kommentarer at analysere endnu.'], 422);
+        }
+
+        $list = $comments->map(fn ($c) => "[{$c->id}] {$c->persona_name}: ".str_replace(["\r","\n"], ' ', (string) $c->body))->implode("\n");
+
+        $prompt = $this->prompts->render('sentiment.analyse', [
+            'post_text' => $post->body,
+            'comments_list' => $list,
+        ]);
+
+        try {
+            $raw = $this->llm->generateText($prompt, null, ['prompt_key' => 'sentiment.analyse']);
+            $json = preg_replace('/^```(?:json)?\s*|\s*```\s*$/m', '', trim($raw));
+            if (preg_match('/\{.*\}/s', $json, $m)) $json = $m[0];
+            $parsed = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+        } catch (\Throwable $e) {
+            Log::warning("Sentiment analyse failed for post {$postId}: {$e->getMessage()} — raw: ".substr($raw ?? '', 0, 500));
+            return response()->json(['error' => 'Analysen fejlede: '.$e->getMessage()], 500);
+        }
+
+        $stanceById = [];
+        foreach (($parsed['classifications'] ?? []) as $c) {
+            $id = (int) ($c['id'] ?? 0);
+            $stance = $c['stance'] ?? 'neutral';
+            if (!in_array($stance, ['pro','con','neutral'], true)) $stance = 'neutral';
+            if ($id) $stanceById[$id] = $stance;
+        }
+
+        $buckets = ['pro' => [], 'con' => [], 'neutral' => []];
+        foreach ($comments as $c) {
+            $stance = $stanceById[$c->id] ?? 'neutral';
+            $buckets[$stance][] = ['id' => $c->id, 'persona_name' => $c->persona_name, 'body' => $c->body];
+        }
+
+        $result = [
+            'summary' => $parsed['summary'] ?? '',
+            'totals' => [
+                'pro' => count($buckets['pro']),
+                'con' => count($buckets['con']),
+                'neutral' => count($buckets['neutral']),
+                'total' => $comments->count(),
+            ],
+            'buckets' => $buckets,
+            'generated_at' => now()->toIso8601String(),
+        ];
+
+        $intel = $post->intelligence ?? [];
+        $intel['sentiment'] = $result;
+        $post->intelligence = $intel;
+        $post->save();
+
+        return response()->json($result);
     }
 
     private function maxThreadDepth($comments): int

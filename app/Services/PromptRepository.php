@@ -270,6 +270,39 @@ PROMPT,
                 'placeholders' => ['persona_image_prompt'],
                 'body' => 'Realistic amateur smartphone selfie portrait, natural lighting, slightly imperfect framing, no studio lighting, no professional retouching. {{persona_image_prompt}}. Square aspect ratio. No text or watermarks.',
             ],
+
+            'sentiment.analyse' => [
+                'name' => 'Sentiment-analyse',
+                'description' => 'Klassificerer hver kommentar som pro, con eller neutral i forhold til opslaget.',
+                'placeholders' => ['post_text', 'comments_list'],
+                'body' => <<<PROMPT
+Du klassificerer kommentarer på et dansk SoMe-opslag efter deres holdning til opslaget.
+
+OPSLAGET:
+"{{post_text}}"
+
+KOMMENTARER (én pr. linje, prefixet med id):
+{{comments_list}}
+
+For HVER kommentar afgør om den er:
+- "pro" — kommentatoren er enig, støtter, eller udtrykker positive følelser om opslaget/dets afsender/budskab.
+- "con" — kommentatoren er uenig, kritisk, vred, eller afviser opslaget/dets afsender/budskab.
+- "neutral" — kommentatoren tager ikke stilling, stiller bare et spørgsmål, deler en relateret oplevelse uden klar holdning, eller er off-topic.
+
+Returnér KUN JSON i dette format:
+{
+  "classifications": [
+    {"id": <comment_id>, "stance": "pro|con|neutral"}
+  ],
+  "summary": "2-3 sætninger på dansk der opsummerer den overordnede stemning og hvad der driver den."
+}
+
+REGLER:
+- Én entry per kommentar — alle skal være med.
+- Vær konsistent: vrede/sarkasme/afvisning = con; støtte/medhold/ros = pro; ren faktuel/spørgende/off-topic = neutral.
+- Bedøm kommentarens holdning til OPSLAGET — ikke til andre kommentarer.
+PROMPT,
+            ],
         ];
     }
 }

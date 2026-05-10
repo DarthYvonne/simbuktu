@@ -108,6 +108,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
 
     Route::get('/analyse', [AnalyseController::class, 'index']);
     Route::get('/analyse/{post}/spread', [AnalyseController::class, 'spreadGraph']);
+    Route::post('/analyse/{post}/sentiment', [AnalyseController::class, 'sentiment']);
 
     Route::get('/beskeder', [MessageController::class, 'index']);
     Route::post('/beskeder/open/{personaId}', [MessageController::class, 'open']);

@@ -46,6 +46,7 @@ class PromptController extends Controller
             'reaction.batch',
             'comment.interpret',
             'comment.compose',
+            'sentiment.analyse',
         ]);
         $prompts = Prompt::get()->sortBy(fn ($p) => $menuOrder[$p->key] ?? 999)->values();
         $current = $key ? Prompt::where('key', $key)->first() : $prompts->first();

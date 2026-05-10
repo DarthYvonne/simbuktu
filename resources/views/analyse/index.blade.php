@@ -38,6 +38,7 @@ function bar($v, $max, $color = '#1877f2') { return '<div style="height:8px;back
 <div class="analyse-tabs">
   <button class="active" data-tab="statistik"><i class="fa-solid fa-chart-simple"></i> Statistik</button>
   <button data-tab="graf"><i class="fa-solid fa-circle-nodes"></i> Graf</button>
+  <button data-tab="sentiment"><i class="fa-solid fa-face-grin-wink"></i> Sentiment</button>
 </div>
 
 <div class="analyse-pane active" data-pane="statistik">
@@ -216,6 +217,127 @@ window.__initSpread = async function () {
 </script>
 
 </div><!-- /graf pane -->
+
+<div class="analyse-pane" data-pane="sentiment">
+
+<style>
+.sentiment-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.sentiment-btn { background: #1877f2; color: #fff; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; font-family: inherit; }
+.sentiment-btn:hover { background: #166fe0; }
+.sentiment-btn:disabled { background: #8a8d91; cursor: not-allowed; }
+.sentiment-meta { color: #65676b; font-size: 12px; }
+.sentiment-summary { background: #fff; border-radius: 8px; padding: 14px 16px; border: 1px solid #dadde1; margin-bottom: 14px; line-height: 1.45; font-size: 14px; color: #1c1e21; }
+.sentiment-summary.empty { color: #65676b; font-style: italic; }
+.sentiment-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 800px) { .sentiment-cols { grid-template-columns: 1fr; } }
+.sentiment-col { background: #fff; border-radius: 8px; border: 1px solid #dadde1; overflow: hidden; display: flex; flex-direction: column; }
+.sentiment-col-head { padding: 10px 14px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dadde1; }
+.sentiment-col.pro     .sentiment-col-head { background: #e7f7ec; color: #137a3c; }
+.sentiment-col.con     .sentiment-col-head { background: #fdecec; color: #b42424; }
+.sentiment-col.neutral .sentiment-col-head { background: #f0f2f5; color: #65676b; }
+.sentiment-col-count { font-family: monospace; font-size: 13px; }
+.sentiment-col-body { padding: 8px; flex: 1; max-height: 560px; overflow-y: auto; }
+.sentiment-comment { background: #f8f9fa; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; font-size: 13px; line-height: 1.4; }
+.sentiment-comment .who { font-weight: 600; font-size: 12px; color: #1c1e21; margin-bottom: 2px; }
+.sentiment-empty { padding: 14px; color: #8a8d91; font-size: 13px; text-align: center; font-style: italic; }
+.sentiment-error { background: #fdecec; border: 1px solid #f5c2c2; color: #b42424; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+</style>
+
+<div class="sentiment-bar">
+  <button id="sentiment-run" class="sentiment-btn"><i class="fa-solid fa-play"></i> <span id="sentiment-btn-label">Kør sentiment-analyse</span></button>
+  <span id="sentiment-meta" class="sentiment-meta">
+    @if ($sentiment)
+      Senest kørt {{ \Carbon\Carbon::parse($sentiment['generated_at'])->diffForHumans() }} · {{ $sentiment['totals']['total'] }} kommentarer
+    @else
+      Ingen analyse kørt endnu.
+    @endif
+  </span>
+</div>
+
+<div id="sentiment-error" class="sentiment-error" style="display: none;"></div>
+
+<div id="sentiment-summary" class="sentiment-summary {{ $sentiment ? '' : 'empty' }}">
+  {{ $sentiment['summary'] ?? 'Klik på knappen for at klassificere kommentarerne som pro, con eller neutral i forhold til opslaget.' }}
+</div>
+
+<div class="sentiment-cols">
+  @foreach (['pro' => 'Støttende kommentarer', 'con' => 'Opponerende kommentarer', 'neutral' => 'Neutrale kommentarer'] as $key => $label)
+    <div class="sentiment-col {{ $key }}">
+      <div class="sentiment-col-head">
+        <span>{{ $label }}</span>
+        <span class="sentiment-col-count" data-count="{{ $key }}">{{ $sentiment['totals'][$key] ?? 0 }}</span>
+      </div>
+      <div class="sentiment-col-body" data-bucket="{{ $key }}">
+        @if ($sentiment && !empty($sentiment['buckets'][$key]))
+          @foreach ($sentiment['buckets'][$key] as $c)
+            <div class="sentiment-comment">
+              <div class="who">{{ $c['persona_name'] }}</div>
+              <div>{{ $c['body'] }}</div>
+            </div>
+          @endforeach
+        @else
+          <div class="sentiment-empty">Ingen.</div>
+        @endif
+      </div>
+    </div>
+  @endforeach
+</div>
+
+<script>
+(function () {
+  const btn = document.getElementById('sentiment-run');
+  const btnLabel = document.getElementById('sentiment-btn-label');
+  const errorBox = document.getElementById('sentiment-error');
+  const summaryEl = document.getElementById('sentiment-summary');
+  const metaEl = document.getElementById('sentiment-meta');
+
+  function escape(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function render(data) {
+    summaryEl.classList.remove('empty');
+    summaryEl.textContent = data.summary || '(ingen opsummering)';
+    ['pro','con','neutral'].forEach(k => {
+      document.querySelector('[data-count="'+k+'"]').textContent = data.totals[k] || 0;
+      const body = document.querySelector('[data-bucket="'+k+'"]');
+      const items = data.buckets[k] || [];
+      if (!items.length) {
+        body.innerHTML = '<div class="sentiment-empty">Ingen.</div>';
+        return;
+      }
+      body.innerHTML = items.map(c =>
+        '<div class="sentiment-comment"><div class="who">'+escape(c.persona_name)+'</div><div>'+escape(c.body)+'</div></div>'
+      ).join('');
+    });
+    metaEl.textContent = 'Lige nu kørt · ' + data.totals.total + ' kommentarer';
+  }
+
+  btn.addEventListener('click', async () => {
+    errorBox.style.display = 'none';
+    btn.disabled = true;
+    btnLabel.textContent = 'Analyserer…';
+    try {
+      const res = await fetch('{{ url("/simulation/analyse/$post->id/sentiment") }}', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || ('HTTP '+res.status));
+      render(data);
+    } catch (e) {
+      errorBox.textContent = e.message;
+      errorBox.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btnLabel.textContent = 'Kør igen';
+    }
+  });
+})();
+</script>
+
+</div><!-- /sentiment pane -->
 
 <script>
 document.querySelectorAll('.analyse-tabs button').forEach(btn => {
