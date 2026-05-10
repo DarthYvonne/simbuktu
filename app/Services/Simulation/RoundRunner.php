@@ -81,8 +81,11 @@ class RoundRunner
             $persona = $this->personas->find($parent->persona_id);
             if (!$persona) continue;
 
-            $returnProb = config('simulation.notification_return_probability', 0.8);
-            if (mt_rand(0, 100) / 100 > $returnProb) continue;
+            // Student replies always trigger a persona response next round; persona-vs-persona uses return probability.
+            if ($reply->user_id === null) {
+                $returnProb = config('simulation.notification_return_probability', 0.8);
+                if (mt_rand(0, 100) / 100 > $returnProb) continue;
+            }
 
             $notified[] = ['persona' => $persona, 'reply_to' => $reply, 'type' => 'reply'];
             $seen[] = $parent->persona_id;
@@ -171,8 +174,12 @@ class RoundRunner
             $original = $reply->parent;
             if (!$original) continue;
 
-            $action = $this->interpreter->decide($persona, $post, $original, $reply);
-            $llmCalls++;
+            if ($reply->user_id !== null) {
+                $action = 'reply';
+            } else {
+                $action = $this->interpreter->decide($persona, $post, $original, $reply);
+                $llmCalls++;
+            }
             $stats['exposed']++;
 
             if ($action === 'reply') {
