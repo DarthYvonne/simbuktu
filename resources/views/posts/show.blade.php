@@ -101,7 +101,7 @@
   <div class="pc-body">{!! preg_replace('#(https?://[^\s<>"\']+)#i', '<a href="$1" target="_blank" rel="noopener" style="color:#1877f2;word-break:break-all;">$1</a>', e($post->body)) !!}</div>
 
   @if ($post->image_path)
-    <img class="pc-img" id="postImg" src="{{ Storage::url($post->image_path) }}" alt="" onclick="document.getElementById('lightbox').classList.add('open')">
+    <img class="pc-img" id="postImg" src="{{ Storage::url($post->image_path) }}" alt="" @if($post->image_description) data-img-desc="{{ $post->image_description }}" @endif onclick="document.getElementById('lightbox').classList.add('open')">
   @elseif ($post->link_url)
     <a class="pc-link" href="{{ $post->link_url }}" target="_blank" rel="noopener">
       @if ($post->link_image)<img src="{{ $post->link_image }}" onerror="this.style.display='none'">@endif

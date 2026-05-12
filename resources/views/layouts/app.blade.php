@@ -234,5 +234,54 @@
   mql.addEventListener('change', onMobileChange);
 })();
 </script>
+
+<style>
+.img-desc-tip { position: fixed; background: rgba(0,0,0,0.88); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 13px; max-width: 320px; line-height: 1.4; z-index: 10000; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+</style>
+<script>
+(function () {
+  var tip = null, timer = null, lastX = 0, lastY = 0;
+  function place(x, y) {
+    if (!tip) return;
+    var pad = 12, w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = Math.min(x + pad, window.innerWidth - w - pad);
+    var top  = Math.min(y + pad, window.innerHeight - h - pad);
+    tip.style.left = Math.max(pad, left) + 'px';
+    tip.style.top  = Math.max(pad, top)  + 'px';
+  }
+  function hide() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (tip) { tip.remove(); tip = null; }
+  }
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target.closest && e.target.closest('[data-img-desc]');
+    if (!el) return;
+    var text = el.getAttribute('data-img-desc');
+    if (!text) return;
+    hide();
+    lastX = e.clientX; lastY = e.clientY;
+    timer = setTimeout(function () {
+      tip = document.createElement('div');
+      tip.className = 'img-desc-tip';
+      tip.textContent = text;
+      document.body.appendChild(tip);
+      place(lastX, lastY);
+    }, 3000);
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!e.target.closest || !e.target.closest('[data-img-desc]')) return;
+    lastX = e.clientX; lastY = e.clientY;
+    if (tip) place(lastX, lastY);
+  });
+  document.addEventListener('mouseout', function (e) {
+    var from = e.target.closest && e.target.closest('[data-img-desc]');
+    if (!from) return;
+    var to = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-img-desc]');
+    if (to === from) return;
+    hide();
+  });
+  window.addEventListener('scroll', hide, true);
+})();
+</script>
 </body>
 </html>

@@ -133,7 +133,7 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
       <div class="pc-body">{!! preg_replace('#(https?://[^\s<>"\']+)#i', '<span style="color:#1877f2;">$1</span>', e(\Illuminate\Support\Str::limit($post->body, 280))) !!}</div>
 
       @if ($post->image_path)
-        <img class="pc-img" src="{{ Storage::url($post->image_path) }}" alt="" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+        <img class="pc-img" src="{{ Storage::url($post->image_path) }}" alt="" @if($post->image_description) data-img-desc="{{ $post->image_description }}" @endif onclick="openLightbox(this.src)" style="cursor: zoom-in;">
       @elseif ($post->link_url)
         <div class="pc-link">
           @if ($post->link_image)<img src="{{ $post->link_image }}" onerror="this.style.display='none'">@endif
