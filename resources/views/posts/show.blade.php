@@ -30,6 +30,8 @@
 .cmeta { font-size: 11px; color: #65676b; padding: 2px 12px; }
 .thread { margin-left: 32px; border-left: 2px solid #e4e6eb; padding-left: 14px; }
 .comment.student .bubble { background: #e7f3ff; }
+.thread[data-depth="2"] { margin-left: 64px; }
+.thread[data-depth="3"] { margin-left: 96px; }
 .student-badge { display: inline-block; margin-left: 6px; padding: 1px 6px; background: #1877f2; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; border-radius: 8px; vertical-align: middle; }
 .reply-link { display: inline-block; margin-left: 8px; font-size: 11px; color: #1877f2; cursor: pointer; font-weight: 600; }
 .reply-link:hover { text-decoration: underline; }
@@ -164,16 +166,30 @@ const FEED_URL = '{{ url("/simulation/posts/$post->id/feed") }}';
 const PERSONA_URL = '{{ url("/simulation/admin/personas") }}';
 let lastSeenId = 0;
 const seenIds = new Set();
+const commentsById = {};
 
 function avatar(personaId, name) {
   return `<div class="avatar"><img src="${PERSONA_URL}/${personaId}/image" onerror="this.outerHTML='${(name||'??').substring(0,2).toUpperCase()}'"></div>`;
 }
 
+function depthOf(c) {
+  let d = 0, pid = c.parent_id;
+  while (pid && d < 5) {
+    const parent = commentsById[pid];
+    if (!parent) break;
+    d++;
+    pid = parent.parent_id;
+  }
+  return d;
+}
+
 function renderComment(c, isNew) {
+  commentsById[c.id] = c;
+  const depth = depthOf(c);
   const classes = ['comment'];
   if (isNew) classes.push('new-comment');
   if (c.from_student) classes.push('student');
-  const indent = c.parent_id ? 'thread' : '';
+  const indent = depth > 0 ? 'thread' : '';
   const badge = c.from_student ? '<span class="student-badge">Studerende</span>' : '';
   const av = c.from_student
     ? `<div class="avatar" style="background:#1877f2;color:#fff;">${(c.persona_name||'??').substring(0,2).toUpperCase()}</div>`
@@ -183,7 +199,7 @@ function renderComment(c, isNew) {
     : `<div class="author"><a href="${PERSONA_URL}/${c.persona_id}" target="_blank">${escapeHtml(c.persona_name)}</a></div>`;
   const replyLink = CAN_COMMENT && !c.parent_id ? `<span class="reply-link" onclick="openReply(${c.id})">Svar</span>` : '';
   return `
-    <div class="${indent}">
+    <div class="${indent}" data-depth="${depth}">
       <div class="${classes.join(' ')}" id="c-${c.id}">
         ${av}
         <div style="flex: 1;">

@@ -77,18 +77,20 @@ class RoundRunner
         $seen = [];
         foreach ($recent as $reply) {
             $parent = $reply->parent;
-            if (!$parent || !$parent->persona_id || in_array($parent->persona_id, $seen)) continue;
+            if (!$parent || !$parent->persona_id) continue;
+            $isStudentReply = $reply->user_id !== null;
+            // Persona-vs-persona: cap at one notification per parent persona; student replies bypass that cap.
+            if (!$isStudentReply && in_array($parent->persona_id, $seen)) continue;
             $persona = $this->personas->find($parent->persona_id);
             if (!$persona) continue;
 
-            // Student replies always trigger a persona response next round; persona-vs-persona uses return probability.
-            if ($reply->user_id === null) {
+            if (!$isStudentReply) {
                 $returnProb = config('simulation.notification_return_probability', 0.8);
                 if (mt_rand(0, 100) / 100 > $returnProb) continue;
+                $seen[] = $parent->persona_id;
             }
 
             $notified[] = ['persona' => $persona, 'reply_to' => $reply, 'type' => 'reply'];
-            $seen[] = $parent->persona_id;
         }
 
         // Personas whose comments got user reactions since last tick
@@ -145,13 +147,16 @@ class RoundRunner
         $maxLlm = $algo['max_llm_calls_per_round'] ?? 25;
 
         // 1. Notified personas → individual interpret-then-maybe-reply path.
-        $notifiedSeen = [];
+        $notifiedSeen = [];        // pid → true; excludes persona from the newOnly batch
+        $handledTriggers = [];     // pid:reply_id → true; prevents same persona answering the same reply twice
         foreach ($notified as $notif) {
             $persona = $notif['persona'];
             $reply = $notif['reply_to'];
             $notifType = $notif['type'] ?? 'reply';
             $pid = $persona['id'];
-            if (isset($notifiedSeen[$pid]) || $llmCalls >= $maxLlm) continue;
+            $triggerKey = $pid.':'.($reply->id ?? 0);
+            if (isset($handledTriggers[$triggerKey]) || $llmCalls >= $maxLlm) continue;
+            $handledTriggers[$triggerKey] = true;
             $notifiedSeen[$pid] = true;
 
             if ($notifType === 'reaction') {
@@ -186,9 +191,13 @@ class RoundRunner
                 $body = $this->writeComment($post, $persona, $reply, $existingCommentsArr);
                 if ($body === null || $body === '') continue;
                 $llmCalls++;
+                // Nest under the student's question; persona-vs-persona stays flat (one-level threads).
+                $parentId = $reply->user_id !== null
+                    ? $reply->id
+                    : ($reply->parent_id ?? $reply->id);
                 Comment::create([
                     'post_id' => $post->id,
-                    'parent_id' => $reply->parent_id ?? $reply->id,
+                    'parent_id' => $parentId,
                     'persona_id' => $pid,
                     'persona_name' => $persona['name'],
                     'body' => $body,
@@ -363,9 +372,12 @@ class RoundRunner
 
     private function replyToStudentComments(Post $post, int $round, array $algo, int $usedLlm, int $maxLlm, array $existingCommentsArr, array &$stats): int
     {
+        // Only handle student top-level comments here; student *replies* are picked up by the
+        // notified-loop in runBatched(), which targets the persona being replied to specifically.
         $studentComments = $post->comments()
             ->whereNotNull('user_id')
             ->whereNull('persona_id')
+            ->whereNull('parent_id')
             ->where('round', '>=', max(1, $round - 2))
             ->doesntHave('replies', 'and', fn ($q) => $q->whereNotNull('persona_id'))
             ->get();
@@ -411,13 +423,30 @@ class RoundRunner
 
     private function checkFinished(Post $post, int $round, array $algo): void
     {
-        if ($round >= ($algo['max_rounds'] ?? 30)) {
-            $post->status = 'finished';
-            $post->finished_at = now();
-        } elseif ($this->isInactive($post, $algo['inactive_threshold_rounds'] ?? 5)) {
-            $post->status = 'finished';
-            $post->finished_at = now();
+        $maxRounds = $algo['max_rounds'] ?? 30;
+        $shouldFinish = $round >= $maxRounds
+            || $this->isInactive($post, $algo['inactive_threshold_rounds'] ?? 5);
+        if (!$shouldFinish) return;
+
+        // Grace period: don't close the post while a student still has an un-answered comment
+        // from the current round. Cap the extension so a chatty student can't run the simulation forever.
+        $graceCap = $maxRounds + 3;
+        if ($round < $graceCap && $this->hasUnansweredStudent($post, $round)) {
+            return;
         }
+
+        $post->status = 'finished';
+        $post->finished_at = now();
+    }
+
+    private function hasUnansweredStudent(Post $post, int $round): bool
+    {
+        return Comment::where('post_id', $post->id)
+            ->where('round', $round)
+            ->whereNotNull('user_id')
+            ->whereNull('persona_id')
+            ->doesntHave('replies', 'and', fn ($q) => $q->whereNotNull('persona_id'))
+            ->exists();
     }
 
     private function getGraphSpreadPersonas(Post $post, int $round, array $algo, array $alreadyExposedIds): array
