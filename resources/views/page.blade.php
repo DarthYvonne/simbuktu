@@ -8,7 +8,7 @@
        Selector pinned to .container > .page-hero so we beat the layout's
        generic `.container > :first-child { margin-top: 0 }` typography rule. */
     .container > .page-hero {
-        margin: -60px 0 36px;
+        margin: -60px 0 18px;
     }
     .container .page-hero img {
         width: 100%; height: auto;
@@ -20,7 +20,8 @@
         display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
         font-size: 13px;
         color: #8a96a7;
-        margin-bottom: 24px;
+        margin: 0 0 20px;
+        padding-left: 14px; /* line up with the sidebar item text */
         letter-spacing: 0.3px;
     }
     .breadcrumb a {
