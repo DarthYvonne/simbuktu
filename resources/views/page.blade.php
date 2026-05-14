@@ -4,8 +4,10 @@
 
 @section('styles')
     /* Hero matches the page content's width, hugs the header's bottom rule
-       with no gap. Height follows the image's natural aspect ratio. */
-    .page-hero {
+       with no gap. Height follows the image's natural aspect ratio.
+       Selector pinned to .container > .page-hero so we beat the layout's
+       generic `.container > :first-child { margin-top: 0 }` typography rule. */
+    .container > .page-hero {
         margin: -60px 0 36px;
     }
     .page-hero img {
@@ -47,7 +49,7 @@
             position: static;
         }
         .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-        .page-hero { margin: -60px 0 24px; }
+        .container > .page-hero { margin: -60px 0 24px; }
     }
 @endsection
 
