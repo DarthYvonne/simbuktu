@@ -69,6 +69,37 @@ Route::post('/booking', function (\Illuminate\Http\Request $request) {
 
 Route::get('/tak', fn () => view('coming-soon-tak'));
 
+Route::post('/kontakt', function (\Illuminate\Http\Request $request) {
+    if (filled($request->input('website'))) {
+        return back()->with('kontakt_sent', true);
+    }
+    $ts = (int) $request->input('ts');
+    if ($ts === 0 || (time() - $ts) < 2) {
+        return back()->with('kontakt_sent', true);
+    }
+
+    $data = $request->validate([
+        'name'  => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'msg'   => 'required|string|max:5000',
+        'kilde' => 'nullable|string|max:200',
+    ]);
+
+    $body = "Henvendelse fra simbuktu.dk\n\n"
+        ."Navn: {$data['name']}\n"
+        ."E-mail: {$data['email']}\n"
+        ."Side: ".($data['kilde'] ?? '—')."\n\n"
+        ."Besked:\n{$data['msg']}\n";
+
+    Mail::raw($body, function ($m) use ($data) {
+        $m->to('anders@klinikken.ai')
+          ->replyTo($data['email'], $data['name'])
+          ->subject('Simbuktu — ny henvendelse fra '.$data['name']);
+    });
+
+    return back()->with('kontakt_sent', true);
+});
+
 // Auth (public)
 Route::prefix('simulation')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');

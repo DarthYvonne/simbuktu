@@ -72,22 +72,72 @@
                     <summary style="cursor:pointer;font-size:13px;color:#888;">Vis HTML-kilde</summary>
                     <textarea id="html-source" style="margin-top:8px;min-height:160px;" oninput="syncFromSource(this.value)">{{ old('content', $page->content) }}</textarea>
                 </details>
+
+                <details style="margin-top:10px;">
+                    <summary style="cursor:pointer;font-size:13px;color:#888;">Genveje — indsæt i indholdet</summary>
+                    <div style="margin-top:10px;display:grid;gap:10px;">
+                        <div class="snippet">
+                            <div class="snippet__head">
+                                <div>
+                                    <strong>Kontaktformular</strong>
+                                    <span class="snippet__hint">Indsæt koden — bliver til en spamfiltret formular på siden.</span>
+                                </div>
+                                <button type="button" class="btn btn--secondary btn--sm" onclick="copySnippet(this)" data-snippet="[kontaktform]">Kopiér</button>
+                            </div>
+                            <code class="snippet__code">[kontaktform]</code>
+                        </div>
+                    </div>
+                </details>
             </div>
 
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button class="btn" type="submit">Gem</button>
-                <button class="btn btn--secondary" type="submit" name="save_and_preview" value="1">Gem og preview</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <button class="btn" type="submit" name="save_and_preview" value="1">Gem</button>
+                @if($page->exists)
+                    <span style="flex:1;"></span>
+                    <button type="button" class="btn btn--danger" onclick="document.getElementById('deletePageForm').requestSubmit()">Slet siden</button>
+                @endif
             </div>
         </form>
 
         @if($page->exists)
-            <form method="POST" action="/cms/{{ $page->id }}" onsubmit="return confirm('Slet siden?');" style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;">
+            <form id="deletePageForm" method="POST" action="/cms/{{ $page->id }}" onsubmit="return confirm('Slet siden?');" style="display:none;">
                 @csrf
                 @method('DELETE')
-                <button class="btn btn--danger" type="submit">Slet siden</button>
             </form>
         @endif
     </div>
+
+    <style>
+        .snippet {
+            background: var(--line-soft);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .snippet__head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; margin-bottom: 8px;
+        }
+        .snippet__hint { display: block; font-size: 12px; color: var(--ink-mute); font-weight: 400; margin-top: 2px; }
+        .snippet__code {
+            display: block;
+            background: var(--surface);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 13px;
+            color: var(--ink);
+        }
+    </style>
+    <script>
+        function copySnippet(btn) {
+            const text = btn.getAttribute('data-snippet');
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.textContent;
+                btn.textContent = 'Kopieret!';
+                setTimeout(() => { btn.textContent = original; }, 1400);
+            });
+        }
+    </script>
 
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>

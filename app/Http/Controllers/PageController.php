@@ -44,6 +44,7 @@ HTML;
             ->where('is_visible', true)
             ->with('children')
             ->firstOrFail();
+        $page->content = $this->renderShortcodes($page->content);
         $editUrl = '/cms/'.$page->id.'/edit';
         return view('page', compact('page', 'editUrl'));
     }
@@ -60,7 +61,24 @@ HTML;
             ->where('is_visible', true)
             ->firstOrFail();
         $page->setRelation('parent', $parentPage);
+        $page->content = $this->renderShortcodes($page->content);
         $editUrl = '/cms/'.$page->id.'/edit';
         return view('page', compact('page', 'editUrl'));
+    }
+
+    private function renderShortcodes(?string $html): string
+    {
+        if ($html === null || $html === '') return '';
+
+        $shortcodes = [
+            'kontaktform' => fn () => view('partials.kontakt-form')->render(),
+        ];
+
+        foreach ($shortcodes as $tag => $render) {
+            $pattern = '#(?:<p>\s*)?\[' . preg_quote($tag, '#') . '\](?:\s*</p>)?#i';
+            $html = preg_replace_callback($pattern, fn () => $render(), $html);
+        }
+
+        return $html;
     }
 }

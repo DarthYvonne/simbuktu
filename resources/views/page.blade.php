@@ -58,6 +58,15 @@
     .page-sidebar a.active { background: #3498db; color: #fff; font-weight: 500; }
     .page-content > *:first-child { margin-top: 0; }
 
+    .kontakt-ok {
+        background: #dcfce7; color: #166534;
+        border: 1px solid #86efac; border-radius: 8px;
+        padding: 14px 18px;
+        margin: 0 0 20px;
+        font-size: 15px;
+    }
+    .kontakt-ok strong { color: #14532d; }
+
     @media (max-width: 768px) {
         .page-layout { grid-template-columns: 1fr; gap: 24px; }
         .page-sidebar {
@@ -76,6 +85,12 @@
         @if($page->hero_image)
             <div class="page-hero">
                 <img src="{{ asset($page->hero_image) }}" alt="">
+            </div>
+        @endif
+
+        @if(session('kontakt_sent'))
+            <div class="kontakt-ok">
+                <strong>Tak!</strong> Din besked er sendt. Vi vender tilbage hurtigst muligt.
             </div>
         @endif
 
