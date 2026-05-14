@@ -15,6 +15,22 @@
         display: block;
         margin: 0;
     }
+
+    .breadcrumb {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+        font-size: 13px;
+        color: #8a96a7;
+        margin-bottom: 24px;
+        letter-spacing: 0.3px;
+    }
+    .breadcrumb a {
+        color: #8a96a7;
+        text-decoration: none;
+        transition: color 0.15s;
+    }
+    .breadcrumb a:hover { color: #3498db; }
+    .breadcrumb .sep { color: #cdd5e0; user-select: none; }
+    .breadcrumb .current { color: #1a2733; font-weight: 500; }
     .page-layout {
         display: grid;
         grid-template-columns: 220px 1fr;
@@ -61,6 +77,16 @@
                 <img src="{{ asset($page->hero_image) }}" alt="">
             </div>
         @endif
+
+        <nav class="breadcrumb" aria-label="Sti">
+            <a href="/">Forside</a>
+            @if($page->parent_id && $page->parent)
+                <span class="sep">›</span>
+                <a href="{{ $page->parent->url() }}">{{ $page->parent->title }}</a>
+            @endif
+            <span class="sep">›</span>
+            <span class="current">{{ $page->title }}</span>
+        </nav>
 
         @php
             // Sidebar lists siblings (so the user can move around the section).
