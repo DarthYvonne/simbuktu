@@ -101,8 +101,9 @@
         <div class="pc-av-ph">{{ strtoupper(substr($p['name'] ?? '?', 0, 2)) }}</div>
       @endif
       <div class="pc-ident">
-        <div class="pc-name">{{ $p['name'] ?? 'Ukendt' }}, {{ $p['demographics']['age'] }}</div>
-        <div class="pc-occ">{{ $p['demographics']['occupation_hint'] }}</div>
+        @php $_age = $p['demographics']['age'] ?? null; @endphp
+        <div class="pc-name">{{ $p['name'] ?? 'Ukendt' }}@if($_age), {{ $_age }}@endif</div>
+        <div class="pc-occ">{{ $p['demographics']['occupation_hint'] ?? '' }}</div>
       </div>
     </div>
 

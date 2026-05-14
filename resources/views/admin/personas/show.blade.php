@@ -98,8 +98,16 @@
         <div class="profile-avatar-placeholder">{{ strtoupper(substr($p['name'] ?? '?', 0, 2)) }}</div>
       @endif
       <div class="profile-id-text">
-        <div class="profile-name">{{ $p['name'] }}, {{ $p['demographics']['age'] }}</div>
-        <div class="profile-meta">{{ $p['demographics']['occupation_hint'] }} · {{ $p['demographics']['region'] }} · {{ $p['demographics']['family'] }}</div>
+        @php
+          $_age = $p['demographics']['age'] ?? null;
+          $_metaBits = array_filter([
+            $p['demographics']['occupation_hint'] ?? null,
+            $p['demographics']['region'] ?? null,
+            $p['demographics']['family'] ?? null,
+          ]);
+        @endphp
+        <div class="profile-name">{{ $p['name'] }}@if($_age), {{ $_age }}@endif</div>
+        <div class="profile-meta">{{ implode(' · ', $_metaBits) }}</div>
         <div class="profile-bio">"{{ $p['bio'] }}"</div>
       </div>
     </div>
@@ -211,7 +219,7 @@
               @endif
               <div style="min-width: 0; flex: 1;">
                 <div style="font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $f['name'] }}</div>
-                <div style="font-size: 11px; color: #65676b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $f['demographics']['age'] }}, {{ $f['demographics']['occupation_hint'] }}</div>
+                <div style="font-size: 11px; color: #65676b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@php $_fAge = $f['demographics']['age'] ?? null; $_fOcc = $f['demographics']['occupation_hint'] ?? ''; @endphp{{ trim(($_fAge ? $_fAge.($_fOcc ? ', ' : '') : '').$_fOcc) }}</div>
               </div>
             </a>
           @endforeach
