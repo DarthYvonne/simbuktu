@@ -1,0 +1,15 @@
+[Unit]
+Description=Simbuktu Laravel queue worker (instance %i)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=5
+WorkingDirectory=/var/www/simbuktu
+ExecStart=/usr/bin/php artisan queue:work --queue=default --sleep=2 --tries=2 --max-time=3600 --max-jobs=1000
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+# Simbuktu Laravel scheduler — runs every minute, dispatches Schedule::command()
+# entries defined in routes/console.php (simulation:tick, FetchNewsJob, etc.)
+#
+# Install: copy to /etc/cron.d/simbuktu (must be owned by root, mode 644).
+#
+# Without this entry the scheduled tasks defined in routes/console.php
+# do not run. Other apps on this box have equivalent entries in
+# /var/spool/cron/crontabs/root — simbuktu was missing one.
+
+* * * * * www-data cd /var/www/simbuktu && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
