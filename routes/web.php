@@ -125,7 +125,8 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     Route::post('/posts/link-preview', [PostController::class, 'linkPreview']);
     Route::get('/posts/{post}/feedback', [\App\Http\Controllers\PostFeedbackController::class, 'show']);
     Route::get('/posts/{post}/feedback/data', [\App\Http\Controllers\PostFeedbackController::class, 'fetch']);
-    Route::post('/posts/{post}/feedback', [\App\Http\Controllers\PostFeedbackController::class, 'send']);
+    Route::post('/posts/{post}/feedback', [\App\Http\Controllers\PostFeedbackController::class, 'send'])
+        ->middleware('throttle:15,1'); // triggers LLM coaching reply — cap per user
     Route::get('/posts/{post}', [PostController::class, 'show']);
     Route::get('/posts/{post}/feed', [PostController::class, 'feed']);
     Route::post('/posts/{post}/comments', [\App\Http\Controllers\CommentController::class, 'store']);
@@ -138,12 +139,14 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
 
     Route::get('/analyse', [AnalyseController::class, 'index']);
     Route::get('/analyse/{post}/spread', [AnalyseController::class, 'spreadGraph']);
-    Route::post('/analyse/{post}/sentiment', [AnalyseController::class, 'sentiment']);
+    Route::post('/analyse/{post}/sentiment', [AnalyseController::class, 'sentiment'])
+        ->middleware('throttle:5,1'); // burns an LLM call — cap at 5/min per user
 
     Route::get('/beskeder', [MessageController::class, 'index']);
     Route::post('/beskeder/open/{personaId}', [MessageController::class, 'open']);
     Route::get('/beskeder/{conversation}', [MessageController::class, 'show']);
-    Route::post('/beskeder/{conversation}/send', [MessageController::class, 'send']);
+    Route::post('/beskeder/{conversation}/send', [MessageController::class, 'send'])
+        ->middleware('throttle:15,1'); // each send triggers an LLM reply — cap per user
 
     Route::get('/profiler', [ProfilerController::class, 'index']);
     Route::get('/profiler/graph', [ProfilerController::class, 'graph']);
