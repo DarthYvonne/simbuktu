@@ -147,7 +147,7 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .sok-toggle:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(24,119,242,0.45); }
-.sok-toggle.open { background: #fff; color: #1877f2; }
+.sok-toggle.open { display: none; }
 .sok-panel {
   position: fixed; top: 0; right: 0; bottom: 0; width: 400px; max-width: 100vw;
   background: #fff; box-shadow: -6px 0 24px rgba(0,0,0,0.12); z-index: 800;
