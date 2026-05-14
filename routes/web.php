@@ -147,6 +147,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     Route::get('/beskeder/{conversation}', [MessageController::class, 'show']);
     Route::post('/beskeder/{conversation}/send', [MessageController::class, 'send'])
         ->middleware('throttle:15,1'); // each send triggers an LLM reply — cap per user
+    Route::get('/beskeder/{conversation}/messages/{message}', [MessageController::class, 'pollMessage']);
 
     Route::get('/profiler', [ProfilerController::class, 'index']);
     Route::get('/profiler/graph', [ProfilerController::class, 'graph']);
