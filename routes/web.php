@@ -178,6 +178,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::patch('/blueprints/{blueprint}',               [BlueprintController::class, 'update']);
         Route::delete('/blueprints/{blueprint}',              [BlueprintController::class, 'destroy']);
         Route::post('/blueprints/{blueprint}/promote',        [BlueprintController::class, 'promote']);
+        Route::post('/blueprints/{blueprint}/chat',           [BlueprintController::class, 'chat']);
         Route::get('/blueprints/{blueprint}/prompts',         [BlueprintController::class, 'editPrompts']);
         Route::patch('/blueprints/{blueprint}/prompts',       [BlueprintController::class, 'updatePrompts']);
         Route::get('/blueprints/{blueprint}/om',              [BlueprintController::class, 'editOm']);

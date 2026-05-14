@@ -40,6 +40,7 @@ class PromptController extends Controller
         // Menu order — independent of defaults() definition order
         $menuOrder = array_flip([
             'persona.narrative',
+            'blueprint.dimension_chat',
             'coherence.check',
             'image.profile',
             'news.digest',

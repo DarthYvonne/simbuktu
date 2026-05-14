@@ -177,6 +177,119 @@ class BlueprintController extends Controller
         return back()->with('success', 'Prompts gemt.');
     }
 
+    /**
+     * Lille Sokrates — sparring-partner chat for the blueprint editor.
+     * Sees the full current (possibly unsaved) state and the conversation so far,
+     * returns prose + optional structured operations the frontend can apply.
+     */
+    public function chat(Request $request, Blueprint $blueprint)
+    {
+        $data = $request->validate([
+            'messages'                => 'array',
+            'messages.*.role'         => 'required|in:user,assistant',
+            'messages.*.content'      => 'required|string',
+            'state'                   => 'array',
+            'state.*.id'              => 'nullable|string',
+            'state.*.name'            => 'nullable|string',
+            'state.*.description'     => 'nullable|string',
+            'state.*.type'            => 'nullable|string',
+            'state.*.tier'            => 'nullable|string',
+            'state.*.show_on_profile' => 'nullable|boolean',
+            'state.*.facets'          => 'nullable|array',
+            'selected_index'          => 'nullable|integer',
+        ]);
+
+        $params = $data['state'] ?? [];
+        $selectedIndex = $data['selected_index'] ?? 0;
+        $selectedDimId = $params[$selectedIndex]['id'] ?? '(ingen valgt)';
+
+        $dimensionsBlock = $this->renderDimensionsBlockForChat($params);
+        $conversation = $this->renderConversation($data['messages'] ?? []);
+
+        $prompts = new \App\Services\PromptRepository();
+        $prompt = $prompts->render('blueprint.dimension_chat', [
+            'blueprint_name'        => $blueprint->name,
+            'blueprint_description' => $blueprint->description ?? '',
+            'dimensions_block'      => $dimensionsBlock ?: '(ingen dimensioner endnu)',
+            'selected_dimension_id' => $selectedDimId,
+            'conversation'          => $conversation ?: '(ingen samtale endnu — eksperten har lige åbnet chatten)',
+        ]);
+
+        try {
+            $raw = app(\App\Services\Llm\LlmRouter::class)->generateText($prompt, 'gemini-2.5-flash', [
+                'prompt_key'   => 'blueprint.dimension_chat',
+                'blueprint_id' => $blueprint->id,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message'    => 'Forbindelsesfejl: ' . $e->getMessage(),
+                'operations' => [],
+            ], 200); // 200 so the frontend can render the error inline as a message
+        }
+
+        $parsed = $this->parseChatResponse($raw);
+        return response()->json($parsed);
+    }
+
+    private function renderDimensionsBlockForChat(array $params): string
+    {
+        if (empty($params)) return '';
+        $lines = [];
+        foreach ($params as $p) {
+            $id = $p['id'] ?? '?';
+            $name = $p['name'] ?? '(unavngivet)';
+            $type = $p['type'] ?? 'personality';
+            $tier = $p['tier'] ?? 'primary';
+            $desc = trim((string) ($p['description'] ?? ''));
+            $lines[] = "## [id={$id}] {$name} (type={$type}, tier={$tier})" . ($desc !== '' ? " — {$desc}" : '');
+            foreach (($p['facets'] ?? []) as $f) {
+                $fid = $f['id'] ?? '?';
+                $fname = $f['name'] ?? '';
+                $weight = (int) ($f['weight'] ?? 0);
+                $value = trim((string) ($f['value'] ?? ''));
+                $text = trim((string) ($f['text'] ?? ''));
+                $textSnippet = mb_strlen($text) > 120 ? mb_substr($text, 0, 117) . '…' : $text;
+                $valSuffix = $value !== '' ? " (værdi={$value})" : '';
+                $lines[] = "  - [id={$fid}] {$fname} ({$weight}%){$valSuffix}: {$textSnippet}";
+            }
+        }
+        return implode("\n", $lines);
+    }
+
+    private function renderConversation(array $messages): string
+    {
+        if (empty($messages)) return '';
+        $lines = [];
+        foreach ($messages as $m) {
+            $role = $m['role'] === 'user' ? 'EKSPERT' : 'SOKRATES';
+            $lines[] = "{$role}: " . trim($m['content']);
+        }
+        return implode("\n\n", $lines);
+    }
+
+    /** Tolerant JSON parser — strip fences and isolate the first {...} block. */
+    private function parseChatResponse(string $raw): array
+    {
+        $raw = trim($raw);
+        $stripped = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $raw);
+        $start = strpos($stripped, '{');
+        $end   = strrpos($stripped, '}');
+        if ($start === false || $end === false || $end <= $start) {
+            return ['message' => $raw, 'operations' => []];
+        }
+        $json = substr($stripped, $start, $end - $start + 1);
+        $decoded = json_decode($json, true);
+        if (!is_array($decoded)) {
+            return ['message' => $raw, 'operations' => []];
+        }
+        $message = isset($decoded['message']) && is_string($decoded['message']) ? $decoded['message'] : '';
+        $operations = isset($decoded['operations']) && is_array($decoded['operations']) ? $decoded['operations'] : [];
+        if ($message === '' && empty($operations)) {
+            return ['message' => $raw, 'operations' => []];
+        }
+        return ['message' => $message ?: '(intet svar)', 'operations' => $operations];
+    }
+
     public function promote(Request $request, Blueprint $blueprint)
     {
         $data = $request->validate([
