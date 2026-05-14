@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\CommentReaction;
 use App\Models\Post;
-use App\Services\ImageDescriptionService;
 use App\Services\LinkPreview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +16,6 @@ class PostController extends Controller
 
     public function __construct(
         private LinkPreview $linkPreview,
-        private ImageDescriptionService $imageDescriber,
     ) {
     }
 
@@ -262,12 +260,10 @@ class PostController extends Controller
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('posts', 'public');
             $data['image_path'] = $path;
-            $course = Auth::user()?->currentCourse();
-            $data['image_description'] = $this->imageDescriber->describe(
-                Storage::disk('public')->path($path),
-                $course?->id,
-                $course?->blueprint?->id,
-            );
+            // image_description is filled in by DescribeImageJob (dispatched
+            // below after the post is created). The simulation handles missing
+            // descriptions gracefully — first tick happens after the worker
+            // has typically already processed the job.
         } else {
             // Only fetch link preview if no image was uploaded
             $url = $this->linkPreview->extractFirstUrl($request->input('body'));
@@ -284,6 +280,10 @@ class PostController extends Controller
         }
 
         $post = Post::create($data);
+
+        if (!empty($data['image_path'])) {
+            \App\Jobs\DescribeImageJob::dispatch($post->id);
+        }
 
         return redirect("/simulation/posts/{$post->id}")->with('success', 'Opslag oprettet — simulering starter ved næste tick.');
     }

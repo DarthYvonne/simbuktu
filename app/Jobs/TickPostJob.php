@@ -22,7 +22,6 @@ class TickPostJob implements ShouldQueue
 
     public int $tries = 1;          // simulation is not safe to retry — would duplicate comments
     public int $timeout = 300;      // worst case: lots of personas, slow LLM
-    public string $queue = 'simulation';
 
     public function __construct(public int $postId)
     {
