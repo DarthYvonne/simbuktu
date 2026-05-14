@@ -58,19 +58,26 @@
             text-transform: uppercase;
             font-size: 18px;
             letter-spacing: 1px;
-            transition: color 0.2s;
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: background-color 0.15s, color 0.15s;
         }
-        nav ul li a:hover,
-        nav ul li a.active { color: #3498db; }
+        nav ul li a:hover { color: #3498db; }
+        nav ul li a.active { background: #3498db; color: #fff; }
 
+        /* Subnav row sits below the header bottom-border. Always rendered so
+           the body content's vertical position doesn't shift between pages
+           that have subpages and pages that don't. */
         .subnav-bar {
             padding: 10px 5%;
             background: #ffffff;
+            min-height: 42px;
         }
         .subnav-bar ul {
             list-style: none;
             display: flex; justify-content: center; flex-wrap: wrap;
-            gap: 28px;
+            gap: 18px;
         }
         .subnav-bar ul li a {
             text-decoration: none;
@@ -79,10 +86,13 @@
             letter-spacing: 0.5px;
             text-transform: none;
             color: #7a8694;
-            transition: color 0.2s;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 5px;
+            transition: background-color 0.15s, color 0.15s;
         }
-        .subnav-bar ul li a:hover,
-        .subnav-bar ul li a.active { color: #3498db; }
+        .subnav-bar ul li a:hover { color: #3498db; }
+        .subnav-bar ul li a.active { background: #3498db; color: #fff; }
 
         .container {
             max-width: 1100px;
@@ -187,16 +197,16 @@
             }
         }
     @endphp
-    @if($activeTop && $activeTop->children->isNotEmpty())
-        <div class="subnav-bar">
+    <div class="subnav-bar">
+        @if($activeTop && $activeTop->children->isNotEmpty())
             <ul>
                 @foreach($activeTop->children as $sub)
                     @php $subPath = ltrim($sub->url(), '/'); @endphp
                     <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
                 @endforeach
             </ul>
-        </div>
-    @endif
+        @endif
+    </div>
 
     @yield('content')
 
