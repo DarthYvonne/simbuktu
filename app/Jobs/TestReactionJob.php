@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Services\Llm\CommentPromptBuilder;
-use App\Services\Llm\GeminiClient;
+use App\Services\Llm\LlmRouter;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
@@ -21,19 +21,34 @@ class TestReactionJob implements ShouldQueue
         public string $postText,
         public ?string $imageDescription = null,
         public ?array $linkPreview = null,
+        public ?string $modelId = null,
     ) {
     }
 
     public function handle(): void
     {
-        $result = ['persona' => $this->persona, 'text' => null, 'error' => null];
+        $result = [
+            'model' => $this->modelId,
+            'persona' => $this->persona,
+            'text' => null,
+            'error' => null,
+        ];
         try {
             $builder = new CommentPromptBuilder();
             $prompt = $builder->build($this->persona, $this->postText, [], null, $this->imageDescription, $this->linkPreview);
-            $result['text'] = trim(app(\App\Services\Llm\LlmRouter::class)->generateText($prompt, null, [
+            $result['text'] = trim(app(LlmRouter::class)->generateText($prompt, $this->modelId, [
                 'prompt_key' => 'comment.compose',
                 'persona_id' => $this->persona['id'] ?? null,
             ]));
+
+            $call = \App\Models\LlmCall::where('persona_id', $this->persona['id'] ?? null)
+                ->where('model', $this->modelId)
+                ->where('prompt_key', 'comment.compose')
+                ->latest('id')
+                ->first();
+            if ($call) {
+                $result['cost_usd'] = (float) $call->cost_usd;
+            }
         } catch (\Throwable $e) {
             $result['error'] = substr($e->getMessage(), 0, 200);
         }
@@ -50,7 +65,12 @@ class TestReactionJob implements ShouldQueue
     {
         $key = "tester:results:{$this->batchId}";
         $existing = Cache::get($key, []);
-        $existing[] = ['persona' => $this->persona, 'text' => null, 'error' => substr($e->getMessage(), 0, 200)];
+        $existing[] = [
+            'model' => $this->modelId,
+            'persona' => $this->persona,
+            'text' => null,
+            'error' => substr($e->getMessage(), 0, 200),
+        ];
         Cache::put($key, $existing, 3600);
         Cache::increment("tester:done:{$this->batchId}");
     }

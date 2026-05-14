@@ -36,6 +36,14 @@ return [
         'api_key' => env('GROK_API_KEY'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

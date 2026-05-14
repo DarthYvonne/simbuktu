@@ -3,232 +3,345 @@
 
 <div class="view-header">
   <h1>Opsætning</h1>
-  <div style="color: #65676b; font-size: 13px;">Skriv et opslag, vælg personas, se hvad de ville svare.</div>
+  <div style="color: #65676b; font-size: 13px;">Vælg en persona og et opslag, kør samme prompt mod flere modeller — sammenlign svar.</div>
 </div>
 
-@php $base = '/simulation/admin/populations/'.$population->id; @endphp
 @include('admin._opsaetning_tabs')
 
-@if (count($personas) === 0)
+@if (!$population || count($personas) === 0)
   <div class="card" style="text-align: center; padding: 30px;">
-    Ingen personas at teste mod. <a href="{{ url("$base/personas") }}" style="color: #1877f2;">Generér nogle først</a>.
+    Ingen personas at teste mod. Vælg et kursus med population, eller generér personas først.
+  </div>
+@elseif ($posts->isEmpty())
+  <div class="card" style="text-align: center; padding: 30px;">
+    Ingen opslag i dette kursus endnu.
   </div>
 @else
 
+@php
+  $selectedPersona = collect($personas)->firstWhere('id', $selectedPersonaId);
+  $selectedPost    = $posts->firstWhere('id', (int) $selectedPostId);
+@endphp
+
 <style>
-.composer { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 14px; }
-.composer-head { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #dadde1; margin-bottom: 12px; }
-.composer-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a1c4fd, #c2e9fb); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
-.composer-field { border: 1px solid #dadde1; border-radius: 10px; background: #f8f9fa; padding: 12px 14px; transition: border 0.15s, background 0.15s; }
-.composer-field:focus-within { border-color: #1877f2; background: #fff; }
-.composer textarea { width: 100%; border: none; resize: vertical; font-size: 16px; line-height: 1.5; min-height: 100px; outline: none; font-family: inherit; background: transparent; }
-.composer textarea::placeholder { color: #8a8d91; }
-.preview-wrap { margin-top: 12px; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #dadde1; }
-.preview-wrap .close { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: #fff; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; z-index: 5; }
-.img-preview { max-height: 400px; width: 100%; object-fit: cover; display: block; }
-.link-card { display: flex; background: #f0f2f5; }
-.link-card img { width: 160px; height: 100%; min-height: 100px; object-fit: cover; flex-shrink: 0; background: #e4e6eb; }
-.link-card .link-meta { padding: 10px 14px; flex: 1; min-width: 0; }
-.link-card .site { font-size: 11px; color: #65676b; text-transform: uppercase; letter-spacing: 0.5px; }
-.link-card .title { font-weight: 600; font-size: 15px; margin: 2px 0; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.link-card .desc { font-size: 13px; color: #65676b; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.link-loading { padding: 14px; color: #65676b; font-size: 13px; text-align: center; }
-.attach-bar { display: flex; align-items: center; justify-content: space-between; border: 1px solid #dadde1; border-radius: 10px; padding: 10px 14px; margin-top: 12px; }
-.attach-bar span { font-weight: 600; font-size: 13px; }
-.attach-btn { background: transparent; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 20px; color: #65676b; }
-.attach-btn:hover { background: #f0f2f5; }
-.submit-row { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.image-desc { background: #fef9e7; border-left: 3px solid #f59e0b; padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.45; margin-top: 8px; color: #1c1e21; }
-.image-desc strong { color: #92400e; }
+.tester-grid { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 12px; }
+@media (max-width: 1100px) { .tester-grid { grid-template-columns: 1fr; } }
+.tester-col { background: #fff; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); display: flex; flex-direction: column; min-height: 480px; max-height: 720px; }
+.tester-col h3 { margin: 0; padding: 12px 14px; border-bottom: 1px solid #dadde1; font-size: 14px; font-weight: 700; }
+.tester-col .col-search { padding: 8px 10px; border-bottom: 1px solid #f0f2f5; }
+.tester-col .col-search input { width: 100%; padding: 6px 10px; border: 1px solid #dadde1; border-radius: 6px; font-size: 13px; }
+.tester-col .col-body { overflow-y: auto; flex: 1; padding: 4px; }
+.tester-item { display: flex; gap: 10px; padding: 8px 10px; padding-right: 30px; border-radius: 8px; cursor: pointer; font-size: 13px; line-height: 1.35; position: relative; }
+.tester-item .open-btn { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border: none; background: rgba(255,255,255,0.7); border-radius: 4px; cursor: pointer; color: #65676b; font-size: 11px; opacity: 0; transition: opacity 0.12s; padding: 0; display: flex; align-items: center; justify-content: center; }
+.tester-item:hover .open-btn { opacity: 1; }
+.tester-item .open-btn:hover { background: #fff; color: #1877f2; }
+.tester-item:hover { background: #f0f2f5; }
+.tester-item.selected { background: #e7f3ff; outline: 2px solid #1877f2; }
+.tester-item .avatar { width: 36px; height: 36px; border-radius: 50%; background: #e4e6eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; object-fit: cover; }
+.tester-item .meta { color: #65676b; font-size: 11px; }
+.tester-empty { padding: 20px; text-align: center; color: #65676b; font-size: 13px; }
+.run-bar { display: flex; align-items: center; gap: 10px; justify-content: space-between; background: #fff; border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.run-bar .summary { font-size: 13px; color: #65676b; }
+.run-bar .summary b { color: #050505; }
+.models-pop { position: relative; }
+.models-pop summary { list-style: none; cursor: pointer; padding: 8px 14px; border: 1px solid #dadde1; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f0f2f5; }
+.models-pop summary::-webkit-details-marker { display: none; }
+.models-pop[open] > .pop-content { display: block; }
+.pop-content { position: absolute; top: 100%; right: 0; margin-top: 4px; background: #fff; border: 1px solid #dadde1; border-radius: 8px; padding: 10px 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.12); z-index: 50; min-width: 280px; max-height: 340px; overflow-y: auto; }
+.pop-content label { display: flex; gap: 8px; align-items: center; padding: 5px 4px; font-size: 13px; }
+.pop-content .nokey { color: #b91c1c; font-size: 11px; margin-left: 6px; }
+.reply-card { padding: 12px 14px; border-bottom: 1px solid #f0f2f5; }
+.reply-card:last-child { border-bottom: none; }
+.reply-card .title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.reply-card .model { font-weight: 700; font-size: 13px; color: #050505; }
+.reply-card .provider { font-size: 11px; color: #65676b; margin-left: 6px; }
+.reply-card .price { font-weight: 400; font-size: 12px; color: #65676b; margin-left: 6px; }
+.reply-card .cost { font-weight: 400; font-size: 12px; color: #1877f2; white-space: nowrap; }
+.reply-card .text { margin-top: 6px; padding: 10px 14px; background: #f0f2f5; border-radius: 14px; line-height: 1.45; font-size: 14px; }
+.reply-card .err { margin-top: 6px; padding: 8px 12px; background: #fee2e2; color: #b91c1c; border-radius: 8px; font-size: 12px; }
+.reply-card .spinner-line { color: #65676b; font-size: 12px; margin-top: 6px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.modal-backdrop.open { display: flex; }
+.modal-box { background: #fff; border-radius: 12px; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 22px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+.modal-close { position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 22px; cursor: pointer; color: #65676b; padding: 2px 8px; border-radius: 4px; }
+.modal-close:hover { background: #f0f2f5; color: #050505; }
+.modal-box h2 { margin: 0 0 6px; }
+.modal-box h3 { margin: 16px 0 6px; font-size: 14px; color: #65676b; text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-box .meta { color: #65676b; font-size: 13px; }
+.modal-box .chip { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 12px; background: #e7f3ff; color: #1877f2; font-weight: 600; margin: 0 4px 4px 0; }
+.modal-box .attr-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
 </style>
 
-<div class="composer">
-  <form method="POST" action="{{ url("$base/personas/tester") }}" enctype="multipart/form-data" id="testForm">
-    @csrf
-    <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
+<form method="POST" action="{{ url('/simulation/admin/personas/tester') }}" id="testForm">
+  @csrf
+  <input type="hidden" name="persona_id" id="personaId" value="{{ $selectedPersonaId }}">
+  <input type="hidden" name="post_id" id="postId" value="{{ $selectedPostId }}">
 
-    <div class="composer-head">
-      <div class="composer-avatar">TS</div>
-      <div>
-        <strong>Test-opslag</strong>
-        <div style="color: #65676b; font-size: 12px;">Sandkasse — gemmes ikke som rigtigt opslag</div>
-      </div>
+  <div class="run-bar">
+    <div class="summary">
+      <span id="selSummary">Vælg et opslag og en persona...</span>
     </div>
-
-    <div class="composer-field">
-      <textarea name="post" id="bodyInput" placeholder="Skriv et opslag at teste..." required>{{ $postText }}</textarea>
-    </div>
-
-    <div id="imagePreview" class="preview-wrap" style="display: none;">
-      <button type="button" class="close" onclick="clearImage()"><i class="fa-solid fa-xmark"></i></button>
-      <img class="img-preview" id="imagePreviewImg">
-    </div>
-
-    <div id="linkPreview" class="preview-wrap" style="display: none;">
-      <button type="button" class="close" onclick="clearLinkPreview(true)"><i class="fa-solid fa-xmark"></i></button>
-      <div id="linkCard"></div>
-    </div>
-
-    <div class="attach-bar">
-      <span>Tilføj til opslaget</span>
-      <button type="button" class="attach-btn" onclick="document.getElementById('imageInput').click()" title="Billede"><i class="fa-regular fa-image"></i></button>
-    </div>
-
-    <div class="submit-row">
-      <label style="font-size: 13px; color: #65676b;">Antal tilfældige personas (hvis ingen valgt): <input type="number" name="count" value="5" min="1" max="20" style="width: 70px; padding: 4px 8px; border: 1px solid #dadde1; border-radius: 4px;"></label>
-      <button class="btn btn-primary" id="reactBtn"><i class="fa-solid fa-play"></i> Lad personas reagere</button>
-    </div>
-
-    <details style="margin-top: 14px;">
-      <summary style="cursor: pointer; color: #1877f2; font-weight: 600; font-size: 13px;">Vælg specifikke personas (valgfrit)</summary>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; max-height: 400px; overflow-y: auto; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-        @foreach ($personas as $p)
-          <label style="display: flex; gap: 8px; align-items: center; padding: 6px 8px; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px;">
-            <input type="checkbox" name="persona_ids[]" value="{{ $p['id'] }}" {{ ($selectedId ?? null) === $p['id'] ? 'checked' : '' }}>
-            <span><strong>{{ $p['name'] }}</strong>, {{ $p['demographics']['age'] ?? '' }}<br><span style="color: #65676b; font-size: 11px;">{{ collect($p['dimensions'] ?? [])->take(3)->pluck('facet')->implode(', ') }}</span></span>
-          </label>
-        @endforeach
-      </div>
-    </details>
-  </form>
-</div>
-
-@if ($batchId || !empty($reactions))
-<div class="card" id="resultsCard">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 14px;">
-    <div style="flex: 1;">
-      <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 8px; font-size: 14px;">
-        <strong>Opslag:</strong> {{ $postText }}
-      </div>
-      @if ($imagePath)
-        <img src="{{ Storage::url($imagePath) }}" style="max-height: 200px; border-radius: 8px; margin-top: 8px;">
-      @endif
-      @if ($imageDescription)
-        <div class="image-desc">
-          <strong>Personas ser dette på billedet:</strong> {{ $imageDescription }}
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <details class="models-pop">
+        <summary><i class="fa-solid fa-cube"></i> Modeller (<span id="modelCount">{{ count($selectedModels) }}</span>)</summary>
+        <div class="pop-content">
+          @foreach ($allModels as $id => $m)
+            @php $hasKey = in_array($id, $availableModels, true); @endphp
+            <label>
+              <input type="checkbox" name="models[]" value="{{ $id }}"
+                {{ in_array($id, $selectedModels, true) && $hasKey ? 'checked' : '' }}
+                {{ $hasKey ? '' : 'disabled' }}
+                class="model-cb">
+              <span>{{ $m['label'] }}</span>
+              <span style="font-weight: 400; color: #65676b; font-size: 11px;">${{ number_format($m['price_in'], 2) }} in / ${{ number_format($m['price_out'], 2) }} out per 1M</span>
+              @if (!$hasKey) <span class="nokey">(API nøgle mangler)</span> @endif
+            </label>
+          @endforeach
         </div>
-      @endif
-      @if ($linkPreview && !empty($linkPreview['title']))
-        <div style="margin-top: 8px; padding: 10px 12px; border: 1px solid #dadde1; border-radius: 8px; font-size: 13px;">
-          <div style="font-weight: 600;">{{ $linkPreview['title'] }}</div>
-          <div style="color: #65676b;">{{ $linkPreview['description'] }}</div>
-        </div>
-      @endif
+      </details>
+      <button type="submit" class="btn btn-primary" id="runBtn" disabled><i class="fa-solid fa-play"></i> Kør</button>
     </div>
-    <span id="progStatus" style="color: #65676b; font-size: 13px; min-width: 100px; text-align: right;">
-      <span id="progLabel">{{ $done }} / {{ $queued }}</span>
-      @if ($done < $queued)<span class="spinner" style="border-color: #1877f2; border-top-color: transparent; margin-left: 6px;"></span>@endif
-    </span>
   </div>
 
-  <div id="reactionsList"></div>
+  <div class="tester-grid">
+    {{-- Column 1: Personas --}}
+    <div class="tester-col">
+      <h3>1. Vælg persona</h3>
+      <div class="col-search">
+        <input type="search" id="personaSearch" placeholder="Søg i personas...">
+      </div>
+      <div class="col-body" id="personaList">
+        @foreach ($personas as $p)
+          @php
+            $demo = $p['demographics'] ?? [];
+            $dimFacets = collect($p['dimensions'] ?? [])->pluck('facet')->filter()->implode(' ');
+            $needle = strtolower(($p['name'] ?? '').' '.($demo['occupation_hint'] ?? '').' '.($demo['region'] ?? '').' '.$dimFacets);
+            $initials = strtoupper(mb_substr($p['name'] ?? '?', 0, 2));
+            $metaBits = array_filter([
+              $demo['age'] ?? null,
+              $demo['occupation_hint'] ?? null,
+              $demo['region'] ?? null,
+            ]);
+            $chips = collect($p['dimensions'] ?? [])->filter(fn ($d) => !empty($d['show_on_profile']))->take(3);
+          @endphp
+          <div class="tester-item persona-item {{ $selectedPersonaId === $p['id'] ? 'selected' : '' }}" data-id="{{ $p['id'] }}" data-text="{{ $needle }}">
+            @if (!empty($p['image_file']))
+              <img src="{{ url('/simulation/admin/populations/'.$population->id.'/personas/'.$p['id'].'/thumb') }}" class="avatar">
+            @else
+              <div class="avatar">{{ $initials }}</div>
+            @endif
+            <div style="flex: 1; min-width: 0;">
+              <div><strong>{{ $p['name'] }}</strong></div>
+              <div class="meta">{{ implode(' · ', $metaBits) }}</div>
+              @if ($chips->isNotEmpty())
+                <div class="meta">{{ $chips->pluck('facet')->implode(', ') }}</div>
+              @endif
+            </div>
+            <button type="button" class="open-btn" data-modal-type="persona" data-modal-id="{{ $p['id'] }}" title="Vis detaljer"><i class="fa-solid fa-up-right-from-square"></i></button>
+          </div>
+        @endforeach
+      </div>
+    </div>
+
+    {{-- Column 2: Posts --}}
+    <div class="tester-col">
+      <h3>2. Vælg opslag</h3>
+      <div class="col-search">
+        <input type="search" id="postSearch" placeholder="Søg i opslag..." value="{{ $q }}">
+      </div>
+      <div class="col-body" id="postList">
+        @foreach ($posts as $post)
+          <div class="tester-item post-item {{ (int) $selectedPostId === $post->id ? 'selected' : '' }}" data-id="{{ $post->id }}" data-text="{{ Str::lower($post->body) }}">
+            <div style="flex: 1; min-width: 0;">
+              <div style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ Str::limit($post->body, 160) }}</div>
+              <div class="meta">#{{ $post->id }} · {{ $post->created_at->format('Y-m-d H:i') }}</div>
+            </div>
+            <button type="button" class="open-btn" data-modal-type="post" data-modal-id="{{ $post->id }}" title="Vis detaljer"><i class="fa-solid fa-up-right-from-square"></i></button>
+          </div>
+        @endforeach
+      </div>
+    </div>
+
+    {{-- Column 3: Replies --}}
+    <div class="tester-col">
+      <h3>3. Modelsvar <span id="progLabel" style="font-weight: 400; color: #65676b; font-size: 12px; margin-left: 8px;">{{ $done }} / {{ $queued }}</span></h3>
+      <div class="col-body" id="repliesBody">
+        @if (!$batchId && empty($results))
+          <div class="tester-empty">Vælg opslag, persona og modeller — så tryk <b>Kør</b>.</div>
+        @else
+          <div id="repliesList">
+            @php $resultsByModel = collect($results)->keyBy('model'); @endphp
+            @foreach ($selectedModels as $modelId)
+              @php $m = $allModels[$modelId] ?? ['label' => $modelId, 'provider' => '?']; $r = $resultsByModel->get($modelId); @endphp
+              <div class="reply-card" data-model="{{ $modelId }}">
+                <div class="title-row">
+                  <span>
+                    <span class="model">{{ $m['label'] }}</span>
+                    <span class="provider">{{ $m['provider'] }}</span>
+                    @if (isset($m['price_in']))
+                      <span class="price">${{ number_format($m['price_in'], 2) }} in / ${{ number_format($m['price_out'], 2) }} out per 1M</span>
+                    @endif
+                  </span>
+                  <span class="cost">
+                    @if ($r && isset($r['cost_usd']))
+                      {{ number_format($r['cost_usd'] * 7.0, 4, ',', '.') }} kr.
+                    @endif
+                  </span>
+                </div>
+                @if ($r && !empty($r['error']))
+                  <div class="err">Fejl: {{ $r['error'] }}</div>
+                @elseif ($r)
+                  <div class="text">{{ $r['text'] }}</div>
+                @else
+                  <div class="spinner-line"><span class="spinner" style="border-color: #1877f2; border-top-color: transparent;"></span> Genererer svar…</div>
+                @endif
+              </div>
+            @endforeach
+          </div>
+        @endif
+      </div>
+    </div>
+  </div>
+</form>
+
+<div id="detailModal" class="modal-backdrop">
+  <div class="modal-box">
+    <button type="button" class="modal-close" onclick="closeModal()" title="Luk (Esc)">×</button>
+    <div id="modalContent"></div>
+  </div>
 </div>
-@endif
-@endif
 
+@php
+  $postsJs = $posts->keyBy('id')->map(fn ($p) => [
+      'id'          => $p->id,
+      'body'        => $p->body,
+      'image_path'  => $p->image_path,
+      'author_name' => $p->author_name,
+      'created_at'  => $p->created_at?->format('Y-m-d H:i'),
+  ]);
+@endphp
 <script>
-const bodyEl = document.getElementById('bodyInput');
-const imgInput = document.getElementById('imageInput');
-const imgPreview = document.getElementById('imagePreview');
-const imgEl = document.getElementById('imagePreviewImg');
-const linkPreviewEl = document.getElementById('linkPreview');
-const linkCard = document.getElementById('linkCard');
-let lastUrl = null;
-let userClearedLink = false;
-let debounceTimer = null;
+const personas = @json(collect($personas)->keyBy('id'));
+const posts    = @json($postsJs);
+const allModels = @json($allModels);
+const PERSONA_THUMB_BASE = '{{ url('/simulation/admin/populations/'.$population->id.'/personas') }}';
+const STORAGE_BASE = '{{ url('/storage') }}';
 
-imgInput?.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    imgEl.src = ev.target.result;
-    imgPreview.style.display = 'block';
-    linkPreviewEl.style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-});
+const personaId = document.getElementById('personaId');
+const postId    = document.getElementById('postId');
+const runBtn    = document.getElementById('runBtn');
+const selSum    = document.getElementById('selSummary');
+const modelCount = document.getElementById('modelCount');
 
-function clearImage() {
-  imgInput.value = '';
-  imgPreview.style.display = 'none';
-  checkForLink();
+function updateRunState() {
+  const ok = personaId.value && postId.value && document.querySelectorAll('.model-cb:checked').length > 0;
+  runBtn.disabled = !ok;
+  const personaName = personas[personaId.value]?.name || '—';
+  const postPreview = posts[postId.value]?.body?.substring(0, 60) || '—';
+  selSum.innerHTML = `<b>${escapeHtml(personaName)}</b> reagerer på <b>"${escapeHtml(postPreview)}${postPreview.length >= 60 ? '...' : ''}"</b>`;
+  modelCount.textContent = document.querySelectorAll('.model-cb:checked').length;
 }
 
-function extractUrl(text) {
-  const m = text.match(/https?:\/\/[^\s<>"']+/i);
-  return m ? m[0].replace(/[.,;:!?)]+$/, '') : null;
-}
-
-async function checkForLink() {
-  if (imgInput.files.length > 0) { linkPreviewEl.style.display = 'none'; return; }
-  const url = extractUrl(bodyEl.value);
-  if (!url) { linkPreviewEl.style.display = 'none'; lastUrl = null; return; }
-  if (url === lastUrl || userClearedLink) return;
-  lastUrl = url;
-
-  linkPreviewEl.style.display = 'block';
-  linkCard.innerHTML = '<div class="link-loading">Henter preview...</div>';
-  try {
-    const res = await fetch('{{ url("/simulation/posts/link-preview") }}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-      body: JSON.stringify({ url })
+function bindList(container, hiddenInput, itemClass) {
+  container.querySelectorAll(itemClass).forEach(el => {
+    el.addEventListener('click', () => {
+      container.querySelectorAll(itemClass).forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      hiddenInput.value = el.dataset.id;
+      updateRunState();
     });
-    const data = await res.json();
-    if (!data) { linkCard.innerHTML = '<div class="link-loading">Kunne ikke hente preview.</div>'; return; }
-    linkCard.innerHTML = `
-      <div class="link-card">
-        ${data.image ? `<img src="${escapeAttr(data.image)}" onerror="this.style.display='none'">` : ''}
-        <div class="link-meta">
-          <div class="site">${escapeHtml(data.site_name || '')}</div>
-          <div class="title">${escapeHtml(data.title || url)}</div>
-          <div class="desc">${escapeHtml(data.description || '')}</div>
-        </div>
-      </div>`;
-  } catch { linkCard.innerHTML = '<div class="link-loading">Kunne ikke hente preview.</div>'; }
+  });
 }
+bindList(document.getElementById('postList'), postId, '.post-item');
+bindList(document.getElementById('personaList'), personaId, '.persona-item');
 
-function clearLinkPreview(byUser) {
-  linkPreviewEl.style.display = 'none';
-  if (byUser) userClearedLink = true;
+document.querySelectorAll('.model-cb').forEach(cb => cb.addEventListener('change', updateRunState));
+
+function filterList(searchInput, container, itemClass) {
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    container.querySelectorAll(itemClass).forEach(el => {
+      el.style.display = !q || el.dataset.text.includes(q) ? '' : 'none';
+    });
+  });
 }
-
-bodyEl?.addEventListener('input', () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(checkForLink, 500);
-});
+filterList(document.getElementById('postSearch'), document.getElementById('postList'), '.post-item');
+filterList(document.getElementById('personaSearch'), document.getElementById('personaList'), '.persona-item');
 
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function escapeAttr(s) { return escapeHtml(s); }
 
-document.getElementById('testForm')?.addEventListener('submit', function() {
-  document.getElementById('reactBtn').disabled = true;
+// --- Detail modal ---
+const detailModal = document.getElementById('detailModal');
+const modalContent = document.getElementById('modalContent');
+function openInModal(type, id) {
+  let html = '';
+  if (type === 'post') {
+    const p = posts[id]; if (!p) return;
+    const img = p.image_path ? `<img src="${STORAGE_BASE}/${escapeAttr(p.image_path)}" style="max-width:100%;border-radius:8px;margin:10px 0;">` : '';
+    html = `<h2>Opslag #${p.id}</h2>
+      <div class="meta">${escapeHtml(p.author_name || 'Anonym')} · ${escapeHtml(p.created_at || '')}</div>
+      ${img}
+      <div style="white-space:pre-wrap;line-height:1.5;margin-top:10px;">${escapeHtml(p.body)}</div>`;
+  } else if (type === 'persona') {
+    const pr = personas[id]; if (!pr) return;
+    const img = pr.image_file
+      ? `<img src="${PERSONA_THUMB_BASE}/${pr.id}/image" style="width:120px;height:120px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+      : `<div style="width:120px;height:120px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:32px;flex-shrink:0;">${escapeHtml((pr.name||'?').substring(0,2).toUpperCase())}</div>`;
+    const demo = pr.demographics || {};
+    const metaBits = [demo.age, demo.occupation_hint, demo.region, demo.family].filter(Boolean).map(escapeHtml).join(' · ');
+    const dims = pr.dimensions || [];
+    const chips = dims.filter(d => d.show_on_profile).map(d => `<span class="chip" title="${escapeAttr(d.dimension || '')}">${escapeHtml(d.facet || '')}</span>`).join('');
+    const demoDims  = dims.filter(d => (d.type || 'personality') === 'demographic');
+    const persDims  = dims.filter(d => (d.type || 'personality') === 'personality');
+    const demoRows = demoDims.map(d => `<div class="attr-row"><span>${escapeHtml(d.dimension || '')}</span><strong>${escapeHtml(d.value ?? d.facet ?? '')}</strong></div>`).join('');
+    const persRows = persDims.map(d => `<div class="attr-row"><span>${escapeHtml(d.dimension || '')}</span><strong>${escapeHtml(d.facet || '')}</strong></div>`).join('');
+    html = `<div style="display:flex;gap:14px;align-items:flex-start;">${img}
+      <div style="flex:1;min-width:0;">
+        <h2>${escapeHtml(pr.name || '')}</h2>
+        <div class="meta">${metaBits}</div>
+        ${pr.bio ? `<div class="meta" style="margin-top:6px;font-style:italic;">"${escapeHtml(pr.bio)}"</div>` : ''}
+        ${chips ? `<div style="margin-top:8px;">${chips}</div>` : ''}
+      </div></div>
+      ${pr.narrative ? `<h3>Narrativ</h3><p style="white-space:pre-wrap;line-height:1.5;margin:0;">${escapeHtml(pr.narrative)}</p>` : ''}
+      ${demoRows ? `<h3>Demografi</h3>${demoRows}` : ''}
+      ${persRows ? `<h3>Personlighed</h3>${persRows}` : ''}`;
+  }
+  modalContent.innerHTML = html;
+  detailModal.classList.add('open');
+}
+function closeModal() { detailModal.classList.remove('open'); }
+detailModal.addEventListener('click', e => { if (e.target === detailModal) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.body.addEventListener('click', e => {
+  const btn = e.target.closest('.open-btn');
+  if (!btn) return;
+  e.stopPropagation(); e.preventDefault();
+  openInModal(btn.dataset.modalType, btn.dataset.modalId);
 });
 
-@if ($batchId)
-const STATUS_URL = '{{ url("$base/personas/tester/status") }}';
-const PERSONA_URL = '{{ url("$base/personas") }}';
-const renderedIds = new Set();
+document.getElementById('testForm').addEventListener('submit', () => { runBtn.disabled = true; });
 
-function renderReaction(r) {
-  const p = r.persona;
-  const dims = (p.dimensions || []).slice(0, 3).map(d => `<span class="tag sub" style="font-size: 10px; padding: 1px 6px;">${escapeHtml(d.facet || '')}</span>`).join('');
-  const initials = (p.name || '?').substring(0, 2).toUpperCase();
-  const img = p.image_file
-    ? `<img src="${PERSONA_URL}/${p.id}/image" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
-    : `<div style="width:40px;height:40px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">${initials}</div>`;
+updateRunState();
+
+// --- Results polling ---
+@if ($batchId)
+const STATUS_URL = '{{ url('/simulation/admin/personas/tester/status') }}';
+const renderedModels = new Set();
+
+function fillReplyCard(card, r) {
   const body = r.error
-    ? `<div style="background:#fee2e2;color:#b91c1c;padding:8px 12px;border-radius:8px;margin-top:6px;font-size:12px;">Fejl: ${escapeHtml(r.error)}</div>`
-    : `<div style="background:#f0f2f5;padding:10px 14px;border-radius:14px;margin-top:6px;line-height:1.45;">${escapeHtml(r.text || '')}</div>`;
-  return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5;">${img}<div style="flex:1;">
-    <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
-      <a href="${PERSONA_URL}/${p.id}" style="font-weight:600;color:#050505;">${escapeHtml(p.name)}</a>
-      <span style="color:#65676b;font-size:12px;">${p.demographics?.age || ''} · ${escapeHtml(p.demographics?.occupation_hint || '')} · ${escapeHtml(p.demographics?.region || '')}</span>
-    </div>
-    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">${dims}</div>
-    ${body}
-  </div></div>`;
+    ? `<div class="err">Fejl: ${escapeHtml(r.error)}</div>`
+    : `<div class="text">${escapeHtml(r.text || '')}</div>`;
+  const oldFiller = card.querySelector('.spinner-line, .text, .err');
+  if (oldFiller) oldFiller.remove();
+  card.insertAdjacentHTML('beforeend', body);
+
+  if (typeof r.cost_usd === 'number') {
+    const dkk = r.cost_usd * 7.0;
+    const costEl = card.querySelector('.cost');
+    if (costEl) costEl.textContent = dkk.toFixed(4).replace('.', ',') + ' kr.';
+  }
 }
 
 async function pollTester() {
@@ -236,15 +349,14 @@ async function pollTester() {
     const res = await fetch(STATUS_URL);
     const data = await res.json();
     document.getElementById('progLabel').textContent = `${data.done} / ${data.queued}`;
-    const list = document.getElementById('reactionsList');
-    data.reactions.forEach(r => {
-      const key = r.persona.id + (r.error ? ':err' : '');
-      if (renderedIds.has(key)) return;
-      renderedIds.add(key);
-      list.insertAdjacentHTML('beforeend', renderReaction(r));
+    data.results.forEach(r => {
+      if (renderedModels.has(r.model)) return;
+      const card = document.querySelector(`.reply-card[data-model="${r.model}"]`);
+      if (!card) return;
+      renderedModels.add(r.model);
+      fillReplyCard(card, r);
     });
     if (data.done >= data.queued && data.queued > 0) {
-      document.getElementById('progStatus').innerHTML = '<span style="color:#22c55e;">✓ Færdig</span>';
       clearInterval(testerTimer);
     }
   } catch (e) {}
@@ -253,4 +365,6 @@ const testerTimer = setInterval(pollTester, 2000);
 pollTester();
 @endif
 </script>
+
+@endif
 @endsection

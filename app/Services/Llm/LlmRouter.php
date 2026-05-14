@@ -18,6 +18,8 @@ class LlmRouter
         return match ($provider) {
             'gemini' => app(GeminiClient::class)->generateText($prompt, $modelId, null, $context),
             'grok' => (new GrokClient())->generateText($prompt, $modelId, $context),
+            'openai' => (new OpenAiClient())->generateText($prompt, $modelId, $context),
+            'anthropic' => (new AnthropicClient())->generateText($prompt, $modelId, $context),
             default => throw new RuntimeException("Unsupported provider: {$provider}"),
         };
     }

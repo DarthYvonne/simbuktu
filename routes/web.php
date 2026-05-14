@@ -150,11 +150,9 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
             Route::get('/personas/graph/view',    [SocialGraphController::class, 'view']);
             Route::get('/personas/graph/data',    [SocialGraphController::class, 'data']);
 
-            Route::get('/personas/tester',        [PersonaTesterController::class, 'index']);
-            Route::post('/personas/tester',       [PersonaTesterController::class, 'react']);
-            Route::get('/personas/tester/status', [PersonaTesterController::class, 'status']);
-
             Route::get('/personas/{id}',          [PersonaController::class, 'show']);
+            Route::get('/personas/{id}/edit',     [PersonaController::class, 'edit']);
+            Route::patch('/personas/{id}',        [PersonaController::class, 'update']);
             Route::delete('/personas/{id}',       [PersonaController::class, 'destroy']);
             Route::get('/personas/{id}/image',    [PersonaController::class, 'image']);
             Route::get('/personas/{id}/thumb',    [PersonaController::class, 'thumb']);
@@ -191,6 +189,10 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::get('/algorithm', [AlgorithmController::class, 'index']);
         Route::post('/algorithm', [AlgorithmController::class, 'update']);
         Route::post('/algorithm/reset', [AlgorithmController::class, 'reset']);
+
+        Route::get('/personas/tester',        [PersonaTesterController::class, 'index']);
+        Route::post('/personas/tester',       [PersonaTesterController::class, 'run']);
+        Route::get('/personas/tester/status', [PersonaTesterController::class, 'status']);
 
         Route::get('/context', [ContextController::class, 'index']);
         Route::post('/context/mode', [ContextController::class, 'setMode']);

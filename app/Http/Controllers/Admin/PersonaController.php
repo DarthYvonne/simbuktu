@@ -106,6 +106,87 @@ class PersonaController extends Controller
         ]);
     }
 
+    public function edit(Population $population, string $id)
+    {
+        $personaModel = Persona::where('population_id', $population->id)->findOrFail($id);
+        $persona      = $this->repo->forPopulation($population)->find($id);
+        abort_unless($persona, 404);
+
+        $blueprint = $personaModel->blueprint;
+        $paramsById = [];
+        foreach ($blueprint?->parameters ?? [] as $param) {
+            if (!empty($param['id'])) $paramsById[$param['id']] = $param;
+        }
+
+        return view('admin.personas.edit', [
+            'population' => $population,
+            'p'          => $persona,
+            'personaModel' => $personaModel,
+            'paramsById' => $paramsById,
+        ]);
+    }
+
+    public function update(Request $request, Population $population, string $id)
+    {
+        $personaModel = Persona::where('population_id', $population->id)->findOrFail($id);
+
+        $data = $request->validate([
+            'name'      => 'required|string|max:120',
+            'bio'       => 'nullable|string|max:500',
+            'narrative' => 'nullable|string|max:5000',
+            'age'       => 'nullable|integer|min:1|max:120',
+            'region'    => 'nullable|string|max:80',
+            'facets'    => 'array',
+            'facets.*'  => 'string',
+        ]);
+
+        $personaData = $personaModel->persona_data ?? [];
+        $personaData['name']      = $data['name'];
+        $personaData['bio']       = $data['bio'] ?? '';
+        $personaData['narrative'] = $data['narrative'] ?? '';
+
+        $blueprint = $personaModel->blueprint;
+        $paramsById = [];
+        foreach ($blueprint?->parameters ?? [] as $param) {
+            if (!empty($param['id'])) $paramsById[$param['id']] = $param;
+        }
+
+        $dimensions = $personaData['dimensions'] ?? [];
+        $pickedFacets = $data['facets'] ?? [];
+        foreach ($dimensions as &$dim) {
+            $dimId = $dim['dimension_id'] ?? null;
+            $newFacetId = $pickedFacets[$dimId] ?? null;
+            if (!$dimId || !$newFacetId) continue;
+            $param = $paramsById[$dimId] ?? null;
+            if (!$param) continue;
+            $facet = null;
+            foreach ($param['facets'] ?? [] as $f) {
+                if (($f['id'] ?? null) === $newFacetId) { $facet = $f; break; }
+            }
+            if (!$facet) continue;
+            $dim['facet_id'] = $facet['id'];
+            $dim['facet']    = $facet['name'] ?? '';
+            $dim['text']     = $facet['text'] ?? '';
+            $dim['value']    = null; // clear sticky exact value — let facet name be the new display
+        }
+        unset($dim);
+        $personaData['dimensions'] = $dimensions;
+
+        $personaModel->name = $data['name'];
+        $personaModel->bio  = $data['bio'] ?? '';
+        if (array_key_exists('age', $data) && $data['age'] !== null) {
+            $personaModel->age = $data['age'];
+        }
+        if (array_key_exists('region', $data) && $data['region'] !== null) {
+            $personaModel->region = $data['region'];
+        }
+        $personaModel->persona_data = $personaData;
+        $personaModel->save();
+
+        return redirect("/simulation/admin/populations/{$population->id}/personas/{$id}")
+            ->with('success', 'Persona opdateret.');
+    }
+
     public function image(Population $population, string $id): BinaryFileResponse
     {
         $path = $population->imagePath() . "/{$id}.png";
