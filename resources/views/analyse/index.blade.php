@@ -311,29 +311,78 @@ window.__initSpread = async function () {
     metaEl.textContent = 'Lige nu kørt · ' + data.totals.total + ' kommentarer';
   }
 
+  const POST_URL = '{{ url("/simulation/analyse/$post->id/sentiment") }}';
+  const STATUS_URL = '{{ url("/simulation/analyse/$post->id/sentiment/status") }}';
+  let polling = false;
+
+  async function pollStatus() {
+    if (polling) return;
+    polling = true;
+    let attempts = 0;
+    while (attempts++ < 90) { // 90 * 2s = 180s
+      try {
+        const res = await fetch(STATUS_URL, { headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'complete') {
+            render(data);
+            polling = false;
+            btn.disabled = false;
+            btnLabel.textContent = 'Kør igen';
+            return;
+          }
+          if (data.status === 'failed') {
+            errorBox.textContent = data.error || 'Analysen fejlede.';
+            errorBox.style.display = 'block';
+            polling = false;
+            btn.disabled = false;
+            btnLabel.textContent = 'Kør igen';
+            return;
+          }
+          // 'pending' or 'idle' — keep polling
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    errorBox.textContent = 'Analysen tog for lang tid — prøv igen.';
+    errorBox.style.display = 'block';
+    polling = false;
+    btn.disabled = false;
+    btnLabel.textContent = 'Kør igen';
+  }
+
   btn.addEventListener('click', async () => {
     errorBox.style.display = 'none';
     btn.disabled = true;
     btnLabel.textContent = 'Analyserer…';
     try {
-      const res = await fetch('{{ url("/simulation/analyse/$post->id/sentiment") }}', {
+      const res = await fetch(POST_URL, {
         method: 'POST',
         headers: {
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
           'Accept': 'application/json',
         },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || ('HTTP '+res.status));
-      render(data);
+      if (!res.ok && res.status !== 202) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || ('HTTP '+res.status));
+      }
+      pollStatus();
     } catch (e) {
       errorBox.textContent = e.message;
       errorBox.style.display = 'block';
-    } finally {
       btn.disabled = false;
       btnLabel.textContent = 'Kør igen';
     }
   });
+
+  // If the page loads while a sentiment job is already pending (e.g. user
+  // navigated away and came back), pick up the poll automatically.
+  @if (($post->intelligence['sentiment_pending'] ?? false) === true)
+    btn.disabled = true;
+    btnLabel.textContent = 'Analyserer…';
+    pollStatus();
+  @endif
 })();
 </script>
 

@@ -141,6 +141,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     Route::get('/analyse/{post}/spread', [AnalyseController::class, 'spreadGraph']);
     Route::post('/analyse/{post}/sentiment', [AnalyseController::class, 'sentiment'])
         ->middleware('throttle:5,1'); // burns an LLM call — cap at 5/min per user
+    Route::get('/analyse/{post}/sentiment/status', [AnalyseController::class, 'sentimentStatus']);
 
     Route::get('/beskeder', [MessageController::class, 'index']);
     Route::post('/beskeder/open/{personaId}', [MessageController::class, 'open']);
