@@ -3,15 +3,17 @@
 @section('title', $page->title.' | Simbuktu')
 
 @section('styles')
+    /* Hero hugs the header's bottom border: negative top margin cancels the
+       container's 60px top padding, and negative side margins push the image
+       out to fill the container's full width. Height follows the image's
+       natural aspect ratio. */
     .page-hero {
-        width: 100%; height: 240px;
-        margin-bottom: 28px;
-        border-radius: 12px;
+        margin: -60px -5% 36px;
         overflow: hidden;
         background: #f4f6f8;
     }
     .page-hero img {
-        width: 100%; height: 100%; object-fit: cover;
+        width: 100%; height: auto;
         display: block;
     }
     .page-layout {
@@ -49,7 +51,7 @@
             position: static;
         }
         .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-        .page-hero { height: 160px; border-radius: 8px; margin-bottom: 20px; }
+        .page-hero { margin: -60px -5% 24px; }
     }
 @endsection
 
