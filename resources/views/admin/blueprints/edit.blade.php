@@ -270,8 +270,8 @@
 <aside id="sok-panel" class="sok-panel">
   <div class="sok-head">
     <div style="flex:1;">
-      <h2><i class="fa-solid fa-brain" style="color:#1877f2; margin-right:6px;"></i> Lille Sokrates</h2>
-      <div class="sub">Samtalepartner — hjælper med at omsætte intuition til prompt-tekst</div>
+      <h2>Lille Sokrates</h2>
+      <div class="sub">Hjælper dig med at komme fra faglighed til prompt</div>
     </div>
     <button type="button" class="close" id="sok-close" title="Luk (Esc)">×</button>
   </div>
@@ -785,8 +785,8 @@ function sokRender() {
         <i class="fa-regular fa-comments"></i>
         <div><strong>Lille Sokrates</strong></div>
         <div style="margin-top:8px; line-height:1.5;">
-          Spar med en samtalepartner om denne personlighed. Beskriv hvad du ser hos folk i shitstorms,
-          så hjælper jeg dig med at omsætte intuitionen til præcis prompt-tekst.
+          Spar med en samtalepartner om denne personlighed. Beskriv hvad du fagligt set ved om de
+          mennesker du vil simulere — så hjælper jeg dig med at omsætte det til præcis prompt-tekst.
         </div>
       </div>`;
     return;

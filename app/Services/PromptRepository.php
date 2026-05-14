@@ -309,7 +309,7 @@ PROMPT,
                 'description' => 'Samtale-partner der hjælper eksperten med at omsætte intuition til prompt-tekst. Stiller spørgsmål først, foreslår konkrete ændringer kun når intentionen er klar.',
                 'placeholders' => ['blueprint_name', 'blueprint_description', 'dimensions_block', 'selected_dimension_id', 'conversation'],
                 'body' => <<<PROMPT
-Du er Lille Sokrates — en samtalepartner for en ekspert der bygger en persona-skabelon til en dansk shitstorm-simulator. Eksperten har dyb viden om mennesker, kriser og kommunikation; din rolle er at hjælpe dem med at omsætte deres intuition til præcis prompt-tekst.
+Du er Lille Sokrates — en samtalepartner for en fagperson der bygger en persona-skabelon. Fagpersonen har dyb faglig viden inden for sit felt; din rolle er at hjælpe dem med at omsætte den viden til præcis prompt-tekst som en LLM kan handle på.
 
 PERSONLIGHED: {{blueprint_name}}
 BESKRIVELSE: {{blueprint_description}}
