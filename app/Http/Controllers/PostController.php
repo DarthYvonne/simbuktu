@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
+    /** Cap the feed window. A class rarely scrolls past this; older posts stay in DB. */
+    private const FEED_PAGE_SIZE = 100;
+
     public function __construct(
         private LinkPreview $linkPreview,
         private ImageDescriptionService $imageDescriber,
@@ -39,6 +42,7 @@ class PostController extends Controller
         $posts = Post::where('course_id', $course->id)
             ->with('user')
             ->orderByDesc('created_at')
+            ->limit(self::FEED_PAGE_SIZE)
             ->get();
 
         $authorIds = $posts->pluck('user_id')->filter()->unique()->values();
@@ -68,7 +72,11 @@ class PostController extends Controller
             if ($user->is_admin) return redirect('/simulation/admin/courses');
             abort(403, 'Du er ikke tilmeldt noget kursus.');
         }
-        $posts = Post::where('course_id', $course->id)->orderByDesc('created_at')->withCount('comments')->get();
+        $posts = Post::where('course_id', $course->id)
+            ->orderByDesc('created_at')
+            ->withCount('comments')
+            ->limit(self::FEED_PAGE_SIZE)
+            ->get();
         $alerts = $this->buildAlerts($user->id, $course->id);
         // Clear unread badge — user is looking at the feed now
         $user->last_feed_visited_at = now();
@@ -191,6 +199,7 @@ class PostController extends Controller
         $posts = Post::where('course_id', $course->id)
             ->orderByDesc('created_at')
             ->withCount('comments')
+            ->limit(self::FEED_PAGE_SIZE)
             ->get()
             ->map(fn ($p) => [
                 'id' => $p->id,
