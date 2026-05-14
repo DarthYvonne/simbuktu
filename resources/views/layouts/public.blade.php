@@ -16,7 +16,7 @@
         a { color: inherit; }
         img { max-width: 100%; height: auto; }
 
-        header { border-bottom: 1px solid #e0e0e0; background-color: #ffffff; }
+        header { border-bottom: 1px solid #e0e0e0; background-color: #ffffff; position: relative; }
 
         .top-bar {
             display: flex;
@@ -66,12 +66,18 @@
         nav ul li a:hover { color: #3498db; }
         nav ul li a.active { background: #3498db; color: #fff; }
 
-        /* Subnav row sits below the header bottom-border, only on pages whose
-           top-level section has children. */
+        /* Subnav row floats below the header bottom-border, absolutely
+           positioned so it doesn't push the body content downward. It overlaps
+           the .container's existing top padding without consuming layout space. */
         .subnav-bar {
+            position: absolute;
+            left: 0; right: 0; top: 100%;
             padding: 10px 5%;
-            background: #ffffff;
+            background: transparent;
+            pointer-events: none;
+            z-index: 5;
         }
+        .subnav-bar ul { pointer-events: auto; }
         .subnav-bar ul {
             list-style: none;
             display: flex; justify-content: center; flex-wrap: wrap;
@@ -181,30 +187,30 @@
                 @endforeach
             </ul>
         </nav>
-    </header>
 
-    @php
-        // Determine the active top-level item — either the current page itself
-        // or the parent of the current sub-page — so we can show its subpages.
-        $activeTop = null;
-        foreach ($menu as $item) {
-            $itemPath = ltrim($item->url(), '/') ?: '/';
-            if (request()->is($itemPath)) { $activeTop = $item; break; }
-            foreach ($item->children as $sub) {
-                if (request()->is(ltrim($sub->url(), '/'))) { $activeTop = $item; break 2; }
+        @php
+            // Determine the active top-level item — either the current page itself
+            // or the parent of the current sub-page — so we can show its subpages.
+            $activeTop = null;
+            foreach ($menu as $item) {
+                $itemPath = ltrim($item->url(), '/') ?: '/';
+                if (request()->is($itemPath)) { $activeTop = $item; break; }
+                foreach ($item->children as $sub) {
+                    if (request()->is(ltrim($sub->url(), '/'))) { $activeTop = $item; break 2; }
+                }
             }
-        }
-    @endphp
-    @if($activeTop && $activeTop->children->isNotEmpty())
-        <div class="subnav-bar">
-            <ul>
-                @foreach($activeTop->children as $sub)
-                    @php $subPath = ltrim($sub->url(), '/'); @endphp
-                    <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+        @endphp
+        @if($activeTop && $activeTop->children->isNotEmpty())
+            <div class="subnav-bar">
+                <ul>
+                    @foreach($activeTop->children as $sub)
+                        @php $subPath = ltrim($sub->url(), '/'); @endphp
+                        <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </header>
 
     @yield('content')
 
