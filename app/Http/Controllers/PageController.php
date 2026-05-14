@@ -42,6 +42,7 @@ HTML;
         $page = CmsPage::whereNull('parent_id')
             ->where('slug', $slug)
             ->where('is_visible', true)
+            ->with('children')
             ->firstOrFail();
         $editUrl = '/cms/'.$page->id.'/edit';
         return view('page', compact('page', 'editUrl'));
@@ -52,11 +53,13 @@ HTML;
         $parentPage = CmsPage::whereNull('parent_id')
             ->where('slug', $parent)
             ->where('is_visible', true)
+            ->with('children')
             ->firstOrFail();
         $page = CmsPage::where('parent_id', $parentPage->id)
             ->where('slug', $child)
             ->where('is_visible', true)
             ->firstOrFail();
+        $page->setRelation('parent', $parentPage);
         $editUrl = '/cms/'.$page->id.'/edit';
         return view('page', compact('page', 'editUrl'));
     }
