@@ -1,6 +1,7 @@
 @php
 $tabs = [
   ['Simulation', url('/simulation/admin/algorithm'), 'simulation/admin/algorithm'],
+  ['Prompts', url('/simulation/admin/prompts'), 'simulation/admin/prompts'],
   ['Test AI model', url('/simulation/admin/personas/tester'), 'simulation/admin/personas/tester'],
   ['Aktuel kontekst', url('/simulation/admin/context'), 'simulation/admin/context'],
   ['API-tjek', url('/simulation/admin/api-check'), 'simulation/admin/api-check'],
