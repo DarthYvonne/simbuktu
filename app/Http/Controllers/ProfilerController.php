@@ -19,7 +19,7 @@ class ProfilerController extends Controller
 
         return view('profiler.index', [
             'personas' => $personas,
-            'total'    => $this->repo->all() ? count($this->repo->all()) : $personas->count(),
+            'total'    => \App\Models\Persona::count(),
             'q'        => $q,
         ]);
     }
@@ -32,10 +32,8 @@ class ProfilerController extends Controller
         }
 
         $friendIds = \App\Models\Friendship::friendIdsOf($id);
-        $all = $this->repo->all();
-        $byId = [];
-        foreach ($all as $p) $byId[$p['id']] = $p;
-        $friends = array_values(array_filter(array_map(fn ($fid) => $byId[$fid] ?? null, $friendIds)));
+        // Resolve only the friends, not every persona in the database.
+        $friends = $this->repo->findMany($friendIds);
 
         $cover = app(\App\Services\CoverPicker::class)->pickFor($persona);
         return view('profiler.show', ['p' => $persona, 'friends' => $friends, 'cover' => $cover]);
@@ -64,7 +62,7 @@ class ProfilerController extends Controller
     public function graph()
     {
         return view('profiler.graph', [
-            'personaCount' => count($this->repo->all()),
+            'personaCount' => \App\Models\Persona::count(),
             'edgeCount'    => \App\Models\Friendship::count(),
         ]);
     }

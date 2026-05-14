@@ -19,18 +19,17 @@ class PersonaActivityContext
     {
         if (!$courseId) return '';
 
-        $postIds = Comment::where('persona_id', $personaId)
-            ->whereHas('post', fn ($q) => $q->where('course_id', $courseId))
-            ->pluck('post_id')
-            ->unique();
-
-        if ($postIds->isEmpty()) return '';
-
-        $posts = Post::whereIn('id', $postIds)
+        // Pull the 15 most recent posts the persona has commented on.
+        // Old approach plucked every post id then re-queried with whereIn —
+        // unbounded, and the IN list could have hundreds of values.
+        $posts = Post::where('course_id', $courseId)
+            ->whereHas('comments', fn ($q) => $q->where('persona_id', $personaId))
             ->with(['comments' => fn ($q) => $q->orderBy('created_at')])
             ->latest()
             ->limit(15)
             ->get();
+
+        if ($posts->isEmpty()) return '';
 
         $lines = [];
         foreach ($posts as $post) {

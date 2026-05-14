@@ -64,6 +64,15 @@ class PersonaRepository
         return $p ? $this->resolver->resolve($p->toFullArray()) : null;
     }
 
+    /** Resolve N personas in a single SQL query — avoids N+1 when callers know the id list. */
+    public function findMany(array $ids): array
+    {
+        if (empty($ids)) return [];
+        return Persona::whereIn('id', $ids)->get()
+            ->map(fn ($p) => $this->resolver->resolve($p->toFullArray()))
+            ->all();
+    }
+
     public function filter(string $q = ''): Collection
     {
         $personas = $this->query()->get()->map(fn ($p) => $this->resolver->resolve($p->toFullArray()));
