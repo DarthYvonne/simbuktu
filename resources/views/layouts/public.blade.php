@@ -63,6 +63,21 @@
         nav ul li a:hover,
         nav ul li a.active { color: #3498db; }
 
+        nav ul li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .subnav {
+            display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
+            list-style: none;
+        }
+        .subnav li a {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: none;
+            color: #7a8694;
+        }
+        .subnav li a:hover,
+        .subnav li a.active { color: #3498db; }
+
         .container {
             max-width: 1100px;
             margin: 0 auto;
@@ -147,7 +162,18 @@
         <nav id="main-nav">
             <ul>
                 @foreach($menu as $item)
-                    <li><a href="{{ $item->url() }}" class="{{ request()->is(ltrim($item->url(),'/') ?: '/') ? 'active' : '' }}">{{ $item->title }}</a></li>
+                    @php $itemPath = ltrim($item->url(), '/') ?: '/'; @endphp
+                    <li>
+                        <a href="{{ $item->url() }}" class="{{ request()->is($itemPath) ? 'active' : '' }}">{{ $item->title }}</a>
+                        @if($item->children->isNotEmpty())
+                            <ul class="subnav">
+                                @foreach($item->children as $sub)
+                                    @php $subPath = ltrim($sub->url(), '/'); @endphp
+                                    <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
                 @endforeach
             </ul>
         </nav>
