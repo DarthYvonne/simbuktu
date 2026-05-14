@@ -56,7 +56,9 @@ class User extends Authenticatable
             ->where('c.user_id', $this->id)
             ->where('c.course_id', $course->id)
             ->where('m.role', 'persona')
-            ->whereRaw('m.created_at > COALESCE(c.last_seen_at, 0)')
+            ->where(function ($q) {
+                $q->whereNull('c.last_seen_at')->orWhereColumn('m.created_at', '>', 'c.last_seen_at');
+            })
             ->count();
     }
 
