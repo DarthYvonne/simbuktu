@@ -70,7 +70,7 @@ class BlueprintController extends Controller
             'parameters.*.tier'                 => 'nullable|in:primary,secondary',
             'parameters.*.library_parameter_id' => 'nullable|integer',
             'parameters.*.show_on_profile'      => 'nullable|boolean',
-            'parameters.*.facets'               => 'required|array|min:2',
+            'parameters.*.facets'               => 'required|array|min:1',
             'parameters.*.facets.*.id'          => 'nullable|string|max:64',
             'parameters.*.facets.*.name'        => 'required|string|max:64',
             'parameters.*.facets.*.text'        => 'nullable|string|max:5000',

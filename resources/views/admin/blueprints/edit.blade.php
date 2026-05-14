@@ -287,7 +287,7 @@ function renderEditor() {
         <textarea rows="3" placeholder="Håndskreven psykologi/kommunikations-konsekvens-tekst..." oninput="updateFacet(${fi}, 'text', this.value)">${escapeHtml(f.text)}</textarea>
       </div>
       <div class="bp-facet-actions">
-        <button type="button" onclick="removeFacet(${fi})" ${facetCount <= 2 ? 'disabled title="Minimum 2 facetter"' : 'title="Slet facet"'}>
+        <button type="button" onclick="removeFacet(${fi})" ${facetCount <= 1 ? 'disabled title="Mindst én facet"' : 'title="Slet facet"'}>
           <i class="fa-solid fa-trash"></i>
         </button>
       </div>
@@ -426,7 +426,7 @@ function addFacet() {
 
 function removeFacet(fi) {
   const p = state.parameters[state.selectedDim];
-  if (p.facets.length <= 2) return;
+  if (p.facets.length <= 1) return;
   p.facets.splice(fi, 1);
   render();
 }
