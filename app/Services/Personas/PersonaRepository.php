@@ -42,17 +42,26 @@ class PersonaRepository
         return $p ? $this->resolver->resolve($p->toFullArray()) : null;
     }
 
-    public function filter(string $q = '', ?string $region = null, ?string $ageBucket = null): Collection
+    public function filter(string $q = ''): Collection
     {
-        $query = $this->query();
+        $personas = $this->query()->get()->map(fn ($p) => $this->resolver->resolve($p->toFullArray()));
 
-        if ($q !== '') $query->where('name', 'like', "%{$q}%");
-        if ($region)   $query->where('region', $region);
-        if ($ageBucket) {
-            [$min, $max] = array_map('intval', explode('-', $ageBucket));
-            $query->whereBetween('age', [$min, $max]);
-        }
+        if ($q === '') return $personas;
 
-        return $query->get()->map(fn ($p) => $this->resolver->resolve($p->toFullArray()));
+        $needle = mb_strtolower(trim($q));
+        return $personas->filter(function (array $p) use ($needle) {
+            $haystack = mb_strtolower(implode(' ', array_filter([
+                $p['name']      ?? '',
+                $p['bio']       ?? '',
+                $p['narrative'] ?? '',
+                $p['demographics']['occupation_hint'] ?? '',
+                $p['demographics']['region']          ?? '',
+                $p['demographics']['family']          ?? '',
+                collect($p['dimensions'] ?? [])
+                    ->map(fn ($d) => trim(($d['dimension'] ?? '').' '.($d['facet'] ?? '').' '.($d['text'] ?? '')))
+                    ->implode(' '),
+            ])));
+            return $haystack !== '' && mb_strpos($haystack, $needle) !== false;
+        })->values();
     }
 }

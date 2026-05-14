@@ -3,7 +3,6 @@
 
 @php
   $base = '/simulation/admin/populations/'.$population->id;
-  $activeFilters = array_filter(['region' => $region, 'age' => $age]);
 @endphp
 
 <style>
@@ -137,46 +136,14 @@
 
 @if ($total > 0)
 <div class="card">
-  <form method="GET" action="{{ url("$base/personas") }}" id="filterForm" class="filter-bar">
-    <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn, bio, job, subkultur…" class="q">
-    <button type="button" class="filter-toggle" id="filterToggle">
-      <i class="fa-solid fa-filter"></i> Filtre
-      @if (count($activeFilters)) <span class="badge">{{ count($activeFilters) }}</span> @endif
-      <i class="fa-solid fa-caret-down" style="font-size: 11px;"></i>
-    </button>
-    <input type="hidden" name="region" value="{{ $region }}">
-    <input type="hidden" name="age" value="{{ $age }}">
-
-    @foreach ($activeFilters as $key => $val)
-      <span class="chip">{{ $val }} <a href="{{ url("$base/personas?" . http_build_query(array_merge(request()->query(), [$key => null]))) }}" title="Fjern">✕</a></span>
-    @endforeach
-
-    <div id="filterPopover" class="popover" style="display: none; top: 50px; right: 0; min-width: 320px;">
-      <div style="margin-bottom: 10px;">
-        <label>Region</label>
-        <select onchange="updateFilter('region', this.value)">
-          <option value="">Alle</option>
-          @foreach ($regions as $r)
-            <option value="{{ $r }}" {{ $region === $r ? 'selected' : '' }}>{{ $r }}</option>
-          @endforeach
-        </select>
-      </div>
-      <div style="margin-bottom: 0;">
-        <label>Alder</label>
-        <select onchange="updateFilter('age', this.value)">
-          <option value="">Alle</option>
-          @foreach (['16-24','25-34','35-44','45-54','55-64','65-79','80-99'] as $b)
-            <option value="{{ $b }}" {{ $age === $b ? 'selected' : '' }}>{{ $b }} år</option>
-          @endforeach
-        </select>
-      </div>
-      @if (count($activeFilters))
-        <div style="margin-top: 12px; text-align: right;">
-          <a href="{{ url("$base/personas") }}" style="color: #1877f2; font-size: 12px;">Nulstil alle</a>
-        </div>
-      @endif
-    </div>
+  <form method="GET" action="{{ url("$base/personas") }}" id="filterForm">
+    <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn, bio, narrativ, dimensioner, facetter…" style="width: 100%; padding: 8px 12px; border: 1px solid #dadde1; border-radius: 6px; font-size: 14px;">
   </form>
+  @if ($q)
+    <div style="margin-top: 8px;">
+      <a href="{{ url("$base/personas") }}" style="color: #1877f2; font-size: 13px;">Nulstil søgning</a>
+    </div>
+  @endif
 </div>
 @endif
 
@@ -194,7 +161,7 @@
   @endif
 @elseif ($personas->isEmpty())
   <div class="card" style="text-align: center; padding: 40px; color: #65676b;">
-    Ingen personas matcher dine filtre.
+    Ingen personas matcher din søgning.
   </div>
 @else
 <div class="persona-grid">
@@ -354,22 +321,6 @@ document.getElementById('genQuickBtn').addEventListener('click', () => {
   document.getElementById('genFormSkip').value = genSkip.checked ? '1' : '';
   document.getElementById('genForm').submit();
 });
-
-// Filter popover
-const filterPopover = document.getElementById('filterPopover');
-document.getElementById('filterToggle').addEventListener('click', (e) => {
-  e.stopPropagation();
-  filterPopover.style.display = filterPopover.style.display === 'none' ? 'block' : 'none';
-});
-document.addEventListener('click', (e) => {
-  if (!filterPopover.contains(e.target) && e.target.closest('#filterToggle') === null) {
-    filterPopover.style.display = 'none';
-  }
-});
-function updateFilter(key, val) {
-  document.querySelector(`#filterForm input[name="${key}"]`).value = val;
-  document.getElementById('filterForm').submit();
-}
 
 // Generation status polling
 const STATUS_URL = '{{ url("$base/personas/status") }}';

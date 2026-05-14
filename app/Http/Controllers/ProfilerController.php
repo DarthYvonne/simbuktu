@@ -15,21 +15,12 @@ class ProfilerController extends Controller
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
-        $region = $request->query('region');
-        $ageBucket = $request->query('age');
-
-        $personas = $this->repo->filter($q, $region, $ageBucket);
-
-        $all = $this->repo->all();
-        $regions = collect($all)->pluck('demographics.region')->unique()->filter()->sort()->values();
+        $personas = $this->repo->filter($q);
 
         return view('profiler.index', [
             'personas' => $personas,
-            'total'    => count($all),
+            'total'    => $this->repo->all() ? count($this->repo->all()) : $personas->count(),
             'q'        => $q,
-            'region'   => $region,
-            'age'      => $ageBucket,
-            'regions'  => $regions,
         ]);
     }
 

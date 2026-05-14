@@ -23,33 +23,15 @@ class PersonaController extends Controller
         $all   = $repo->all();
         $total = count($all);
 
-        $q         = trim((string) $request->query('q', ''));
-        $region    = $request->query('region');
-        $ageBucket = $request->query('age');
+        $q = trim((string) $request->query('q', ''));
 
-        $personas = $repo->filter($q, $region, $ageBucket);
+        $personas = $repo->filter($q);
 
         $genPrefix = "personas:gen:{$population->id}";
         $genQueued = (int) Cache::get("{$genPrefix}:queued", 0);
         $genDone   = (int) Cache::get("{$genPrefix}:done", 0);
         $genErrors = (int) Cache::get("{$genPrefix}:errors", 0);
         $generating = $genQueued > 0 && ($genDone + $genErrors) < $genQueued;
-
-        $ageBuckets = ['16-24','25-34','35-44','45-54','55-64','65-79','80-99'];
-        $ageDist    = array_fill_keys($ageBuckets, 0);
-        $regionDist = [];
-        foreach ($all as $p) {
-            $a = $p['demographics']['age'] ?? null;
-            if (is_numeric($a)) {
-                foreach ($ageBuckets as $b) {
-                    [$min, $max] = array_map('intval', explode('-', $b));
-                    if ($a >= $min && $a <= $max) { $ageDist[$b]++; break; }
-                }
-            }
-            $r = $p['demographics']['region'] ?? null;
-            if ($r) $regionDist[$r] = ($regionDist[$r] ?? 0) + 1;
-        }
-        arsort($regionDist);
 
         $course        = \Illuminate\Support\Facades\Auth::user()?->currentCourse();
         $activityCount = 0;
@@ -69,11 +51,6 @@ class PersonaController extends Controller
             'count'          => $personas->count(),
             'total'          => $total,
             'q'              => $q,
-            'region'         => $region,
-            'age'            => $ageBucket,
-            'regions'        => collect($all)->pluck('demographics.region')->unique()->filter()->sort()->values(),
-            'ageDist'        => $ageDist,
-            'regionDist'     => $regionDist,
             'generating'     => $generating,
             'genQueued'      => $genQueued,
             'genDone'        => $genDone + $genErrors,
