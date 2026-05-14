@@ -63,20 +63,26 @@
         nav ul li a:hover,
         nav ul li a.active { color: #3498db; }
 
-        nav ul li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .subnav {
-            display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
-            list-style: none;
+        .subnav-bar {
+            padding: 10px 5%;
+            background: #ffffff;
         }
-        .subnav li a {
+        .subnav-bar ul {
+            list-style: none;
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 28px;
+        }
+        .subnav-bar ul li a {
+            text-decoration: none;
             font-size: 13px;
             font-weight: 400;
             letter-spacing: 0.5px;
             text-transform: none;
             color: #7a8694;
+            transition: color 0.2s;
         }
-        .subnav li a:hover,
-        .subnav li a.active { color: #3498db; }
+        .subnav-bar ul li a:hover,
+        .subnav-bar ul li a.active { color: #3498db; }
 
         .container {
             max-width: 1100px;
@@ -163,21 +169,34 @@
             <ul>
                 @foreach($menu as $item)
                     @php $itemPath = ltrim($item->url(), '/') ?: '/'; @endphp
-                    <li>
-                        <a href="{{ $item->url() }}" class="{{ request()->is($itemPath) ? 'active' : '' }}">{{ $item->title }}</a>
-                        @if($item->children->isNotEmpty())
-                            <ul class="subnav">
-                                @foreach($item->children as $sub)
-                                    @php $subPath = ltrim($sub->url(), '/'); @endphp
-                                    <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </li>
+                    <li><a href="{{ $item->url() }}" class="{{ request()->is($itemPath) ? 'active' : '' }}">{{ $item->title }}</a></li>
                 @endforeach
             </ul>
         </nav>
     </header>
+
+    @php
+        // Determine the active top-level item — either the current page itself
+        // or the parent of the current sub-page — so we can show its subpages.
+        $activeTop = null;
+        foreach ($menu as $item) {
+            $itemPath = ltrim($item->url(), '/') ?: '/';
+            if (request()->is($itemPath)) { $activeTop = $item; break; }
+            foreach ($item->children as $sub) {
+                if (request()->is(ltrim($sub->url(), '/'))) { $activeTop = $item; break 2; }
+            }
+        }
+    @endphp
+    @if($activeTop && $activeTop->children->isNotEmpty())
+        <div class="subnav-bar">
+            <ul>
+                @foreach($activeTop->children as $sub)
+                    @php $subPath = ltrim($sub->url(), '/'); @endphp
+                    <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     @yield('content')
 
