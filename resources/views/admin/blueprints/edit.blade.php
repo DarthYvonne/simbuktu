@@ -308,6 +308,13 @@ function renderEditor() {
           <input type="text" class="dim-desc" value="${escapeHtml(p.description ?? '')}" placeholder="Kort beskrivelse" oninput="updateDim('description', this.value)">
         </div>
         <div class="actions">
+          <label class="profile-toggle" title="Personlighed: facet-tekst farver LLM'ens stemme. Demografi: facet-navnet (eller værdi) er en konkret egenskab — alder, region, etc.">
+            <span style="color:#65676b;">Type:</span>
+            <select onchange="updateDim('type', this.value)" style="border:none; background:transparent; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; padding:0;">
+              <option value="personality" ${(p.type || 'personality') === 'personality' ? 'selected' : ''}>Personlighed</option>
+              <option value="demographic" ${(p.type || 'personality') === 'demographic' ? 'selected' : ''}>Demografi</option>
+            </select>
+          </label>
           <label class="profile-toggle" title="Primær = grundlæggende træk (uafhængig sampling). Sekundær = livsstil/præferencer (LLM tjekker plausibilitet mod primære).">
             <span style="color:#65676b;">Tier:</span>
             <select onchange="updateDim('tier', this.value)" style="border:none; background:transparent; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; padding:0;">
@@ -337,7 +344,8 @@ function selectDim(i) { state.selectedDim = i; render(); }
 
 function updateDim(field, value) {
   state.parameters[state.selectedDim][field] = value;
-  if (field === 'name') renderTree();
+  if (field === 'name') renderList();
+  if (field === 'type') renderEditor(); // toggle Værdi inputs on facets
 }
 
 function updateFacet(fi, field, value) {
@@ -350,7 +358,7 @@ function updateFacet(fi, field, value) {
     const el = document.querySelector(`.bp-facet[data-fi="${fi}"] .bp-facet-weight input`);
     if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
   }
-  if (field === 'name') renderTree();
+  if (field === 'name') renderList();
 }
 
 function distributeEqually() {
@@ -401,7 +409,6 @@ function addCustomDimension() {
     facets: [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
   });
   state.selectedDim = state.parameters.length - 1;
-  state.collapsed[CUSTOM_CAT] = false;
   render();
 }
 
