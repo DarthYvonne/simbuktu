@@ -63,7 +63,7 @@
   <div class="profile-body">
     <div class="profile-id-row">
       @if (!empty($p['image_file']))
-        <img class="profile-avatar" src="{{ url('/simulation/profiler/'.$p['id'].'/image') }}">
+        <img class="profile-avatar" src="{{ url('/simulation/profiler/'.$p['id'].'/image') }}" style="cursor: zoom-in;" onclick="openImageModal('{{ url('/simulation/profiler/'.$p['id'].'/image') }}', '{{ addslashes($p['name'] ?? '') }}')" title="Klik for at se i fuld størrelse">
       @else
         <div class="profile-avatar-placeholder">{{ strtoupper(substr($p['name'] ?? '?', 0, 2)) }}</div>
       @endif
@@ -194,6 +194,25 @@ document.querySelectorAll('.tabs button[data-tab]').forEach(btn => {
     document.querySelector('[data-pane="'+btn.dataset.tab+'"]').style.display = 'block';
   });
 });
+</script>
+
+{{-- Image zoom modal --}}
+<div id="imageModal" onclick="closeImageModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:30px; cursor:zoom-out;">
+  <button type="button" onclick="closeImageModal()" style="position:absolute; top:14px; right:18px; background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:24px; width:40px; height:40px; border-radius:50%; cursor:pointer;" title="Luk (Esc)">×</button>
+  <img id="imageModalImg" src="" alt="" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+</div>
+<script>
+function openImageModal(src, alt) {
+  const modal = document.getElementById('imageModal');
+  document.getElementById('imageModalImg').src = src;
+  document.getElementById('imageModalImg').alt = alt || '';
+  modal.style.display = 'flex';
+}
+function closeImageModal() {
+  document.getElementById('imageModal').style.display = 'none';
+  document.getElementById('imageModalImg').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImageModal(); });
 </script>
 
 @endsection
