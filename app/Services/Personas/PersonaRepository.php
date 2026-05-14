@@ -36,6 +36,28 @@ class PersonaRepository
             ->all();
     }
 
+    /**
+     * Pick N personas at random from the (optionally population-scoped) pool,
+     * excluding the given IDs. Random pick happens in SQL so the full table
+     * never gets materialised in PHP memory.
+     */
+    public function pickRandom(int $n, array $excludeIds = [], ?int $populationId = null): array
+    {
+        if ($n <= 0) return [];
+        $q = Persona::query();
+        if ($populationId !== null) {
+            $q->where('population_id', $populationId);
+        } elseif ($this->populationId !== null) {
+            $q->where('population_id', $this->populationId);
+        }
+        if (!empty($excludeIds)) {
+            $q->whereNotIn('id', $excludeIds);
+        }
+        return $q->inRandomOrder()->limit($n)->get()
+            ->map(fn ($p) => $this->resolver->resolve($p->toFullArray()))
+            ->all();
+    }
+
     public function find(string $id): ?array
     {
         $p = Persona::find($id);

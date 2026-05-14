@@ -14,12 +14,12 @@ class TriggerResolver
      * Pick N personas for this round's random discovery pool. Trigger-relevance
      * is no longer decided here — each persona decides inside the batched LLM
      * call whether the post actually resonates with them.
+     *
+     * Picks N rows in SQL with ORDER BY RANDOM() LIMIT N, scoped to the post's
+     * population. Avoids loading every persona into PHP memory.
      */
-    public function pickExposures(int $n, array $alreadyExposedIds): array
+    public function pickExposures(int $n, array $alreadyExposedIds, ?int $populationId = null): array
     {
-        if ($n <= 0) return [];
-        $all = collect($this->personas->all())->whereNotIn('id', $alreadyExposedIds)->values();
-        if ($all->isEmpty()) return [];
-        return $all->shuffle()->take($n)->all();
+        return $this->personas->pickRandom($n, $alreadyExposedIds, $populationId);
     }
 }

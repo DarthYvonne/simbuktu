@@ -45,7 +45,8 @@ class RoundRunner
             : $base;
 
         // Random discovery pool + graph spread from last round's engagers
-        $discoveryExposures = $this->triggerResolver->pickExposures($size, $alreadyExposedIds);
+        $populationId = $post->course?->population_id;
+        $discoveryExposures = $this->triggerResolver->pickExposures($size, $alreadyExposedIds, $populationId);
         $graphExposures = $this->getGraphSpreadPersonas($post, $round, $algo, $alreadyExposedIds);
 
         // Merge, dedupe (graph first — friends are more "salient")
