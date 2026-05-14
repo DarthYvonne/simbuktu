@@ -120,7 +120,7 @@
         }
         .container pre code { background: transparent; padding: 0; color: inherit; }
 
-        .container img { border-radius: 8px; margin: 14px 0; }
+        .container img { margin: 14px 0; }
         .container hr { border: 0; border-top: 1px solid #e6eaf0; margin: 32px 0; }
 
         /* Tighten when headings stack directly on top of each other. */
