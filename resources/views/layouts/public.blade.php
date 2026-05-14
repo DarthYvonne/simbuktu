@@ -66,37 +66,58 @@
         nav ul li a:hover { color: #3498db; }
         nav ul li a.active { background: #3498db; color: #fff; }
 
-        /* Subnav row floats below the header bottom-border, absolutely
-           positioned so it doesn't push the body content downward. It overlaps
-           the .container's existing top padding without consuming layout space. */
-        .subnav-bar {
+        /* Parent menu item with children — dropdown on hover (desktop) and on
+           tap (mobile). Caret hints at the dropdown. */
+        nav ul li.has-children { position: relative; }
+        nav ul li.has-children > a::after {
+            content: ''; display: inline-block;
+            width: 6px; height: 6px;
+            border-right: 1.5px solid currentColor;
+            border-bottom: 1.5px solid currentColor;
+            transform: rotate(45deg) translateY(-2px);
+            margin-left: 7px;
+            opacity: 0.55;
+            transition: transform 0.15s;
+        }
+        nav ul li.has-children:hover > a::after,
+        nav ul li.has-children.open > a::after {
+            transform: rotate(45deg) translateY(0);
+            opacity: 0.85;
+        }
+        .dropdown {
             position: absolute;
-            left: 0; right: 0; top: 100%;
-            padding: 10px 5%;
-            background: transparent;
-            pointer-events: none;
-            z-index: 5;
-        }
-        .subnav-bar ul { pointer-events: auto; }
-        .subnav-bar ul {
+            top: 100%; left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            min-width: 200px;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px -8px rgba(15,23,42,0.18);
+            padding: 6px;
+            display: none;
+            z-index: 50;
             list-style: none;
-            display: flex; justify-content: center; flex-wrap: wrap;
-            gap: 18px;
+            flex-direction: column;
+            gap: 0;
         }
-        .subnav-bar ul li a {
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 400;
-            letter-spacing: 0.5px;
-            text-transform: none;
-            color: #7a8694;
-            display: inline-block;
-            padding: 4px 12px;
+        nav ul li.has-children:hover > .dropdown,
+        nav ul li.has-children.open > .dropdown {
+            display: flex;
+        }
+        .dropdown li { width: 100%; }
+        .dropdown li a {
+            display: block;
+            padding: 8px 14px;
             border-radius: 5px;
-            transition: background-color 0.15s, color 0.15s;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            text-transform: none;
+            color: #2c3e50;
+            white-space: nowrap;
         }
-        .subnav-bar ul li a:hover { color: #3498db; }
-        .subnav-bar ul li a.active { background: #3498db; color: #fff; }
+        .dropdown li a:hover { background: #f4f6f8; color: #3498db; }
+        .dropdown li a.active { background: #3498db; color: #fff; }
 
         .container {
             max-width: 1100px;
@@ -153,6 +174,20 @@
                 border-bottom: 1px solid #f0f0f0;
                 font-size: 16px;
             }
+            /* On mobile, the dropdown flattens into the column — no overlay. */
+            nav ul li.has-children > a::after { display: none; }
+            .dropdown {
+                position: static;
+                transform: none;
+                display: flex !important;
+                border: 0; box-shadow: none; padding: 0;
+                min-width: 0; background: #fafbfc;
+            }
+            .dropdown li a {
+                padding: 12px 5%;
+                font-size: 14px;
+                border-bottom: 1px solid #f0f0f0;
+            }
         }
 
         @yield('styles')
@@ -182,35 +217,54 @@
         <nav id="main-nav">
             <ul>
                 @foreach($menu as $item)
-                    @php $itemPath = ltrim($item->url(), '/') ?: '/'; @endphp
-                    <li><a href="{{ $item->url() }}" class="{{ request()->is($itemPath) ? 'active' : '' }}">{{ $item->title }}</a></li>
+                    @php
+                        $itemPath = ltrim($item->url(), '/') ?: '/';
+                        $hasChildren = $item->children->isNotEmpty();
+                        $sectionActive = request()->is($itemPath);
+                        if (!$sectionActive && $hasChildren) {
+                            foreach ($item->children as $sub) {
+                                if (request()->is(ltrim($sub->url(), '/'))) { $sectionActive = true; break; }
+                            }
+                        }
+                    @endphp
+                    <li class="{{ $hasChildren ? 'has-children' : '' }}">
+                        <a href="{{ $item->url() }}" class="{{ $sectionActive ? 'active' : '' }}">{{ $item->title }}</a>
+                        @if($hasChildren)
+                            <ul class="dropdown">
+                                @foreach($item->children as $sub)
+                                    @php $subPath = ltrim($sub->url(), '/'); @endphp
+                                    <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
                 @endforeach
             </ul>
         </nav>
-
-        @php
-            // Determine the active top-level item — either the current page itself
-            // or the parent of the current sub-page — so we can show its subpages.
-            $activeTop = null;
-            foreach ($menu as $item) {
-                $itemPath = ltrim($item->url(), '/') ?: '/';
-                if (request()->is($itemPath)) { $activeTop = $item; break; }
-                foreach ($item->children as $sub) {
-                    if (request()->is(ltrim($sub->url(), '/'))) { $activeTop = $item; break 2; }
-                }
-            }
-        @endphp
-        @if($activeTop && $activeTop->children->isNotEmpty())
-            <div class="subnav-bar">
-                <ul>
-                    @foreach($activeTop->children as $sub)
-                        @php $subPath = ltrim($sub->url(), '/'); @endphp
-                        <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
     </header>
+
+    <script>
+    // Touch / no-hover: tap the parent to open the dropdown without navigating
+    // (only when the dropdown isn't already open).
+    (function () {
+        document.querySelectorAll('nav li.has-children > a').forEach(function (a) {
+            a.addEventListener('click', function (e) {
+                var li = a.parentElement;
+                if (!matchMedia('(hover: none)').matches) return; // desktop: normal navigation
+                if (!li.classList.contains('open')) {
+                    e.preventDefault();
+                    document.querySelectorAll('nav li.has-children.open').forEach(function (o) { if (o !== li) o.classList.remove('open'); });
+                    li.classList.add('open');
+                }
+            });
+        });
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('nav li.has-children')) {
+                document.querySelectorAll('nav li.has-children.open').forEach(function (o) { o.classList.remove('open'); });
+            }
+        });
+    })();
+    </script>
 
     @yield('content')
 
