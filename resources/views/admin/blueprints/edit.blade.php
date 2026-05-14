@@ -277,7 +277,7 @@
   </div>
   <div class="sok-messages" id="sok-messages"></div>
   <form class="sok-input" id="sok-form">
-    <textarea id="sok-input" placeholder="Skriv til Sokrates… (Enter for at sende, Shift+Enter for ny linje)" rows="1"></textarea>
+    <textarea id="sok-input" rows="1"></textarea>
     <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
   </form>
 </aside>
