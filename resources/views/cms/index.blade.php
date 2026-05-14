@@ -62,7 +62,7 @@
     <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
             <h2 style="font-size:18px;">Sider</h2>
-            <a href="/cms/create" class="btn">+ Ny topside</a>
+            <a href="/cms/create" class="btn">+ Ny side</a>
         </div>
 
         @if($topLevel->isEmpty())
