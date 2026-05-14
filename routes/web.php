@@ -141,6 +141,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::prefix('populations/{population}')->group(function () {
             Route::get('/personas',               [PersonaController::class, 'index']);
             Route::post('/personas/generate',     [PersonaController::class, 'generate']);
+            Route::post('/personas/cancel',       [PersonaController::class, 'cancelGeneration']);
             Route::get('/personas/status',        [PersonaController::class, 'status']);
             Route::post('/personas/clear',        [PersonaController::class, 'clear']);
 

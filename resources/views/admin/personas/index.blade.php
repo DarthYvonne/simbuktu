@@ -123,9 +123,13 @@
     @endif
   </div>
   <div id="progress" style="display: none; margin-top: 12px; padding: 10px 12px; background: #e7f3ff; border-radius: 6px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-      <strong style="color: #1877f2; font-size: 13px;"><span class="spinner" style="border-color: #1877f2; border-top-color: transparent;"></span> Genererer…</strong>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 10px;">
+      <strong style="color: #1877f2; font-size: 13px; flex: 1;"><span class="spinner" style="border-color: #1877f2; border-top-color: transparent;"></span> Genererer…</strong>
       <span id="progLabel" style="font-size: 13px; color: #1877f2;">0 / 0</span>
+      <form method="POST" action="{{ url("$base/personas/cancel") }}" onsubmit="return confirm('Annullér generering?')" style="margin: 0;">
+        @csrf
+        <button type="submit" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px;"><i class="fa-solid fa-xmark"></i> Annullér</button>
+      </form>
     </div>
     <div style="height: 5px; background: #fff; border-radius: 3px; overflow: hidden;">
       <div id="progBar" style="height: 100%; background: #1877f2; width: 0%; transition: width 0.3s;"></div>
@@ -153,6 +157,10 @@
       <span class="spinner" style="border-color: #1877f2; border-top-color: transparent; width: 30px; height: 30px; border-width: 3px;"></span>
       <div style="margin-top: 16px; font-size: 15px; color: #1877f2; font-weight: 600;">Genererer dine første personas…</div>
       <div id="emptyProgLabel" style="margin-top: 6px; font-size: 13px; color: #65676b;">{{ $genDone }} / {{ $genQueued }}</div>
+      <form method="POST" action="{{ url("$base/personas/cancel") }}" onsubmit="return confirm('Annullér generering?')" style="margin-top: 16px;">
+        @csrf
+        <button type="submit" class="btn btn-secondary" style="font-size: 13px;"><i class="fa-solid fa-xmark"></i> Annullér generering</button>
+      </form>
     </div>
   @else
     <div class="card" style="text-align: center; padding: 40px; color: #65676b;">

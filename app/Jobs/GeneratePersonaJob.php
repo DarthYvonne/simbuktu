@@ -38,6 +38,10 @@ class GeneratePersonaJob implements ShouldQueue
 
     public function handle(): void
     {
+        $cachePrefix = $this->populationId ? "personas:gen:{$this->populationId}" : 'personas:gen';
+        // Cancelled mid-batch — bail before doing any LLM work.
+        if (Cache::get("{$cachePrefix}:cancelled")) return;
+
         $population = $this->populationId ? Population::find($this->populationId) : null;
         $blueprint  = $this->blueprintId  ? Blueprint::find($this->blueprintId)   : null;
 
@@ -60,8 +64,6 @@ class GeneratePersonaJob implements ShouldQueue
         $gemini   = new GeminiClient(config('gemini'));
         $narrator = new NarrativeBuilder($gemini, $prompts);
         $imager   = new ImageGenerator($gemini, $prompts);
-
-        $cachePrefix = $this->populationId ? "personas:gen:{$this->populationId}" : 'personas:gen';
 
         try {
             $narrative = $narrator->build([

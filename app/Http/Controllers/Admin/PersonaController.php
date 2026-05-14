@@ -223,6 +223,8 @@ class PersonaController extends Controller
         }
 
         $prefix = "personas:gen:{$population->id}";
+        // Clear any prior cancellation flag — this is a fresh batch.
+        Cache::forget("{$prefix}:cancelled");
         Cache::put("{$prefix}:queued",     $count, 3600);
         Cache::put("{$prefix}:done",       0,      3600);
         Cache::put("{$prefix}:errors",     0,      3600);
@@ -244,6 +246,19 @@ class PersonaController extends Controller
             'errors' => (int) Cache::get("{$prefix}:errors",  0),
             'total'  => Persona::where('population_id', $population->id)->count(),
         ]);
+    }
+
+    public function cancelGeneration(Population $population)
+    {
+        $prefix = "personas:gen:{$population->id}";
+        // Flag tells already-queued jobs to bail when they pick up.
+        Cache::put("{$prefix}:cancelled", true, 3600);
+        // Clear UI counters so the progress card disappears.
+        Cache::forget("{$prefix}:queued");
+        Cache::forget("{$prefix}:done");
+        Cache::forget("{$prefix}:errors");
+        Cache::forget("{$prefix}:started_at");
+        return back()->with('success', 'Generering annulleret. Igangværende jobs stoppes når de bliver hentet fra køen.');
     }
 
     public function destroy(Population $population, string $id)
