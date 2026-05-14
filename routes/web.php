@@ -201,3 +201,5 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
 
 // Public CMS-rendered pages — must be last (catch-all by slug)
 Route::get('/{slug}', [PageController::class, 'show'])->where('slug', '[A-Za-z0-9\-_]+');
+Route::get('/{parent}/{child}', [PageController::class, 'showChild'])
+    ->where(['parent' => '[A-Za-z0-9\-_]+', 'child' => '[A-Za-z0-9\-_]+']);

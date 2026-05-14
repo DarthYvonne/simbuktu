@@ -39,7 +39,24 @@ HTML;
 
     public function show(string $slug)
     {
-        $page = CmsPage::where('slug', $slug)->where('is_visible', true)->firstOrFail();
+        $page = CmsPage::whereNull('parent_id')
+            ->where('slug', $slug)
+            ->where('is_visible', true)
+            ->firstOrFail();
+        $editUrl = '/cms/'.$page->id.'/edit';
+        return view('page', compact('page', 'editUrl'));
+    }
+
+    public function showChild(string $parent, string $child)
+    {
+        $parentPage = CmsPage::whereNull('parent_id')
+            ->where('slug', $parent)
+            ->where('is_visible', true)
+            ->firstOrFail();
+        $page = CmsPage::where('parent_id', $parentPage->id)
+            ->where('slug', $child)
+            ->where('is_visible', true)
+            ->firstOrFail();
         $editUrl = '/cms/'.$page->id.'/edit';
         return view('page', compact('page', 'editUrl'));
     }

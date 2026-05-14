@@ -17,10 +17,22 @@
 
             <div class="form-row form-row--inline">
                 <div>
-                    <label>Slug (URL)</label>
-                    <input type="text" name="slug" value="{{ old('slug', $page->slug) }}" placeholder="f.eks. simulationer (tom = forside)">
+                    <label>Overside</label>
+                    <select name="parent_id" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;font-size:14px;font-family:inherit;background:#fff;">
+                        <option value="">— Ingen (topside)</option>
+                        @foreach($parents as $parent)
+                            <option value="{{ $parent->id }}"
+                                {{ (int) old('parent_id', $page->parent_id) === $parent->id ? 'selected' : '' }}>
+                                {{ $parent->title }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
+                    <label>Slug (URL-segment)</label>
+                    <input type="text" name="slug" value="{{ old('slug', $page->slug) }}" placeholder="f.eks. team (tom = forside)">
+                </div>
+                <div style="max-width:120px;">
                     <label>Sortering</label>
                     <input type="number" name="sort_order" value="{{ old('sort_order', $page->sort_order) }}">
                 </div>

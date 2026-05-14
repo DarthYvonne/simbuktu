@@ -81,15 +81,35 @@ class CmsController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $pages = CmsPage::orderBy('sort_order')->get();
-        return view('cms.index', compact('pages'));
+        $topLevel = CmsPage::whereNull('parent_id')
+            ->with(['children' => fn ($q) => $q->orderBy('sort_order')->orderBy('title')])
+            ->orderBy('sort_order')->orderBy('title')
+            ->get();
+
+        // Selected top-level page (drives the inverted-box highlight and the
+        // visible "Ny underside" affordance). Default = first top-level page.
+        $selectedId = (int) $request->query('selected', 0);
+        if (!$topLevel->firstWhere('id', $selectedId)) {
+            $selectedId = (int) ($topLevel->first()?->id ?? 0);
+        }
+
+        return view('cms.index', compact('topLevel', 'selectedId'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('cms.edit', ['page' => new CmsPage(['is_visible' => true, 'sort_order' => (CmsPage::max('sort_order') ?? 0) + 1])]);
+        $parentId = $request->query('parent') ? (int) $request->query('parent') : null;
+        $parents  = CmsPage::whereNull('parent_id')->orderBy('sort_order')->orderBy('title')->get();
+        return view('cms.edit', [
+            'page'    => new CmsPage([
+                'is_visible' => true,
+                'sort_order' => (CmsPage::max('sort_order') ?? 0) + 1,
+                'parent_id'  => $parentId,
+            ]),
+            'parents' => $parents,
+        ]);
     }
 
     public function store(Request $request)
@@ -101,7 +121,13 @@ class CmsController extends Controller
 
     public function edit(CmsPage $page)
     {
-        return view('cms.edit', compact('page'));
+        // A page cannot be its own ancestor — exclude it (and its descendants) from parent choices.
+        $descendantIds = $this->descendantIds($page);
+        $parents = CmsPage::whereNull('parent_id')
+            ->whereNotIn('id', $descendantIds)
+            ->orderBy('sort_order')->orderBy('title')
+            ->get();
+        return view('cms.edit', compact('page', 'parents'));
     }
 
     public function update(Request $request, CmsPage $page)
@@ -127,6 +153,7 @@ class CmsController extends Controller
     private function validated(Request $request, ?int $ignoreId = null): array
     {
         $data = $request->validate([
+            'parent_id'  => 'nullable|integer|exists:cms_pages,id',
             'title'      => 'required|string|max:255',
             'slug'       => 'nullable|string|max:255',
             'content'    => 'nullable|string',
@@ -134,18 +161,51 @@ class CmsController extends Controller
             'is_visible' => 'nullable|boolean',
         ]);
 
-        $data['slug']       = isset($data['slug']) ? trim($data['slug'], '/') : Str::slug($data['title']);
+        $data['slug']       = isset($data['slug']) && $data['slug'] !== ''
+            ? trim($data['slug'], '/')
+            : Str::slug($data['title']);
+        $data['parent_id']  = !empty($data['parent_id']) ? (int) $data['parent_id'] : null;
         $data['is_visible'] = (bool) ($data['is_visible'] ?? false);
         $data['sort_order'] = $data['sort_order'] ?? 0;
 
+        // Prevent picking yourself or a descendant as parent.
+        if ($ignoreId && $data['parent_id']) {
+            if ($data['parent_id'] === $ignoreId) abort(422, 'En side kan ikke være sin egen overside.');
+            $page = CmsPage::find($ignoreId);
+            if ($page && in_array($data['parent_id'], $this->descendantIds($page), true)) {
+                abort(422, 'Oversiden kan ikke være en underside af sig selv.');
+            }
+            // Only one level deep — a subpage cannot itself have a parent that has a parent.
+            $proposedParent = CmsPage::find($data['parent_id']);
+            if ($proposedParent && $proposedParent->parent_id) {
+                abort(422, 'Undersider kan kun ligge ét niveau dybt.');
+            }
+        }
+        if (!$ignoreId && $data['parent_id']) {
+            // Same one-level rule applies when creating.
+            $proposedParent = CmsPage::find($data['parent_id']);
+            if ($proposedParent && $proposedParent->parent_id) {
+                abort(422, 'Undersider kan kun ligge ét niveau dybt.');
+            }
+        }
+
+        // Slug uniqueness is scoped to the same parent — siblings share a namespace.
         $exists = CmsPage::where('slug', $data['slug'])
+            ->where('parent_id', $data['parent_id'])
             ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
             ->exists();
-
         if ($exists) {
-            abort(422, 'Slug findes allerede.');
+            abort(422, 'En side med samme URL findes allerede under den valgte overside.');
         }
 
         return $data;
+    }
+
+    /** Return [$page->id, ...children ids...] so we can exclude them from parent options. */
+    private function descendantIds(CmsPage $page): array
+    {
+        $ids = [$page->id];
+        foreach ($page->children as $c) $ids[] = $c->id;
+        return $ids;
     }
 }
