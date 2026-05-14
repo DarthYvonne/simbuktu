@@ -4,7 +4,7 @@
 
 @section('styles')
     .page-hero {
-        width: 100%; max-height: 420px;
+        width: 100%; height: 240px;
         margin-bottom: 28px;
         border-radius: 12px;
         overflow: hidden;
@@ -12,7 +12,7 @@
     }
     .page-hero img {
         width: 100%; height: 100%; object-fit: cover;
-        display: block; max-height: 420px;
+        display: block;
     }
     .page-layout {
         display: grid;
@@ -49,8 +49,7 @@
             position: static;
         }
         .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-        .page-hero { max-height: 260px; border-radius: 8px; margin-bottom: 20px; }
-        .page-hero img { max-height: 260px; }
+        .page-hero { height: 160px; border-radius: 8px; margin-bottom: 20px; }
     }
 @endsection
 
