@@ -351,7 +351,7 @@ function renderComments(wrap, comments) {
   };
   wrap.innerHTML = topLevel.map(c => renderOne(c, 0)).join('');
 }
-setInterval(() => { openComments.forEach(id => loadComments(id)); }, 5000);
+setInterval(() => { openComments.forEach(id => loadComments(id)); }, 10000);
 
 // Alles opslag: live search + participant filter
 (function () {

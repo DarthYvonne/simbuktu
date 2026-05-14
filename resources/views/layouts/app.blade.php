@@ -160,7 +160,7 @@
       }
     } catch {}
   }
-  setInterval(tick, 6000);
+  setInterval(tick, 15000); // header unread badge — modest refresh rate
 })();
 </script>
 @endauth

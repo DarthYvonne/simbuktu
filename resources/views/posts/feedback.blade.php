@@ -183,7 +183,7 @@
       (data.messages || []).forEach(appendComment);
     } catch {}
   }
-  setInterval(poll, 5000);
+  setInterval(poll, 10000);
   input.focus();
 })();
 </script>

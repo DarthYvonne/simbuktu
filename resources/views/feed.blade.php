@@ -493,7 +493,7 @@ function renderReactions(data) {
     } catch {}
   }
   pollCounts();
-  setInterval(pollCounts, 6000);
+  setInterval(pollCounts, 15000);
 
   const seenKeys = new Set();
   // Seed with server-rendered items (avoid duplicate animation on first poll)
@@ -535,7 +535,7 @@ function renderReactions(data) {
     } catch (e) { console.warn('feed poll failed', e); }
   }
 
-  setInterval(poll, 5000);
+  setInterval(poll, 10000);
 })();
 
 const whyBubble = document.getElementById('whyBubble');
@@ -832,7 +832,7 @@ setInterval(() => {
   const isTyping = focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA');
   if (isTyping) return;
   openComments.forEach(postId => loadComments(postId));
-}, 5000);
+}, 10000);
 </script>
 
 @endsection
