@@ -52,4 +52,17 @@ class DescribeImageJob implements ShouldQueue
             $post->save();
         }
     }
+
+    /**
+     * Image descriptions are non-essential — the simulation handles a null
+     * description gracefully. So a terminal failure is just logged; we don't
+     * try to recover or surface it to the user.
+     */
+    public function failed(?\Throwable $exception): void
+    {
+        \Illuminate\Support\Facades\Log::warning('DescribeImageJob failed terminally', [
+            'post_id' => $this->postId,
+            'error' => $exception?->getMessage(),
+        ]);
+    }
 }

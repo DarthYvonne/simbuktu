@@ -49,4 +49,17 @@ class TickPostJob implements ShouldQueue
             throw $e;
         }
     }
+
+    /**
+     * If the worker dies mid-tick (timeout, OOM), make sure last_ticked_at
+     * doesn't stay in a partially-incremented state that blocks the next tick.
+     * The next scheduled tick will re-pick up this post from where it left off.
+     */
+    public function failed(?\Throwable $exception): void
+    {
+        Log::error('TickPostJob failed terminally', [
+            'post_id' => $this->postId,
+            'error' => $exception?->getMessage(),
+        ]);
+    }
 }

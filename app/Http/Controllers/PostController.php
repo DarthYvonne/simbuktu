@@ -138,7 +138,14 @@ class PostController extends Controller
 
     private function buildAlerts(int $userId, int $courseId): array
     {
-        $myPostIds = Post::where('user_id', $userId)->where('course_id', $courseId)->pluck('id', 'id');
+        // Cap to the most recent 200 own-posts. The downstream queries
+        // pass these ids in WHERE IN clauses; an unbounded scan plus huge
+        // IN list bites a long-running course.
+        $myPostIds = Post::where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->orderByDesc('created_at')
+            ->limit(200)
+            ->pluck('id', 'id');
         if ($myPostIds->isEmpty()) return [];
 
         $repo = app(\App\Services\Personas\PersonaRepository::class);
