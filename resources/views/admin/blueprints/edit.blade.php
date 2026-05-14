@@ -816,15 +816,61 @@ function sokRender() {
   wrap.scrollTop = wrap.scrollHeight;
 }
 
+function lookupDim(dimId) {
+  return state.parameters.find(p => p.id === dimId);
+}
+function lookupFacet(dimId, facetId) {
+  const dim = lookupDim(dimId);
+  return dim ? (dim.facets || []).find(f => f.id === facetId) : null;
+}
+function nameOrFallback(thing, fallback) {
+  const n = (thing && thing.name) ? thing.name.trim() : '';
+  return n || fallback;
+}
 function describeOp(op) {
   const d = op.data || {};
   switch (op.op) {
-    case 'add_facet':       return `Tilføj facet "${d.name || '?'}" (${d.weight ?? 0}%) til dimension`;
-    case 'update_facet':    return `Opdatér facet ${d.facet_id ? d.facet_id.substring(0,8) : '?'}`;
-    case 'delete_facet':    return `Slet facet ${d.facet_id ? d.facet_id.substring(0,8) : '?'}`;
-    case 'add_dimension':   return `Tilføj ny dimension "${d.name || '?'}" med ${(d.facets || []).length} facetter`;
-    case 'update_dimension':return `Opdatér dimension "${d.name || d.dimension_id?.substring(0,8) || '?'}"`;
-    case 'delete_dimension':return `Slet dimension`;
+    case 'add_facet': {
+      const dim = lookupDim(d.dimension_id);
+      const dimName = nameOrFallback(dim, 'dimension');
+      const facetName = d.name || '(unavngivet)';
+      return `Tilføj "${facetName}" (${d.weight ?? 0}%) i ${dimName}`;
+    }
+    case 'update_facet': {
+      const dim = lookupDim(d.dimension_id);
+      const facet = lookupFacet(d.dimension_id, d.facet_id);
+      const dimName = nameOrFallback(dim, 'dimension');
+      const facetName = (d.name && d.name.trim()) || nameOrFallback(facet, 'facet');
+      const bits = [];
+      if (d.name !== undefined && facet && d.name !== facet.name) bits.push(`omdøb → "${d.name}"`);
+      if (d.weight !== undefined) bits.push(`vægt ${d.weight}%`);
+      if (d.value !== undefined && d.value !== '') bits.push(`værdi = ${d.value}`);
+      if (d.text !== undefined) bits.push(`tekst opdateret`);
+      const summary = bits.length ? ` (${bits.join(', ')})` : '';
+      return `Opdatér "${facetName}" i ${dimName}${summary}`;
+    }
+    case 'delete_facet': {
+      const dim = lookupDim(d.dimension_id);
+      const facet = lookupFacet(d.dimension_id, d.facet_id);
+      return `Slet "${nameOrFallback(facet, 'facet')}" fra ${nameOrFallback(dim, 'dimension')}`;
+    }
+    case 'add_dimension':
+      return `Tilføj ny dimension "${d.name || '(unavngivet)'}" med ${(d.facets || []).length} facetter`;
+    case 'update_dimension': {
+      const dim = lookupDim(d.dimension_id);
+      const dimName = (d.name && d.name.trim()) || nameOrFallback(dim, 'dimension');
+      const bits = [];
+      if (d.name !== undefined && dim && d.name !== dim.name) bits.push(`omdøb → "${d.name}"`);
+      if (d.type !== undefined) bits.push(`type = ${d.type}`);
+      if (d.tier !== undefined) bits.push(`tier = ${d.tier}`);
+      if (d.show_on_profile !== undefined) bits.push(`vis på profil = ${d.show_on_profile ? 'ja' : 'nej'}`);
+      const summary = bits.length ? ` (${bits.join(', ')})` : '';
+      return `Opdatér dimension "${dimName}"${summary}`;
+    }
+    case 'delete_dimension': {
+      const dim = lookupDim(d.dimension_id);
+      return `Slet dimension "${nameOrFallback(dim, '?')}"`;
+    }
     default: return op.op;
   }
 }
