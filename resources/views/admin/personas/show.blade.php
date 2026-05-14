@@ -219,7 +219,12 @@
               @endif
               <div style="min-width: 0; flex: 1;">
                 <div style="font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $f['name'] }}</div>
-                <div style="font-size: 11px; color: #65676b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@php $_fAge = $f['demographics']['age'] ?? null; $_fOcc = $f['demographics']['occupation_hint'] ?? ''; @endphp{{ trim(($_fAge ? $_fAge.($_fOcc ? ', ' : '') : '').$_fOcc) }}</div>
+                @php
+                  $_fAge = $f['demographics']['age'] ?? null;
+                  $_fOcc = $f['demographics']['occupation_hint'] ?? '';
+                  $_fBits = array_filter([$_fAge, $_fOcc]);
+                @endphp
+                <div style="font-size: 11px; color: #65676b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ implode(', ', $_fBits) }}</div>
               </div>
             </a>
           @endforeach
