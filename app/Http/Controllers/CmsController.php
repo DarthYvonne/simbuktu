@@ -22,6 +22,22 @@ class CmsController extends Controller
 
     public function saveSettings(Request $request)
     {
+        // If the user picked a file but PHP rejected it (post_max_size /
+        // upload_max_filesize / disk error), $request->hasFile() is false even
+        // though the user clearly intended to upload. Surface a real error
+        // instead of silently saving everything else and leaving the image
+        // unchanged.
+        if (isset($_FILES['hero_image']) && $_FILES['hero_image']['error'] !== UPLOAD_ERR_OK && $_FILES['hero_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $msg = match ($_FILES['hero_image']['error']) {
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Billedet er for stort. Brug et mindre billede eller bed admin om at hæve PHP\'s upload-grænse.',
+                UPLOAD_ERR_PARTIAL    => 'Upload blev afbrudt midt i. Prøv igen.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Server-fejl: ingen midlertidig mappe.',
+                UPLOAD_ERR_CANT_WRITE => 'Server-fejl: kan ikke skrive billedet.',
+                default               => 'Upload-fejl (kode '.$_FILES['hero_image']['error'].').',
+            };
+            return back()->withErrors(['hero_image' => $msg])->withInput();
+        }
+
         $request->validate([
             'hero_image'           => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
             'hero_headline'        => 'nullable|string|max:500',
@@ -144,6 +160,19 @@ class CmsController extends Controller
      */
     private function handleHeroImage(Request $request, CmsPage $page): void
     {
+        // Catch PHP-level upload rejections (post_max_size etc.) before they
+        // get swallowed silently by Laravel's nullable image validation.
+        if (isset($_FILES['hero_image']) && $_FILES['hero_image']['error'] !== UPLOAD_ERR_OK && $_FILES['hero_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $msg = match ($_FILES['hero_image']['error']) {
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Billedet er for stort til at blive uploadet. Brug et mindre billede.',
+                UPLOAD_ERR_PARTIAL    => 'Upload blev afbrudt midt i. Prøv igen.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Server-fejl: ingen midlertidig mappe.',
+                UPLOAD_ERR_CANT_WRITE => 'Server-fejl: kan ikke skrive billedet.',
+                default               => 'Upload-fejl (kode '.$_FILES['hero_image']['error'].').',
+            };
+            throw \Illuminate\Validation\ValidationException::withMessages(['hero_image' => $msg]);
+        }
+
         $request->validate([
             'hero_image'  => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:8192',
             'remove_hero' => 'nullable|boolean',

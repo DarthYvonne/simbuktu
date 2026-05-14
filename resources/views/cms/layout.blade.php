@@ -130,9 +130,11 @@
             background: var(--success-soft); color: #166534;
             padding: 12px 16px; border-radius: 10px;
             margin-bottom: 18px; font-size: 13px; font-weight: 500;
-            display: flex; align-items: center; gap: 9px;
+            display: flex; align-items: flex-start; gap: 9px;
+            flex-direction: column;
         }
-        .status::before { content: '✓'; font-weight: 700; }
+        .status[style*="danger"]::before { content: '⚠'; font-weight: 700; }
+        .status:not([style*="danger"])::before { content: '✓'; font-weight: 700; }
 
         code { background: var(--line-soft); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--ink-soft); font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
@@ -157,6 +159,13 @@
     <main class="cms-main">
         @if(session('status'))
             <div class="status">{{ session('status') }}</div>
+        @endif
+        @if($errors->any())
+            <div class="status" style="background:var(--danger-soft);color:var(--danger);">
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
         @endif
         @yield('content')
     </main>
