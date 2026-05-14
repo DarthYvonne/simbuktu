@@ -10,9 +10,10 @@
     .container > .page-hero {
         margin: -60px 0 36px;
     }
-    .page-hero img {
+    .container .page-hero img {
         width: 100%; height: auto;
         display: block;
+        margin: 0;
     }
     .page-layout {
         display: grid;
