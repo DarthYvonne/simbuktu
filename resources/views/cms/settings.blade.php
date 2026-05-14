@@ -52,6 +52,14 @@
                 <div style="font-size:12px;color:#888;margin-top:4px;">JPG, PNG, WebP eller GIF · maks 5 MB</div>
             </div>
 
+            <h3 style="font-size:15px;font-weight:600;margin:24px 0 12px;color:#555;">Kontaktformular</h3>
+
+            <div class="form-row">
+                <label>Modtager-e-mail</label>
+                <input type="email" name="contact_email" value="{{ old('contact_email', $contactEmail) }}" placeholder="navn@domæne.dk">
+                <div style="font-size:12px;color:#888;margin-top:4px;">Henvendelser fra <code>[kontaktform]</code>-genvejen sendes hertil.</div>
+            </div>
+
             <h3 style="font-size:15px;font-weight:600;margin:24px 0 12px;color:#555;">Indhold under hero</h3>
 
             <div class="form-row">

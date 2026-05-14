@@ -17,7 +17,8 @@ class CmsController extends Controller
         $heroButtonText = CmsSetting::get('home_hero_button_text', 'Udforsk nu');
         $heroButtonUrl  = CmsSetting::get('home_hero_button_url', '#');
         $homeContent    = CmsSetting::get('home_content');
-        return view('cms.settings', compact('heroImage', 'heroHeadline', 'heroSubhead', 'heroButtonText', 'heroButtonUrl', 'homeContent'));
+        $contactEmail   = CmsSetting::get('contact_email', 'anders@klinikken.ai');
+        return view('cms.settings', compact('heroImage', 'heroHeadline', 'heroSubhead', 'heroButtonText', 'heroButtonUrl', 'homeContent', 'contactEmail'));
     }
 
     public function saveSettings(Request $request)
@@ -45,6 +46,7 @@ class CmsController extends Controller
             'hero_button_text'     => 'nullable|string|max:100',
             'hero_button_url'      => 'nullable|string|max:500',
             'home_content'         => 'nullable|string',
+            'contact_email'        => 'nullable|email|max:255',
             'reset_all'            => 'nullable|boolean',
         ]);
 
@@ -65,6 +67,7 @@ class CmsController extends Controller
             'home_hero_button_text' => 'hero_button_text',
             'home_hero_button_url'  => 'hero_button_url',
             'home_content'          => 'home_content',
+            'contact_email'         => 'contact_email',
         ] as $key => $field) {
             if ($request->has($field)) {
                 CmsSetting::set($key, $request->input($field));

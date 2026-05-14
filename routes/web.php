@@ -91,8 +91,10 @@ Route::post('/kontakt', function (\Illuminate\Http\Request $request) {
         ."Side: ".($data['kilde'] ?? '—')."\n\n"
         ."Besked:\n{$data['msg']}\n";
 
-    Mail::raw($body, function ($m) use ($data) {
-        $m->to('anders@klinikken.ai')
+    $to = \App\Models\CmsSetting::get('contact_email', 'anders@klinikken.ai');
+
+    Mail::raw($body, function ($m) use ($data, $to) {
+        $m->to($to)
           ->replyTo($data['email'], $data['name'])
           ->subject('Simbuktu — ny henvendelse fra '.$data['name']);
     });
