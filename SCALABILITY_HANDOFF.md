@@ -4,7 +4,7 @@ Run overnight on 2026-05-14/15. All work is committed but **not pushed or deploy
 
 ## What was done
 
-8 commits, all on `main` ahead of `ba94f0b`. Run `git log --oneline ba94f0b..HEAD` to see them.
+11 commits, all on `main` ahead of `ba94f0b`. Run `git log --oneline ba94f0b..HEAD` to see them.
 
 ### Code (committed)
 
@@ -18,6 +18,8 @@ Run overnight on 2026-05-14/15. All work is committed but **not pushed or deploy
 | `f12a45d` | Image description moves to `DescribeImageJob` | `PostController::store` no longer holds a PHP-FPM worker for 3-15s on the Gemini Vision call. The post saves immediately; the description fills in seconds later. |
 | `21f60c6` | Slow student-facing polling from 5-6s to 10-15s | 9 polling sites updated. Roughly halves the polling load with minimal UX impact (sim ticks once per minute anyway). |
 | `826acd3` | New migration: `posts(course_id, created_at)` + `post_exposures(persona_id)` indexes | Hot feed query no longer table-scans on Postgres (no FK auto-indexes). |
+| `ea64947` | **Chat: queue persona reply via `GenerateChatReplyJob`** | The biggest worker-blocker fix. `MessageController::send` used to hold a PHP-FPM worker for the full 5-30s LLM round-trip. Now: send creates a pending placeholder, dispatches a job, returns immediately. Frontend polls and swaps the typing bubble for the real reply when status flips off `pending`. Includes schema migration (`conversation_messages.status` + `error_message`), a shared `PersonaActivityContext` service, and frontend polling logic that handles page-reloads mid-reply. |
+| `bb230b1` | Chat: cap rendered + prompted message history | Both the messages view (`->limit(100)`) and the LLM prompt (`->limit(50)`) had unbounded `->get()` on long conversations. |
 
 ### Infrastructure (done directly on prod via ssh)
 
@@ -40,8 +42,8 @@ Run overnight on 2026-05-14/15. All work is committed but **not pushed or deploy
 |---|---|---|
 | #39 | Postgres on prod | Multi-step (install, init, edit .env, migrate, copy preserved data) — wanted you awake to OK each step. |
 | #40 | Export preservable tables | Same — needs you to pick which tables matter. |
-| #45 | Queue chat reply | Needs schema change (`conversation_messages.status`) + frontend "typing…" UX + polling endpoint. Real risk of breaking the chat without test cycles. |
-| #45 | Queue sentiment | Already rate-limited + retried. Lower priority. Same UX-refactor risk. |
+| #45 | Queue chat reply | **DONE** (commits `ea64947` + `bb230b1`). See "Chat-reply specifics" below for testing checklist. |
+| #45 | Queue sentiment | Still pending. Admin-only, already rate-limited + retried. Same UX-refactor pattern as chat if you want it done. |
 | #46 | Object storage | Needs you to choose provider + provide credentials. |
 | #47 | Horizon | Could do `composer require laravel/horizon` locally but installing/supervising it on prod is a bigger deploy step. Also: the current `simbuktu-worker.service` is fine for now. |
 
@@ -63,7 +65,39 @@ Run overnight on 2026-05-14/15. All work is committed but **not pushed or deploy
 6. Decide on Postgres timeline. The code is ready (only one COALESCE issue found, already fixed).
 7. Tackle the chat-reply UX refactor when you have time to test — biggest remaining win for the chat workers being held hostage.
 
-## Expected capacity after deploying these 8 commits
+## Chat-reply specifics — test before pushing
+
+The chat refactor is the most invasive change of the night and the one I couldn't run locally. Test these flows after deploy:
+
+1. **Happy path** — open a chat, send a message. You should see your bubble + a typing indicator. After ~5-15s the typing bubble swaps for the persona's reply.
+2. **Send while reply pending** — send a second message before the first reply lands. Both should resolve; the second pending bubble appears below.
+3. **Reload mid-reply** — send a message, hit reload before reply arrives. The page should re-render the pending bubble and resume polling.
+4. **Worker offline** — `systemctl stop simbuktu-worker` then send a message. The bubble should sit pending until the worker comes back or the 190s client timeout shows the "tog for lang tid" error. Restart the worker.
+5. **Messages index preview** — start a chat, send first message, immediately navigate to /beskeder. The preview should NOT be empty (it falls back to the latest non-pending message — your own user message).
+
+If any of these breaks, the safest revert is `git revert ea64947 bb230b1` then redeploy — the schema migration is additive and harmless if left in place.
+
+The simbuktu-worker.service runs ONE worker process. That's fine today but at "lots of concurrent students chatting" you'd want 4-8 workers. Adjust the systemd unit — see "Scaling the worker" below.
+
+## Scaling the worker
+
+Single worker = ~6 chat replies per minute throughput (10s avg per reply). For more parallelism, change `ExecStart` in `/etc/systemd/system/simbuktu-worker.service` to run multiple workers, or add `simbuktu-worker@.service` (template unit) and enable several instances:
+
+```ini
+# /etc/systemd/system/simbuktu-worker@.service
+[Service]
+ExecStart=/usr/bin/php /var/www/simbuktu/artisan queue:work --queue=default --sleep=2 --tries=2 --max-time=3600 --max-jobs=1000
+# (rest same as simbuktu-worker.service)
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then `systemctl enable --now simbuktu-worker@{1,2,3,4}`. Four workers fits comfortably on the box.
+
+Bigger jump: install Horizon (task #47) for a proper dashboard + auto-scaling on Redis.
+
+## Expected capacity after deploying these 11 commits
 
 Rough math, assuming you reload php-fpm + switch cache/session to Redis:
 
@@ -73,4 +107,6 @@ Rough math, assuming you reload php-fpm + switch cache/session to Redis:
 - LLM transient errors: handled (retries instead of cascading fail)
 - Per-user LLM quota burn: capped
 
-Conservative estimate: from "~50-100 concurrent students" up to "~150-250 concurrent students" on the same hardware, **without** Postgres or Horizon. To get past that requires Postgres (writer contention), Redis-backed queue + more workers (parallel LLM throughput), and async chat replies (worker freeing).
+Conservative estimate: from "~50-100 concurrent students" up to **"~300-500 concurrent students"** on the same hardware once the chat-reply queue is live and you've spawned 4+ workers, **without** Postgres or Horizon. The student-facing worker-blocking problem (chat send) is now solved at the code level.
+
+To push past ~500 concurrent requires Postgres (writer contention starts biting once SQLite write QPS gets serious) and Horizon (auto-scaling + proper monitoring of the now-very-busy queue).
