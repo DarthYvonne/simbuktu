@@ -139,6 +139,59 @@
             color: #888;
             font-size: 14px;
         }
+        .admin-actions {
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        .admin-action {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px;
+            font-size: 13px; font-weight: 500;
+            color: #3498db;
+            background: transparent;
+            border: 1px solid #d6e3ee;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: inherit;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .admin-action:hover { background: #eaf4fb; border-color: #3498db; }
+        .admin-action svg { width: 14px; height: 14px; }
+        .admin-action--danger { color: #c0392b; border-color: #f0c8c0; }
+        .admin-action--danger:hover { background: #fee2dc; border-color: #c0392b; }
+
+        /* Delete confirmation modal */
+        .del-modal {
+            display: none;
+            position: fixed; inset: 0; z-index: 1000;
+            background: rgba(15,23,42,0.45);
+            align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .del-modal.open { display: flex; }
+        .del-modal__panel {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 24px 60px -16px rgba(15,23,42,0.4);
+            max-width: 440px; width: 100%;
+            padding: 28px 30px;
+            text-align: left;
+        }
+        .del-modal__panel h3 { font-size: 18px; font-weight: 700; color: #1a2733; margin: 0 0 10px; }
+        .del-modal__panel p { font-size: 14px; color: #54637a; line-height: 1.55; margin: 0 0 22px; }
+        .del-modal__panel strong { color: #1a2733; }
+        .del-modal__actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .del-btn {
+            padding: 9px 16px;
+            font-size: 13px; font-weight: 600;
+            border-radius: 7px; border: 0; cursor: pointer;
+            font-family: inherit;
+        }
+        .del-btn--ghost { background: #f4f6f8; color: #1a2733; }
+        .del-btn--ghost:hover { background: #e6eaf0; }
+        .del-btn--danger { background: #c0392b; color: #fff; }
+        .del-btn--danger:hover { background: #a32f23; }
 
         @media (max-width: 768px) {
             .menu-toggle {
@@ -223,14 +276,44 @@
     @yield('content')
 
     <footer>
-        &copy; {{ date('Y') }} Simbuktu
+        <div>&copy; {{ date('Y') }} Simbuktu</div>
         @auth
             @if(auth()->user()->is_admin && !empty($editUrl))
-                · <a href="{{ $editUrl }}" style="color:#3498db;text-decoration:none;">Rediger denne side</a>
-                · <a href="/cms/create{{ isset($page) && $page->parent_id ? '?parent='.$page->parent_id : (isset($page) ? '?parent='.$page->id : '') }}" style="color:#3498db;text-decoration:none;">+ Opret ny side</a>
+                <div class="admin-actions">
+                    <a href="{{ $editUrl }}" class="admin-action">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                        Rediger
+                    </a>
+                    <a href="/cms/create{{ isset($page) && $page->parent_id ? '?parent='.$page->parent_id : (isset($page) ? '?parent='.$page->id : '') }}" class="admin-action">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Opret ny
+                    </a>
+                    @if(isset($page))
+                        <button type="button" class="admin-action admin-action--danger" onclick="document.getElementById('deletePageModal').classList.add('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"/></svg>
+                            Slet
+                        </button>
+                    @endif
+                </div>
             @endif
         @endauth
     </footer>
+
+    @auth @if(auth()->user()->is_admin && isset($page))
+    <div id="deletePageModal" class="del-modal" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="del-modal__panel">
+            <h3>Slet siden?</h3>
+            <p>Du er ved at slette <strong>{{ $page->title }}</strong>@if($page->children->isNotEmpty()) og dens {{ $page->children->count() }} underside{{ $page->children->count() === 1 ? '' : 'r' }}@endif. Handlingen kan ikke fortrydes.</p>
+            <div class="del-modal__actions">
+                <button type="button" class="del-btn del-btn--ghost" onclick="document.getElementById('deletePageModal').classList.remove('open')">Annullér</button>
+                <form method="POST" action="/cms/{{ $page->id }}" style="margin:0;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="del-btn del-btn--danger">Slet siden</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif @endauth
 
 </body>
 </html>
