@@ -15,7 +15,7 @@ class GrokClient
     public function generateText(string $prompt, string $model = 'grok-3-mini', array $context = []): string
     {
         $start = microtime(true);
-        $response = Http::timeout(120)
+        $response = LlmHttp::send(fn () => Http::timeout(120)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -24,7 +24,7 @@ class GrokClient
                 'model' => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
                 'temperature' => 0.9,
-            ]);
+            ]));
         $latency = (int) round((microtime(true) - $start) * 1000);
 
         if (!$response->successful()) {

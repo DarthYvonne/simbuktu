@@ -19,7 +19,7 @@ class OpenAiClient
         }
 
         $start = microtime(true);
-        $response = Http::timeout(120)
+        $response = LlmHttp::send(fn () => Http::timeout(120)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -27,7 +27,7 @@ class OpenAiClient
             ->post('https://api.openai.com/v1/chat/completions', [
                 'model' => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
-            ]);
+            ]));
         $latency = (int) round((microtime(true) - $start) * 1000);
 
         if (!$response->successful()) {

@@ -19,7 +19,7 @@ class AnthropicClient
         }
 
         $start = microtime(true);
-        $response = Http::timeout(120)
+        $response = LlmHttp::send(fn () => Http::timeout(120)
             ->withHeaders([
                 'x-api-key' => $this->apiKey,
                 'anthropic-version' => '2023-06-01',
@@ -30,7 +30,7 @@ class AnthropicClient
                 'max_tokens' => 2048,
                 'temperature' => 0.9,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
-            ]);
+            ]));
         $latency = (int) round((microtime(true) - $start) * 1000);
 
         if (!$response->successful()) {

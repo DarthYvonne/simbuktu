@@ -24,8 +24,8 @@ class GeminiClient
         ];
 
         $start = microtime(true);
-        $response = Http::timeout($this->config['timeout'])
-            ->post($this->endpoint($model), $body);
+        $response = LlmHttp::send(fn () => Http::timeout($this->config['timeout'])
+            ->post($this->endpoint($model), $body));
         $latency = (int) round((microtime(true) - $start) * 1000);
 
         if (!$response->successful()) {
@@ -55,7 +55,7 @@ class GeminiClient
             ]],
         ];
         $start = microtime(true);
-        $response = Http::timeout($this->config['timeout'])->post($this->endpoint($model), $body);
+        $response = LlmHttp::send(fn () => Http::timeout($this->config['timeout'])->post($this->endpoint($model), $body));
         $latency = (int) round((microtime(true) - $start) * 1000);
         if (!$response->successful()) {
             throw new RuntimeException("Gemini vision error ({$response->status()}): {$response->body()}");
@@ -75,8 +75,8 @@ class GeminiClient
         ];
 
         $start = microtime(true);
-        $response = Http::timeout($this->config['timeout'])
-            ->post($this->endpoint($model), $body);
+        $response = LlmHttp::send(fn () => Http::timeout($this->config['timeout'])
+            ->post($this->endpoint($model), $body));
         $latency = (int) round((microtime(true) - $start) * 1000);
 
         if (!$response->successful()) {
