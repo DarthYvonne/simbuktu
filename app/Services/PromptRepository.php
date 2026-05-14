@@ -266,9 +266,9 @@ PROMPT,
 
             'image.profile' => [
                 'name' => 'Profilbillede-stil',
-                'description' => 'Sørger for at profilbilleder ligner selfies, ikke studiefotos.',
-                'placeholders' => ['persona_image_prompt'],
-                'body' => 'Realistic amateur smartphone selfie portrait, natural lighting, slightly imperfect framing, no studio lighting, no professional retouching. {{persona_image_prompt}}. Square aspect ratio. No text or watermarks.',
+                'description' => 'Sørger for at profilbilleder ligner selfies, ikke studiefotos. {{subject_line}} forced fra persona\'ens alder/køn så modellen ikke driver mod en standard-voksen.',
+                'placeholders' => ['persona_image_prompt', 'subject_line', 'persona_age', 'persona_gender'],
+                'body' => '{{subject_line}} Realistic amateur smartphone selfie portrait, natural lighting, slightly imperfect framing, no studio lighting, no professional retouching. {{persona_image_prompt}}. Square aspect ratio. No text or watermarks. The subject must visibly match the age stated above.',
             ],
 
             'sentiment.analyse' => [

@@ -76,17 +76,24 @@ class GeneratePersonaJob implements ShouldQueue
             throw $e;
         }
 
+        // Derive scalar columns (used for filtering UI) from sampled demographic dimensions, by name.
+        // Computed BEFORE image generation so age/gender can be forced into the image prompt.
+        $scalars = $this->extractScalarColumns($sampledFacets);
+
         $imageFile = null;
         if (!$this->skipImage && !empty($narrative['image_prompt'])) {
             if (!is_dir($imageDir)) mkdir($imageDir, 0775, true);
             $outputPath = "{$imageDir}/{$personaId}.png";
-            $ok = $imager->generate($narrative['image_prompt'], $outputPath, $personaId);
+            $ok = $imager->generate(
+                $narrative['image_prompt'],
+                $outputPath,
+                $personaId,
+                $scalars['age'] ?? null,
+                $scalars['gender'] ?? null,
+            );
             $imageFile = $ok ? "{$personaId}.png" : null;
             if ($ok) Thumbnails::path($personaId, 128, $imageDir);
         }
-
-        // Derive scalar columns (used for filtering UI) from sampled demographic dimensions, by name.
-        $scalars = $this->extractScalarColumns($sampledFacets);
 
         $personaData = [
             'id'                => $personaId,
