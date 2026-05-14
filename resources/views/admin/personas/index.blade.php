@@ -4,9 +4,6 @@
 @php
   $base = '/simulation/admin/populations/'.$population->id;
   $activeFilters = array_filter(['region' => $region, 'age' => $age]);
-  $maxAge = max(array_values($ageDist) ?: [0]);
-  $regionTop = array_slice($regionDist, 0, 6, true);
-  $maxRegion = max(array_values($regionTop) ?: [0]);
 @endphp
 
 <style>
@@ -77,31 +74,6 @@
 
 @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 @if (session('error'))<div class="alert alert-error">{{ session('error') }}</div>@endif
-
-@if ($total > 0)
-<div class="demo-strip">
-  <div class="demo-block">
-    <div class="demo-title">Alder</div>
-    @foreach ($ageDist as $bucket => $n)
-      <div class="demo-row">
-        <span class="lbl">{{ $bucket }}</span>
-        <span class="bar-wrap"><span class="bar" style="width: {{ $maxAge ? round($n / $maxAge * 100) : 0 }}%"></span></span>
-        <span class="num">{{ $n }}</span>
-      </div>
-    @endforeach
-  </div>
-  <div class="demo-block">
-    <div class="demo-title">Region</div>
-    @foreach ($regionTop as $name => $n)
-      <div class="demo-row r">
-        <span class="lbl" title="{{ $name }}">{{ $name }}</span>
-        <span class="bar-wrap"><span class="bar" style="width: {{ $maxRegion ? round($n / $maxRegion * 100) : 0 }}%"></span></span>
-        <span class="num">{{ $n }}</span>
-      </div>
-    @endforeach
-  </div>
-</div>
-@endif
 
 <div class="card">
   <div class="gen-row">
