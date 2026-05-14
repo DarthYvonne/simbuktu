@@ -3,50 +3,86 @@
 @section('title', $page->title.' | Simbuktu')
 
 @section('styles')
-    .page-submenu {
-        display: flex; flex-wrap: wrap; gap: 24px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 32px;
+    .page-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 48px;
+        align-items: start;
     }
-    .page-submenu a {
+    .page-sidebar {
+        border-right: 1px solid #e0e0e0;
+        padding-right: 24px;
+        position: sticky;
+        top: 24px;
+    }
+    .page-sidebar h4 {
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.8px;
+        color: #95a5a6;
+        margin-bottom: 12px;
+    }
+    .page-sidebar ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .page-sidebar a {
+        display: block;
         text-decoration: none;
         font-size: 14px; font-weight: 400;
-        letter-spacing: 0.4px;
-        color: #7a8694;
-        padding: 4px 10px; border-radius: 5px;
+        color: #54637a;
+        padding: 8px 12px;
+        border-radius: 6px;
         transition: background-color 0.15s, color 0.15s;
     }
-    .page-submenu a:hover { color: #3498db; }
-    .page-submenu a.active { background: #3498db; color: #fff; }
+    .page-sidebar a:hover { color: #3498db; background: #f4f6f8; }
+    .page-sidebar a.active { background: #3498db; color: #fff; font-weight: 500; }
     .page-content > *:first-child { margin-top: 0; }
+
+    @media (max-width: 768px) {
+        .page-layout { grid-template-columns: 1fr; gap: 24px; }
+        .page-sidebar {
+            border-right: 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding-right: 0; padding-bottom: 16px;
+            position: static;
+        }
+        .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    }
 @endsection
 
 @section('content')
     <main class="container">
         @php
-            // Submenu = the siblings of this page (so the user can move around the
-            // section). If this page is a top-level page with children, show its
-            // own children. If it's a subpage, show its siblings (its parent's
-            // visible children). Otherwise no submenu.
-            $submenuPages = collect();
+            // Sidebar lists siblings (so the user can move around the section).
+            // If this page is a top-level page with children, show its own children.
+            // If it's a subpage, show its siblings (its parent's visible children).
+            // Otherwise no sidebar — content uses full width.
+            $sidebarPages = collect();
+            $sectionLabel = '';
             if ($page->parent_id && $page->parent) {
-                $submenuPages = $page->parent->children->where('is_visible', true);
+                $sidebarPages = $page->parent->children->where('is_visible', true);
+                $sectionLabel = $page->parent->title;
             } elseif ($page->children->isNotEmpty()) {
-                $submenuPages = $page->children->where('is_visible', true);
+                $sidebarPages = $page->children->where('is_visible', true);
+                $sectionLabel = $page->title;
             }
         @endphp
 
-        @if($submenuPages->count() > 0)
-            <nav class="page-submenu" aria-label="Undersider">
-                @foreach($submenuPages as $sibling)
-                    <a href="{{ $sibling->url() }}" class="{{ $sibling->id === $page->id ? 'active' : '' }}">{{ $sibling->title }}</a>
-                @endforeach
-            </nav>
+        @if($sidebarPages->count() > 0)
+            <div class="page-layout">
+                <aside class="page-sidebar" aria-label="Undersider">
+                    <h4>{{ $sectionLabel }}</h4>
+                    <ul>
+                        @foreach($sidebarPages as $sibling)
+                            <li><a href="{{ $sibling->url() }}" class="{{ $sibling->id === $page->id ? 'active' : '' }}">{{ $sibling->title }}</a></li>
+                        @endforeach
+                    </ul>
+                </aside>
+                <div class="page-content">
+                    {!! $page->content !!}
+                </div>
+            </div>
+        @else
+            <div class="page-content">
+                {!! $page->content !!}
+            </div>
         @endif
-
-        <div class="page-content">
-            {!! $page->content !!}
-        </div>
     </main>
 @endsection
