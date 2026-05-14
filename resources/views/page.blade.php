@@ -30,9 +30,9 @@
     .page-sidebar a {
         display: block;
         text-decoration: none;
-        font-size: 14px; font-weight: 400;
+        font-size: 16px; font-weight: 400;
         color: #54637a;
-        padding: 8px 12px;
+        padding: 9px 14px;
         border-radius: 6px;
         transition: background-color 0.15s, color 0.15s;
     }
