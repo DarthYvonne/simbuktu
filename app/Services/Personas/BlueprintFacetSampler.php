@@ -32,6 +32,7 @@ class BlueprintFacetSampler
                 'facet'           => $facet['name'] ?? '',
                 'text'            => $facet['text'] ?? '',
                 'type'            => $param['type'] ?? 'personality',
+                'tier'            => $param['tier'] ?? 'primary',
                 'value'           => $this->resolveValue($facet['value'] ?? null),
                 'show_on_profile' => (bool) ($param['show_on_profile'] ?? false),
             ];

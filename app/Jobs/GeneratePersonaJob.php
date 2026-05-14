@@ -112,6 +112,9 @@ class GeneratePersonaJob implements ShouldQueue
         ]);
 
         Cache::increment("{$cachePrefix}:done");
+
+        // Non-blocking coherence check (LLM flags implausible secondary-vs-primary combos for human review)
+        CoherenceCheckJob::dispatch($personaId);
     }
 
     /**

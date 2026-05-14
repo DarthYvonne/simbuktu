@@ -156,6 +156,7 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
             Route::delete('/personas/{id}',       [PersonaController::class, 'destroy']);
             Route::get('/personas/{id}/image',    [PersonaController::class, 'image']);
             Route::get('/personas/{id}/thumb',    [PersonaController::class, 'thumb']);
+            Route::post('/personas/{id}/coherence/accept', [PersonaController::class, 'acceptCoherence']);
 
             Route::get('/demografi',                       [PopulationController::class, 'demografi']);
             Route::patch('/demografi',                     [PopulationController::class, 'saveDemografi']);

@@ -4,7 +4,7 @@
 <div class="view-header">
   <div>
     <h1 style="margin-bottom: 3px;">Dimensions-bibliotek</h1>
-    <div style="font-size: 13px; color: #65676b;">Genbrugelige dimensioner der kan indsættes i blueprints som snapshots.</div>
+    <div style="font-size: 13px; color: #65676b;">Genbrugelige dimensioner der kan indsættes i personligheder som snapshots.</div>
   </div>
   <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
     <i class="fa-solid fa-plus"></i> Ny dimension
@@ -50,7 +50,7 @@ $catLabels = [
                 <span style="font-size:11px; padding:2px 7px; border-radius:10px; background:#e7f3ff; color:#1877f2; font-weight:600;">Demografi</span>
               @endif
               @if ($p->default_in_new_blueprints)
-                <span style="font-size:11px; padding:2px 7px; border-radius:10px; background:#dcfce7; color:#166534; font-weight:600;" title="Indsættes som standard i nye blueprints"><i class="fa-solid fa-check"></i> Standard</span>
+                <span style="font-size:11px; padding:2px 7px; border-radius:10px; background:#dcfce7; color:#166534; font-weight:600;" title="Indsættes som standard i nye personligheder"><i class="fa-solid fa-check"></i> Standard</span>
               @endif
               @if ($p->description)
                 <span style="color:#65676b; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;">{{ $p->description }}</span>

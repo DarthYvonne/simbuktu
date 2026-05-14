@@ -209,9 +209,17 @@
 @endif
 
 @if ($total === 0)
-  <div class="card" style="text-align: center; padding: 40px; color: #65676b;">
-    Ingen personas endnu. Generér dine første ovenfor.
-  </div>
+  @if ($generating)
+    <div class="card" style="text-align: center; padding: 50px 20px;">
+      <span class="spinner" style="border-color: #1877f2; border-top-color: transparent; width: 30px; height: 30px; border-width: 3px;"></span>
+      <div style="margin-top: 16px; font-size: 15px; color: #1877f2; font-weight: 600;">Genererer dine første personas…</div>
+      <div id="emptyProgLabel" style="margin-top: 6px; font-size: 13px; color: #65676b;">{{ $genDone }} / {{ $genQueued }}</div>
+    </div>
+  @else
+    <div class="card" style="text-align: center; padding: 40px; color: #65676b;">
+      Ingen personas endnu. Generér dine første ovenfor.
+    </div>
+  @endif
 @elseif ($personas->isEmpty())
   <div class="card" style="text-align: center; padding: 40px; color: #65676b;">
     Ingen personas matcher dine filtre.
@@ -405,6 +413,8 @@ async function pollStatus() {
       document.getElementById('progLabel').textContent = `${s.done + s.errors} / ${s.queued}`;
       document.getElementById('progBar').style.width = (((s.done + s.errors) / s.queued) * 100) + '%';
       if (s.errors > 0) document.getElementById('progErrors').textContent = `${s.errors} fejl`;
+      const emptyLabel = document.getElementById('emptyProgLabel');
+      if (emptyLabel) emptyLabel.textContent = `${s.done + s.errors} / ${s.queued}`;
     } else {
       document.getElementById('progress').style.display = 'none';
       document.getElementById('genQuickBtn').disabled = false;

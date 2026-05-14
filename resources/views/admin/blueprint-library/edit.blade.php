@@ -67,7 +67,7 @@
       <label style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:#f0f2f5; border-radius:6px; cursor:pointer; font-size:13px; user-select:none;">
         <input type="hidden" name="default_in_new_blueprints" value="0">
         <input type="checkbox" name="default_in_new_blueprints" value="1" {{ old('default_in_new_blueprints', $parameter->default_in_new_blueprints) ? 'checked' : '' }}>
-        <span><strong>Medtag som standard</strong> i nye blueprints</span>
+        <span><strong>Medtag som standard</strong> i nye personligheder</span>
       </label>
     </div>
   </div>

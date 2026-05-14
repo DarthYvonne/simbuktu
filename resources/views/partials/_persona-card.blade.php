@@ -69,6 +69,16 @@
   color: #b91c1c;
 }
 .pc-footer-tag.sub { color: #166534; }
+.pc-flag-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: #fef3c7; color: #92400e;
+  border: 1px solid #fde68a;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  z-index: 2;
+}
+.pc { position: relative; }
 </style>
 @endonce
 
@@ -79,6 +89,9 @@
 @endphp
 
 <a href="{{ $href }}" class="pc">
+  @if (!empty($p['coherence_flags']))
+    <div class="pc-flag-badge" title="LLM har markeret mulige inkohærente træk — gennemse personaen"><i class="fa-solid fa-triangle-exclamation"></i></div>
+  @endif
   <div class="pc-banner" @if($_cover) style="background-image: url('{{ $_cover['thumb'] }}&fit=crop&crop=center&w=800&h=200')" @endif></div>
   <div class="pc-body">
     <div class="pc-head">

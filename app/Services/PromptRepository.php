@@ -303,6 +303,28 @@ REGLER:
 - Bedøm kommentarens holdning til OPSLAGET — ikke til andre kommentarer.
 PROMPT,
             ],
+
+            'coherence.check' => [
+                'name' => 'Troværdigheds-tjek af persona',
+                'description' => 'Tjekker om en nyrullet personas sekundære træk er plausible givet de primære. Markerer kun fundamentalt usandsynlige kombinationer — ikke usædvanlige-men-mulige.',
+                'placeholders' => ['primary_block', 'secondary_block'],
+                'body' => <<<PROMPT
+Du har genereret en fiktiv dansk SoMe-persona. Du skal vurdere om personens sekundære træk (livsstil, kultur, præferencer) er PLAUSIBLE givet de primære træk (hvem personen er).
+
+PRIMÆRE TRÆK (hvem personen er — disse er givne, mix og match er normalt):
+{{primary_block}}
+
+SEKUNDÆRE TRÆK (hvad personen gør / kan lide):
+{{secondary_block}}
+
+Vurder hvert SEKUNDÆRT træk. Marker KUN dem der er fundamentalt usandsynlige (fx 95-årig skater, læge der ryger hash dagligt, hjemløs der har Tesla-abonnement). Vi ønsker mangfoldighed — usædvanlige men mulige kombinationer skal IKKE markeres.
+
+Returnér KUN ren JSON i præcis dette format, intet andet:
+{"flags": [{"dimension_id": "<id fra listen ovenfor>", "reason": "<kort dansk forklaring, max 15 ord>"}]}
+
+Hvis alle sekundære træk er plausible, returnér: {"flags": []}
+PROMPT,
+            ],
         ];
     }
 }

@@ -61,6 +61,29 @@
 }
 </style>
 
+@if (!empty($p['coherence_flags']))
+  <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">
+    <div style="display: flex; align-items: flex-start; gap: 12px;">
+      <i class="fa-solid fa-triangle-exclamation" style="color: #b45309; font-size: 18px; margin-top: 2px;"></i>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-weight: 700; color: #92400e; margin-bottom: 6px;">LLM'en gør opmærksom på mulige inkohærente træk</div>
+        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #78350f; line-height: 1.6;">
+          @foreach ($p['coherence_flags'] as $flag)
+            <li><strong>{{ $flag['dimension'] ?? '' }}</strong>{{ !empty($flag['facet']) ? ' = '.$flag['facet'] : '' }} — {{ $flag['reason'] ?? '' }}</li>
+          @endforeach
+        </ul>
+        <div style="margin-top: 12px; display: flex; gap: 8px;">
+          <a href="{{ url("$base/personas/".$p['id']."/edit") }}" class="btn btn-secondary" style="font-size: 13px;"><i class="fa-solid fa-pen"></i> Rediger</a>
+          <form method="POST" action="{{ url("$base/personas/".$p['id']."/coherence/accept") }}" style="display:inline;">
+            @csrf
+            <button class="btn btn-secondary" style="font-size: 13px;"><i class="fa-solid fa-check"></i> Acceptér</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+@endif
+
 <div class="profile-header">
   <div class="profile-cover" @if (!empty($cover)) style="background-image: url('{{ $cover['url'] }}&w=2400&h=640&fit=crop&crop=center&q=85');" @endif>
     @if (!empty($cover))

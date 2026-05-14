@@ -29,6 +29,12 @@ class PersonaController extends Controller
 
         $personas = $repo->filter($q, $region, $ageBucket);
 
+        $genPrefix = "personas:gen:{$population->id}";
+        $genQueued = (int) Cache::get("{$genPrefix}:queued", 0);
+        $genDone   = (int) Cache::get("{$genPrefix}:done", 0);
+        $genErrors = (int) Cache::get("{$genPrefix}:errors", 0);
+        $generating = $genQueued > 0 && ($genDone + $genErrors) < $genQueued;
+
         $ageBuckets = ['16-24','25-34','35-44','45-54','55-64','65-79','80-99'];
         $ageDist    = array_fill_keys($ageBuckets, 0);
         $regionDist = [];
@@ -68,6 +74,9 @@ class PersonaController extends Controller
             'regions'        => collect($all)->pluck('demographics.region')->unique()->filter()->sort()->values(),
             'ageDist'        => $ageDist,
             'regionDist'     => $regionDist,
+            'generating'     => $generating,
+            'genQueued'      => $genQueued,
+            'genDone'        => $genDone + $genErrors,
         ]);
     }
 
@@ -153,10 +162,12 @@ class PersonaController extends Controller
 
         $dimensions = $personaData['dimensions'] ?? [];
         $pickedFacets = $data['facets'] ?? [];
+        $changedDimensionIds = [];
         foreach ($dimensions as &$dim) {
             $dimId = $dim['dimension_id'] ?? null;
             $newFacetId = $pickedFacets[$dimId] ?? null;
             if (!$dimId || !$newFacetId) continue;
+            if (($dim['facet_id'] ?? null) === $newFacetId) continue;
             $param = $paramsById[$dimId] ?? null;
             if (!$param) continue;
             $facet = null;
@@ -168,9 +179,18 @@ class PersonaController extends Controller
             $dim['facet']    = $facet['name'] ?? '';
             $dim['text']     = $facet['text'] ?? '';
             $dim['value']    = null; // clear sticky exact value — let facet name be the new display
+            $changedDimensionIds[] = $dimId;
         }
         unset($dim);
         $personaData['dimensions'] = $dimensions;
+
+        // Drop coherence flags for dimensions the user just edited — they've acted on them.
+        if (!empty($personaData['coherence_flags']) && $changedDimensionIds) {
+            $personaData['coherence_flags'] = array_values(array_filter(
+                $personaData['coherence_flags'],
+                fn ($f) => !in_array($f['dimension_id'] ?? null, $changedDimensionIds, true),
+            ));
+        }
 
         $personaModel->name = $data['name'];
         $personaModel->bio  = $data['bio'] ?? '';
@@ -185,6 +205,16 @@ class PersonaController extends Controller
 
         return redirect("/simulation/admin/populations/{$population->id}/personas/{$id}")
             ->with('success', 'Persona opdateret.');
+    }
+
+    public function acceptCoherence(Population $population, string $id)
+    {
+        $persona = Persona::where('population_id', $population->id)->findOrFail($id);
+        $data = $persona->persona_data ?? [];
+        $data['coherence_flags'] = [];
+        $persona->persona_data = $data;
+        $persona->save();
+        return back()->with('success', 'Træk accepteret.');
     }
 
     public function image(Population $population, string $id): BinaryFileResponse

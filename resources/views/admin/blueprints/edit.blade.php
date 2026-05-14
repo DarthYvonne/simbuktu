@@ -216,6 +216,8 @@ state.parameters = state.parameters.map(p => ({
   description: p.description ?? '',
   library_parameter_id: p.library_parameter_id ?? null,
   show_on_profile: !!p.show_on_profile,
+  type: p.type ?? 'personality',
+  tier: p.tier ?? 'primary',
   facets: Array.isArray(p.facets) && p.facets.length
     ? p.facets.map(f => ({ name: f.name ?? '', text: f.text ?? '', weight: Number.isFinite(f.weight) ? f.weight : 0 }))
     : [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
@@ -306,6 +308,13 @@ function renderEditor() {
           <input type="text" class="dim-desc" value="${escapeHtml(p.description ?? '')}" placeholder="Kort beskrivelse" oninput="updateDim('description', this.value)">
         </div>
         <div class="actions">
+          <label class="profile-toggle" title="Primær = grundlæggende træk (uafhængig sampling). Sekundær = livsstil/præferencer (LLM tjekker plausibilitet mod primære).">
+            <span style="color:#65676b;">Tier:</span>
+            <select onchange="updateDim('tier', this.value)" style="border:none; background:transparent; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; padding:0;">
+              <option value="primary" ${(p.tier || 'primary') === 'primary' ? 'selected' : ''}>Primær</option>
+              <option value="secondary" ${(p.tier || 'primary') === 'secondary' ? 'selected' : ''}>Sekundær</option>
+            </select>
+          </label>
           <label class="profile-toggle" title="Vis sampled facet som badge på persona-profilen">
             <input type="checkbox" ${p.show_on_profile ? 'checked' : ''} onchange="updateDim('show_on_profile', this.checked)" style="margin:0;">
             Vis på profil
@@ -388,6 +397,7 @@ function normalWeights(n) {
 function addCustomDimension() {
   state.parameters.push({
     name: '', description: '', library_parameter_id: null, show_on_profile: false,
+    type: 'personality', tier: 'primary',
     facets: [{ name: '', text: '', weight: 0 }, { name: '', text: '', weight: 0 }],
   });
   state.selectedDim = state.parameters.length - 1;
@@ -426,6 +436,7 @@ function buildFormData() {
     fd.append(`parameters[${i}][name]`, p.name);
     fd.append(`parameters[${i}][description]`, p.description ?? '');
     fd.append(`parameters[${i}][type]`, p.type ?? 'personality');
+    fd.append(`parameters[${i}][tier]`, p.tier ?? 'primary');
     if (p.library_parameter_id) fd.append(`parameters[${i}][library_parameter_id]`, p.library_parameter_id);
     fd.append(`parameters[${i}][show_on_profile]`, p.show_on_profile ? 1 : 0);
     p.facets.forEach((f, j) => {
@@ -545,6 +556,8 @@ function insertFromLibrary(id) {
     description: lib.description ?? '',
     library_parameter_id: lib.id,
     show_on_profile: false,
+    type: lib.type ?? 'personality',
+    tier: 'primary',
     facets: (lib.facets || []).map(f => ({ name: f.name ?? '', text: f.text ?? '', weight: Number.isFinite(f.weight) ? f.weight : 0 })),
   });
   state.selectedDim = state.parameters.length - 1;

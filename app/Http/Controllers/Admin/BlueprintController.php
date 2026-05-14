@@ -32,6 +32,7 @@ class BlueprintController extends Controller
             'name'                 => $lib->name,
             'description'          => $lib->description,
             'type'                 => $lib->type ?? 'personality',
+            'tier'                 => 'primary',
             'library_parameter_id' => $lib->id,
             'show_on_profile'      => false,
             'facets'               => array_map(
@@ -66,6 +67,7 @@ class BlueprintController extends Controller
             'parameters.*.name'                 => 'required|string|max:64',
             'parameters.*.description'          => 'nullable|string|max:500',
             'parameters.*.type'                 => 'nullable|in:personality,demographic',
+            'parameters.*.tier'                 => 'nullable|in:primary,secondary',
             'parameters.*.library_parameter_id' => 'nullable|integer',
             'parameters.*.show_on_profile'      => 'nullable|boolean',
             'parameters.*.facets'               => 'required|array|min:2',
@@ -96,6 +98,7 @@ class BlueprintController extends Controller
                 'name'                 => trim($p['name']),
                 'description'          => $p['description'] ?? null,
                 'type'                 => $p['type'] ?? 'personality',
+                'tier'                 => $p['tier'] ?? 'primary',
                 'library_parameter_id' => $p['library_parameter_id'] ?? null,
                 'show_on_profile'      => (bool) ($p['show_on_profile'] ?? false),
                 'facets'               => $facets,
