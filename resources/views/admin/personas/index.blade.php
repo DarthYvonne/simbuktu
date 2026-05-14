@@ -137,7 +137,7 @@
 @if ($total > 0)
 <div class="card">
   <form method="GET" action="{{ url("$base/personas") }}" id="filterForm">
-    <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn, bio, narrativ, dimensioner, facetter…" style="width: 100%; padding: 8px 12px; border: 1px solid #dadde1; border-radius: 6px; font-size: 14px;">
+    <input type="text" name="q" value="{{ $q }}" placeholder="Søg navn, beskrivelse, etc." style="width: 100%; padding: 8px 12px; border: 1px solid #dadde1; border-radius: 6px; font-size: 14px;">
   </form>
   @if ($q)
     <div style="margin-top: 8px;">
