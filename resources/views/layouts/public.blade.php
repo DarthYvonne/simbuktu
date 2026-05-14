@@ -66,13 +66,11 @@
         nav ul li a:hover { color: #3498db; }
         nav ul li a.active { background: #3498db; color: #fff; }
 
-        /* Subnav row sits below the header bottom-border. Always rendered so
-           the body content's vertical position doesn't shift between pages
-           that have subpages and pages that don't. */
+        /* Subnav row sits below the header bottom-border, only on pages whose
+           top-level section has children. */
         .subnav-bar {
             padding: 10px 5%;
             background: #ffffff;
-            min-height: 42px;
         }
         .subnav-bar ul {
             list-style: none;
@@ -197,16 +195,16 @@
             }
         }
     @endphp
-    <div class="subnav-bar">
-        @if($activeTop && $activeTop->children->isNotEmpty())
+    @if($activeTop && $activeTop->children->isNotEmpty())
+        <div class="subnav-bar">
             <ul>
                 @foreach($activeTop->children as $sub)
                     @php $subPath = ltrim($sub->url(), '/'); @endphp
                     <li><a href="{{ $sub->url() }}" class="{{ request()->is($subPath) ? 'active' : '' }}">{{ $sub->title }}</a></li>
                 @endforeach
             </ul>
-        @endif
-    </div>
+        </div>
+    @endif
 
     @yield('content')
 
