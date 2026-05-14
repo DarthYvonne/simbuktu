@@ -3,12 +3,10 @@
 @section('title', $page->title.' | Simbuktu')
 
 @section('styles')
-    /* Hero is edge-to-edge: full viewport width, flush against the header's
-       bottom rule. No rounded corners, no frame. Height follows the image's
-       natural aspect ratio. */
+    /* Hero matches the page content's width, hugs the header's bottom rule
+       with no gap. Height follows the image's natural aspect ratio. */
     .page-hero {
-        margin: -60px calc(50% - 50vw) 36px;
-        width: 100vw;
+        margin: -60px 0 36px;
     }
     .page-hero img {
         width: 100%; height: auto;
@@ -49,7 +47,7 @@
             position: static;
         }
         .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-        .page-hero { margin: -60px calc(50% - 50vw) 24px; }
+        .page-hero { margin: -60px 0 24px; }
     }
 @endsection
 
