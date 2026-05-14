@@ -65,11 +65,13 @@ class GenerateChatReplyJob implements ShouldQueue
             : null;
         $senderName = $membership?->poster_name ?: ($user?->name ?: 'Brugeren');
 
-        // History excludes the pending message itself (it's the placeholder waiting on us).
+        // History excludes the pending message itself. Capped to the most
+        // recent 50 turns — older context wouldn't fit in the prompt anyway
+        // and is unlikely to influence the next reply.
         $history = $conversation->messages()
             ->where('id', '<', $pending->id)
-            ->orderBy('id')
-            ->get()
+            ->latest('id')->limit(50)->get()
+            ->reverse()->values()
             ->map(fn ($m) => ['role' => $m->role, 'body' => $m->body])
             ->toArray();
 

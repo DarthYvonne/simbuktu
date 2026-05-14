@@ -47,7 +47,11 @@ class MessageController extends Controller
     {
         $this->authorizeConversation($conversation);
         $persona = $this->personas->find($conversation->persona_id);
-        $messages = $conversation->messages()->get();
+        // Cap to the most recent 100. Long-running chats accumulate and
+        // rendering 500+ message bubbles bogs down mobile.
+        $messages = $conversation->messages()
+            ->latest('id')->limit(100)->get()
+            ->reverse()->values();
         $conversation->update(['last_seen_at' => now()]);
         return view('messages.show', [
             'conversation' => $conversation,
@@ -77,12 +81,15 @@ class MessageController extends Controller
             ]
         );
 
-        $messages = $conversation->messages()->get()->map(fn ($m) => [
-            'id' => $m->id,
-            'role' => $m->role,
-            'body' => $m->body,
-            'created_at' => $m->created_at->toIso8601String(),
-        ]);
+        $messages = $conversation->messages()
+            ->latest('id')->limit(100)->get()
+            ->reverse()->values()
+            ->map(fn ($m) => [
+                'id' => $m->id,
+                'role' => $m->role,
+                'body' => $m->body,
+                'created_at' => $m->created_at->toIso8601String(),
+            ]);
 
         $conversation->update(['last_seen_at' => now()]);
 
