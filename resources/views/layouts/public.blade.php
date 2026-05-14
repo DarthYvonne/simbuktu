@@ -72,10 +72,65 @@
             padding: 60px 5%;
         }
 
-        .container h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 24px; color: #2c3e50; }
-        .container h2 { font-size: 1.75rem; font-weight: 700; margin: 32px 0 16px; }
-        .container p  { font-size: 1.1rem; color: #555; margin-bottom: 16px; line-height: 1.7; }
-        .container ul, .container ol { margin: 0 0 16px 24px; }
+        /* ── Body typography (page content + landing) ─────────────────────
+           One vertical rhythm unit ≈ 8px. Headings have generous top margin
+           to "breathe" after preceding text, but tight when they immediately
+           follow another heading. First element in any block has no top margin. */
+        .container { color: #2c3e50; }
+        .container h1, .container h2, .container h3, .container h4 {
+            color: #1a2733;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+        .container h1 { font-size: 2.25rem; margin: 0 0 12px; letter-spacing: -0.02em; line-height: 1.15; }
+        .container h2 { font-size: 1.5rem;  margin: 40px 0 12px; }
+        .container h3 { font-size: 1.2rem;  margin: 28px 0 10px; }
+        .container h4 { font-size: 1.05rem; margin: 22px 0 8px; }
+
+        .container p  { font-size: 1.05rem; color: #4a5568; margin: 0 0 14px; line-height: 1.65; }
+        .container ul, .container ol { margin: 0 0 16px 22px; color: #4a5568; font-size: 1.05rem; line-height: 1.65; }
+        .container li { margin-bottom: 4px; }
+        .container li > ul, .container li > ol { margin-bottom: 0; }
+
+        .container a { color: #3498db; text-decoration: underline; text-underline-offset: 2px; }
+        .container a:hover { color: #2980b9; }
+
+        .container strong { color: #1a2733; }
+
+        .container blockquote {
+            margin: 22px 0;
+            padding: 4px 0 4px 18px;
+            border-left: 3px solid #cdd5e0;
+            color: #54637a;
+            font-style: italic;
+        }
+        .container code {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 0.92em;
+            background: #f4f6f8;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .container pre {
+            background: #1a2733; color: #e6eaf0;
+            padding: 16px 18px; border-radius: 8px;
+            overflow-x: auto; margin: 18px 0;
+            font-size: 0.92rem; line-height: 1.5;
+        }
+        .container pre code { background: transparent; padding: 0; color: inherit; }
+
+        .container img { border-radius: 8px; margin: 14px 0; }
+        .container hr { border: 0; border-top: 1px solid #e6eaf0; margin: 32px 0; }
+
+        /* Tighten when headings stack directly on top of each other. */
+        .container h1 + h2, .container h1 + h3 { margin-top: 18px; }
+        .container h2 + h3, .container h2 + h4 { margin-top: 14px; }
+        .container h3 + h4 { margin-top: 12px; }
+
+        /* No top margin on first child of any content block. */
+        .container > :first-child,
+        .container .page-content > :first-child { margin-top: 0; }
 
         footer {
             border-top: 1px solid #e0e0e0;
