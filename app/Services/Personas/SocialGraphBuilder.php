@@ -158,11 +158,13 @@ class SocialGraphBuilder
             'personality_weight' => 0.25, 'demographics_weight' => 0.30,
             'heritage_weight' => 0.07, 'bridge_bonus' => 0.10,
         ];
-        $others = array_filter($this->repo->all(), fn ($p) => $p['id'] !== $persona['id']);
+        // Single load — reused for both the candidate pool and the bridge threshold calc.
+        $allPersonas = $this->repo->all();
+        $others = array_filter($allPersonas, fn ($p) => $p['id'] !== $persona['id']);
         if (empty($others)) return 0;
 
         $target = $this->targetFriendCount($persona, $params);
-        $bridgeThreshold = $this->bridgeThreshold($this->repo->all(), $params['bridge_percentage']);
+        $bridgeThreshold = $this->bridgeThreshold($allPersonas, $params['bridge_percentage']);
         $isBridge = $this->isBridge($persona, $bridgeThreshold);
 
         $scored = [];
