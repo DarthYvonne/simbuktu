@@ -172,6 +172,7 @@
         @auth
             @if(auth()->user()->is_admin && !empty($editUrl))
                 · <a href="{{ $editUrl }}" style="color:#3498db;text-decoration:none;">Rediger denne side</a>
+                · <a href="/cms/create{{ isset($page) && $page->parent_id ? '?parent='.$page->parent_id : (isset($page) ? '?parent='.$page->id : '') }}" style="color:#3498db;text-decoration:none;">+ Opret ny side</a>
             @endif
         @endauth
     </footer>
