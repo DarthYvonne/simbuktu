@@ -48,7 +48,6 @@
       @foreach ($rows as $i => $row)
         <div class="pp-item {{ $i === 0 ? 'active' : '' }}" data-key="{{ $row['key'] }}" onclick="selectPrompt('{{ $row['key'] }}')">
           <span class="pp-name">{{ $row['name'] }}</span>
-          <span class="pp-badge {{ $row['overridden'] ? 'ov' : 'std' }}">{{ $row['overridden'] ? 'Egen' : 'Std' }}</span>
         </div>
       @endforeach
     </div>
@@ -61,8 +60,8 @@
               <div><span class="t">{{ $row['name'] }}</span><span class="k">{{ $row['key'] }}</span></div>
               <div class="d">{{ $row['description'] }}</div>
             </div>
-            <button type="button" onclick="resetPrompt('{{ $row['key'] }}')" style="background:none; border:1px solid #dadde1; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; color:#65676b;">
-              <i class="fa-solid fa-rotate-left"></i> Standard
+            <button type="button" onclick="loadFromTemplate('{{ $row['key'] }}')" style="background:none; border:1px solid #dadde1; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; color:#65676b;" title="Erstat denne personlighedens prompt med den aktuelle skabelon">
+              <i class="fa-solid fa-download"></i> Hent fra skabelon
             </button>
           </div>
           @if (!empty($row['placeholders']))
@@ -72,7 +71,7 @@
               @endforeach
             </div>
           @endif
-          <textarea name="prompts[{{ $row['key'] }}]" data-default="{{ $row['default'] }}">{{ $row['current'] }}</textarea>
+          <textarea name="prompts[{{ $row['key'] }}]" data-template="{{ $row['template'] }}">{{ $row['current'] }}</textarea>
         </div>
       @endforeach
     </div>
@@ -84,10 +83,10 @@ function selectPrompt(key) {
   document.querySelectorAll('.pp-item').forEach(el => el.classList.toggle('active', el.dataset.key === key));
   document.querySelectorAll('.pp-pane').forEach(el => el.classList.toggle('active', el.dataset.pane === key));
 }
-function resetPrompt(key) {
-  if (!confirm('Nulstil denne prompt til system-standarden?')) return;
+function loadFromTemplate(key) {
+  if (!confirm('Erstat denne personlighedens prompt med den nuværende skabelon? Din egen tekst kan ikke fortrydes.')) return;
   const ta = document.querySelector(`textarea[name="prompts[${key}]"]`);
-  if (ta) ta.value = ta.dataset.default;
+  if (ta) ta.value = ta.dataset.template;
 }
 </script>
 

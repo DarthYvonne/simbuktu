@@ -51,9 +51,27 @@ class PromptController extends Controller
             'sentiment.analyse',
             'news.digest',
         ]);
-        $prompts = Prompt::get()->sortBy(fn ($p) => $menuOrder[$p->key] ?? 999)->values();
+        $allPrompts = Prompt::get()->sortBy(fn ($p) => $menuOrder[$p->key] ?? 999)->values();
+
+        $templateKeys = \App\Models\Blueprint::PROMPT_KEYS;
+        $templates = $allPrompts->filter(fn ($p) => in_array($p->key, $templateKeys, true))->values();
+        $globals   = $allPrompts->reject(fn ($p) => in_array($p->key, $templateKeys, true))->values();
+
+        // Determine active tab: explicit selection wins; otherwise infer from current key; default = globals.
+        $tab = request()->query('tab');
+        if ($key) {
+            $tab = in_array($key, $templateKeys, true) ? 'templates' : 'globals';
+        }
+        if (!in_array($tab, ['globals', 'templates'], true)) $tab = 'globals';
+
+        $prompts = $tab === 'templates' ? $templates : $globals;
         $current = $key ? Prompt::where('key', $key)->first() : $prompts->first();
-        return view('admin.prompts.index', ['prompts' => $prompts, 'current' => $current]);
+
+        return view('admin.prompts.index', [
+            'prompts' => $prompts,
+            'current' => $current,
+            'tab'     => $tab,
+        ]);
     }
 
     public function update(Request $request, Prompt $prompt)

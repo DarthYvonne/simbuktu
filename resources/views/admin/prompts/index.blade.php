@@ -17,7 +17,23 @@
 <style>
 .prompts-layout { display: grid; grid-template-columns: 260px 1fr; gap: 14px; }
 @media (max-width: 767px) { .prompts-layout { grid-template-columns: 1fr; } }
+.prompts-subtabs { display: inline-flex; gap: 2px; background: #f0f2f5; border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+.prompts-subtabs a { padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; color: #65676b; }
+.prompts-subtabs a.active { background: #fff; color: #1c1e21; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.prompts-subhint { font-size: 12px; color: #65676b; line-height: 1.5; margin-bottom: 12px; padding: 0 4px; }
 </style>
+
+<div class="prompts-subtabs">
+  <a href="{{ url('/simulation/admin/prompts?tab=globals') }}" class="{{ $tab === 'globals' ? 'active' : '' }}">Globale prompts</a>
+  <a href="{{ url('/simulation/admin/prompts?tab=templates') }}" class="{{ $tab === 'templates' ? 'active' : '' }}">Promptskabeloner</a>
+</div>
+<div class="prompts-subhint">
+  @if ($tab === 'templates')
+    Skabeloner kopieres ind i en personlighed når den oprettes. Ændringer her påvirker <strong>kun nye personligheder</strong> — eksisterende beholder deres egne kopier.
+  @else
+    Globale prompts gælder hele platformen og bruges direkte ved hvert kald. Ændringer slår igennem med det samme overalt.
+  @endif
+</div>
 <div class="prompts-layout">
   <div class="card" style="padding: 8px 0; height: fit-content;">
     @foreach ($prompts as $p)

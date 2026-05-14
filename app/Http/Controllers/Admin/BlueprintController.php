@@ -46,6 +46,20 @@ class BlueprintController extends Controller
             ),
         ])->all();
         $data['created_by'] = Auth::id();
+
+        // Seed all 7 template prompts into the new personality so it's self-contained
+        // from day one. Templates are pulled from the DB prompts table (which is the
+        // source of truth — see PromptController::index for seeding from defaults()).
+        $templateBodies = \App\Models\Prompt::whereIn('key', Blueprint::PROMPT_KEYS)
+            ->pluck('body', 'key')->all();
+        $defaults = (new \App\Services\PromptRepository())->defaults();
+        $overrides = [];
+        foreach (Blueprint::PROMPT_KEYS as $key) {
+            $body = $templateBodies[$key] ?? ($defaults[$key]['body'] ?? '');
+            if (trim($body) !== '') $overrides[$key] = $body;
+        }
+        $data['prompt_overrides'] = $overrides;
+
         $blueprint = Blueprint::create($data);
         return redirect("/simulation/admin/blueprints/{$blueprint->id}")->with('success', 'Personlighed oprettet.');
     }
@@ -136,19 +150,23 @@ class BlueprintController extends Controller
 
     public function editPrompts(Blueprint $blueprint)
     {
+        // Template body comes from the live DB prompts row (the editable "Promptskabelon").
+        // Falls back to PromptRepository::defaults() only if the DB row hasn't been seeded yet.
         $defaults = (new \App\Services\PromptRepository())->defaults();
+        $templateBodies = \App\Models\Prompt::whereIn('key', Blueprint::PROMPT_KEYS)
+            ->pluck('body', 'key')->all();
         $rows = [];
         foreach (Blueprint::PROMPT_KEYS as $key) {
             $def = $defaults[$key] ?? null;
             if (!$def) continue;
             $override = $blueprint->prompt_overrides[$key] ?? null;
+            $template = $templateBodies[$key] ?? ($def['body'] ?? '');
             $rows[] = [
                 'key'         => $key,
                 'name'        => $def['name'] ?? $key,
                 'description' => $def['description'] ?? '',
-                'default'     => $def['body'] ?? '',
-                'current'     => $override ?: ($def['body'] ?? ''),
-                'overridden'  => is_string($override) && trim($override) !== '',
+                'template'    => $template,                  // current template body (for "Hent fra skabelon")
+                'current'     => $override ?: $template,     // what's shown in the textarea
                 'placeholders'=> $def['placeholders'] ?? [],
             ];
         }
