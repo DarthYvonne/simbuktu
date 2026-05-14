@@ -124,4 +124,19 @@ class GenerateChatReplyJob implements ShouldQueue
         ]);
     }
 
+    /**
+     * Called by Laravel when the job exhausts retries OR the worker dies
+     * mid-handle (e.g. timeout, OOM, segfault). Without this the pending
+     * message would sit at status='pending' forever and the chat UI would
+     * eventually time out client-side without a clear reason.
+     */
+    public function failed(?\Throwable $exception): void
+    {
+        $pending = ConversationMessage::find($this->pendingMessageId);
+        if (!$pending || $pending->status !== 'pending') return;
+        $pending->update([
+            'status'        => 'failed',
+            'error_message' => 'Server-fejl' . ($exception ? ': ' . $exception->getMessage() : '.'),
+        ]);
+    }
 }
