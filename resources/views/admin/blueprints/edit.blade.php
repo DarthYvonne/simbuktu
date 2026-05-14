@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('content')
 
-@include('admin.blueprints._header')
+@include('admin.populations.personlighed._header', ['urlBase' => $urlBase, 'population' => $population])
 
-@component('admin.blueprints._subtabs', ['blueprint' => $blueprint])
+@component('admin.blueprints._subtabs', ['urlBase' => $urlBase])
   <button type="button" class="btn btn-primary" id="save-btn" onclick="saveBlueprint()">
     <i class="fa-solid fa-floppy-disk"></i> Gem dimensioner
   </button>
@@ -226,9 +226,7 @@
   <div class="bp-content" id="dim-editor"></div>
 </div>
 
-<form id="delete-form" method="POST" action="{{ url('/simulation/admin/blueprints/'.$blueprint->id) }}" style="display:none;">
-  @csrf @method('DELETE')
-</form>
+{{-- Personlighed is owned by population — there is no separate delete. Population delete cascades. --}}
 
 {{-- Library picker --}}
 <div class="bp-modal" id="picker">
@@ -283,7 +281,7 @@
 </aside>
 
 <script>
-const BP_URL = @json(url('/simulation/admin/blueprints/'.$blueprint->id));
+const BP_URL = @json(url($urlBase));
 const CSRF   = @json(csrf_token());
 const LIBRARY = @json($library);
 

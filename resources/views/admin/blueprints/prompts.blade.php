@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('content')
 
-@include('admin.blueprints._header')
+@include('admin.populations.personlighed._header', ['urlBase' => $urlBase, 'population' => $population])
 
-@component('admin.blueprints._subtabs', ['blueprint' => $blueprint])
+@component('admin.blueprints._subtabs', ['urlBase' => $urlBase])
   <button type="submit" form="prompts-form" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Gem prompts</button>
 @endcomponent
 
@@ -39,7 +39,7 @@
 .pp-pane textarea { width:100%; border:none; padding:14px 16px; font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace; font-size:12px; line-height:1.55; resize:vertical; outline:none; min-height: 480px; }
 </style>
 
-<form id="prompts-form" method="POST" action="{{ url('/simulation/admin/blueprints/'.$blueprint->id.'/prompts') }}">
+<form id="prompts-form" method="POST" action="{{ url($urlBase.'/prompts') }}">
   @csrf @method('PATCH')
 
   <div class="pp-layout">

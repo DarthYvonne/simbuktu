@@ -165,13 +165,6 @@ class CourseController extends Controller
         return redirect($target)->with('success', $msg);
     }
 
-    public function setBlueprint(Request $request, Course $course)
-    {
-        $data = $request->validate(['blueprint_id' => 'nullable|exists:blueprints,id']);
-        $course->update(['blueprint_id' => $data['blueprint_id'] ?? null]);
-        return back()->with('success', 'Personlighed valgt.');
-    }
-
     public function switch(Request $request, Course $course)
     {
         $user = Auth::user();

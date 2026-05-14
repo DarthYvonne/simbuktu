@@ -3,15 +3,15 @@
 
 <div class="view-header">
   <div>
-    <h1 style="margin-bottom: 3px;">Dimensions-bibliotek</h1>
-    <div style="font-size: 13px; color: #65676b;">Genbrugelige dimensioner der kan indsættes i personligheder som snapshots.</div>
+    <h1 style="margin-bottom: 3px;">Personlighedskomponenter</h1>
+    <div style="font-size: 13px; color: #65676b;">Genbrugelige byggeklodser. Indsættes som snapshots i personligheder — ændringer her påvirker ikke eksisterende.</div>
   </div>
   <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
-    <i class="fa-solid fa-plus"></i> Ny dimension
+    <i class="fa-solid fa-plus"></i> Ny komponent
   </button>
 </div>
 
-@include('admin._personligheder_tabs')
+@include('admin._opsaetning_tabs')
 
 @if (session('success'))
   <div class="alert alert-success">{{ session('success') }}</div>
@@ -43,7 +43,7 @@ $catLabels = [
         </div>
         <div style="display:grid; gap:6px;">
           @foreach ($group as $p)
-            <a href="{{ url('/simulation/admin/blueprint-library/'.$p->id) }}"
+            <a href="{{ url('/simulation/admin/personlighedskomponenter/'.$p->id) }}"
                style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #dadde1; border-radius:8px; padding:10px 14px; text-decoration:none; color:inherit;">
               <span style="font-weight:600; font-size:14px; color:#1c1e21;">{{ $p->name }}</span>
               @if ($p->type === 'demographic')
@@ -67,7 +67,7 @@ $catLabels = [
 <div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
   <div style="background:#fff; border-radius:12px; padding:28px; width:100%; max-width:520px; box-shadow:0 8px 40px rgba(0,0,0,.2);">
     <h2 style="margin:0 0 18px; font-size:18px;">Ny dimension</h2>
-    <form method="POST" action="{{ url('/simulation/admin/blueprint-library') }}">
+    <form method="POST" action="{{ url('/simulation/admin/personlighedskomponenter') }}">
       @csrf
       <div style="margin-bottom:14px;">
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Navn *</label>

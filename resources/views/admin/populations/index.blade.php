@@ -94,10 +94,21 @@
         <input type="text" name="name" required autofocus placeholder="fx Gymnasieelever, Voksne danskere…"
           style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
       </div>
-      <div style="margin-bottom:20px;">
+      <div style="margin-bottom:14px;">
         <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Beskrivelse</label>
         <input type="text" name="description" placeholder="Valgfri kort beskrivelse"
           style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; font-weight:600; font-size:13px; color:#65676b; margin-bottom:4px;">Start fra</label>
+        <select name="clone_from"
+          style="width:100%; padding:9px 12px; border:1px solid #dadde1; border-radius:6px; font-size:14px; font-family:inherit; background:#fff;">
+          <option value="">Tom personlighed</option>
+          @foreach ($populations as $pop)
+            <option value="{{ $pop->id }}">Kopiér fra: {{ $pop->name }}</option>
+          @endforeach
+        </select>
+        <div style="font-size:12px; color:#65676b; margin-top:4px;">Personligheden kopieres uafhængigt — ændringer påvirker ikke originalen.</div>
       </div>
       <div style="display:flex; gap:8px; justify-content:flex-end;">
         <button type="button" class="btn btn-secondary" onclick="document.getElementById('createModal').style.display='none'">Annuller</button>

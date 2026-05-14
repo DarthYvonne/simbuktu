@@ -3,12 +3,12 @@
 
 <div class="view-header">
   <div>
-    <a href="{{ url('/simulation/admin/blueprint-library') }}" style="font-size:13px; color:#65676b; text-decoration:none;">
-      <i class="fa-solid fa-arrow-left"></i> Bibliotek
+    <a href="{{ url('/simulation/admin/personlighedskomponenter') }}" style="font-size:13px; color:#65676b; text-decoration:none;">
+      <i class="fa-solid fa-arrow-left"></i> Personlighedskomponenter
     </a>
     <h1 style="margin:3px 0 0;">{{ $parameter->name }}</h1>
   </div>
-  <form method="POST" action="{{ url('/simulation/admin/blueprint-library/'.$parameter->id) }}"
+  <form method="POST" action="{{ url('/simulation/admin/personlighedskomponenter/'.$parameter->id) }}"
         onsubmit="return confirm('Slet dimension {{ addslashes($parameter->name) }}? Eksisterende strukturer påvirkes ikke.')">
     @csrf @method('DELETE')
     <button type="submit" class="btn btn-secondary" style="color:#b91c1c;">
@@ -28,7 +28,7 @@
   </div>
 @endif
 
-<form method="POST" action="{{ url('/simulation/admin/blueprint-library/'.$parameter->id) }}" style="max-width:860px;">
+<form method="POST" action="{{ url('/simulation/admin/personlighedskomponenter/'.$parameter->id) }}" style="max-width:860px;">
   @csrf @method('PATCH')
 
   <div style="background:#fff; border:1px solid #dadde1; border-radius:8px; padding:18px; margin-bottom:14px;">

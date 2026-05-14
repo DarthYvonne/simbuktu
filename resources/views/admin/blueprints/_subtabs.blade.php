@@ -1,14 +1,16 @@
 @php
-$bpBase = '/simulation/admin/blueprints/'.$blueprint->id;
+$bpBase = $urlBase;
 $bpPath = request()->path();
-$bpOnOm       = str_starts_with($bpPath, ltrim("$bpBase/om", '/'));
-$bpOnPrompts  = str_starts_with($bpPath, ltrim("$bpBase/prompts", '/'));
-$bpOnDim      = !$bpOnOm && !$bpOnPrompts;
+$onOm       = str_ends_with($bpPath, '/personlighed/om');
+$onPrompts  = str_ends_with($bpPath, '/personlighed/prompts');
+$onTest     = str_ends_with($bpPath, '/personlighed/test') || str_contains($bpPath, '/personlighed/test');
+$onDim      = !$onOm && !$onPrompts && !$onTest;
 
 $bpSubtabs = [
-  ['Om',          url("$bpBase/om"),     $bpOnOm],
-  ['Dimensioner', url($bpBase),          $bpOnDim],
-  ['Prompts',     url("$bpBase/prompts"),$bpOnPrompts],
+  ['Om',          url("$bpBase/om"),      $onOm],
+  ['Dimensioner', url("$bpBase"),         $onDim],
+  ['Prompts',     url("$bpBase/prompts"), $onPrompts],
+  ['Test AI',     url("$bpBase/test"),    $onTest],
 ];
 @endphp
 <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px;">

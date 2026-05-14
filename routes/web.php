@@ -1,12 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AlgorithmController;
-use App\Http\Controllers\Admin\BlueprintController;
 use App\Http\Controllers\Admin\BlueprintLibraryController;
-use App\Http\Controllers\Admin\ContextController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\PersonaController;
-use App\Http\Controllers\Admin\PersonaTesterController;
 use App\Http\Controllers\Admin\PopulationController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\SocialGraphController;
@@ -130,7 +127,6 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::delete('/courses/{course}', [CourseController::class, 'destroy']);
         Route::post('/courses/{course}/switch', [CourseController::class, 'switch']);
         Route::patch('/courses/{course}/population', [CourseController::class, 'setPopulation']);
-        Route::patch('/courses/{course}/blueprint',  [CourseController::class, 'setBlueprint']);
 
         Route::get('/populations', [PopulationController::class, 'index']);
         Route::post('/populations', [PopulationController::class, 'store']);
@@ -163,27 +159,30 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
             Route::patch('/demografi',                     [PopulationController::class, 'saveDemografi']);
             Route::post('/demografi/{dim}/reset',          [PopulationController::class, 'resetDemografiDimension']);
 
-            Route::get('/prompts',                     [PopulationController::class, 'prompts']);
-            Route::patch('/prompts',                   [PopulationController::class, 'savePrompt']);
+            // Personlighed — 1:1 with the population. Was the old top-level /blueprints surface.
+            Route::get('/personlighed',                 [PopulationController::class, 'personlighedDimensioner']);
+            Route::patch('/personlighed',               [PopulationController::class, 'updatePersonlighedDimensioner']);
+            Route::get('/personlighed/om',              [PopulationController::class, 'personlighedOm']);
+            Route::patch('/personlighed/om',            [PopulationController::class, 'updatePersonlighedOm']);
+            Route::get('/personlighed/prompts',         [PopulationController::class, 'personlighedPrompts']);
+            Route::patch('/personlighed/prompts',       [PopulationController::class, 'updatePersonlighedPrompts']);
+            Route::post('/personlighed/chat',           [PopulationController::class, 'personlighedChat']);
+            Route::post('/personlighed/promote',        [PopulationController::class, 'personlighedPromote']);
+            Route::get('/personlighed/test',            [PopulationController::class, 'personlighedTest']);
+            Route::post('/personlighed/test',           [PopulationController::class, 'runPersonlighedTest']);
+            Route::get('/personlighed/test/status',     [PopulationController::class, 'statusPersonlighedTest']);
+
+            // Kontekst — per-population manual context blob.
+            Route::get('/kontekst',                     [PopulationController::class, 'kontekst']);
+            Route::patch('/kontekst',                   [PopulationController::class, 'updateKontekst']);
         });
 
-        Route::get('/blueprint-library',                      [BlueprintLibraryController::class, 'index']);
-        Route::post('/blueprint-library',                     [BlueprintLibraryController::class, 'store']);
-        Route::get('/blueprint-library/{parameter}',          [BlueprintLibraryController::class, 'edit']);
-        Route::patch('/blueprint-library/{parameter}',        [BlueprintLibraryController::class, 'update']);
-        Route::delete('/blueprint-library/{parameter}',       [BlueprintLibraryController::class, 'destroy']);
-
-        Route::get('/blueprints',                             [BlueprintController::class, 'index']);
-        Route::post('/blueprints',                            [BlueprintController::class, 'store']);
-        Route::get('/blueprints/{blueprint}',                 [BlueprintController::class, 'edit']);
-        Route::patch('/blueprints/{blueprint}',               [BlueprintController::class, 'update']);
-        Route::delete('/blueprints/{blueprint}',              [BlueprintController::class, 'destroy']);
-        Route::post('/blueprints/{blueprint}/promote',        [BlueprintController::class, 'promote']);
-        Route::post('/blueprints/{blueprint}/chat',           [BlueprintController::class, 'chat']);
-        Route::get('/blueprints/{blueprint}/prompts',         [BlueprintController::class, 'editPrompts']);
-        Route::patch('/blueprints/{blueprint}/prompts',       [BlueprintController::class, 'updatePrompts']);
-        Route::get('/blueprints/{blueprint}/om',              [BlueprintController::class, 'editOm']);
-        Route::patch('/blueprints/{blueprint}/meta',          [BlueprintController::class, 'updateMeta']);
+        // Personlighedskomponenter (reusable dimension building-blocks, shared across populations).
+        Route::get('/personlighedskomponenter',                [BlueprintLibraryController::class, 'index']);
+        Route::post('/personlighedskomponenter',               [BlueprintLibraryController::class, 'store']);
+        Route::get('/personlighedskomponenter/{parameter}',    [BlueprintLibraryController::class, 'edit']);
+        Route::patch('/personlighedskomponenter/{parameter}',  [BlueprintLibraryController::class, 'update']);
+        Route::delete('/personlighedskomponenter/{parameter}', [BlueprintLibraryController::class, 'destroy']);
 
         Route::get('/api-check', [\App\Http\Controllers\Admin\ApiCheckController::class, 'index']);
 
@@ -192,17 +191,6 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
         Route::get('/algorithm', [AlgorithmController::class, 'index']);
         Route::post('/algorithm', [AlgorithmController::class, 'update']);
         Route::post('/algorithm/reset', [AlgorithmController::class, 'reset']);
-
-        Route::get('/personas/tester',        [PersonaTesterController::class, 'index']);
-        Route::post('/personas/tester',       [PersonaTesterController::class, 'run']);
-        Route::get('/personas/tester/status', [PersonaTesterController::class, 'status']);
-
-        Route::get('/context', [ContextController::class, 'index']);
-        Route::post('/context/mode', [ContextController::class, 'setMode']);
-        Route::post('/context/manual', [ContextController::class, 'saveManual']);
-        Route::post('/context/build', [ContextController::class, 'buildDigest']);
-        Route::post('/context/news-prompt', [ContextController::class, 'saveNewsPrompt']);
-        Route::post('/context/news-prompt/reset', [ContextController::class, 'resetNewsPrompt']);
 
         Route::get('/prompts/{key?}', [PromptController::class, 'index']);
         Route::patch('/prompts/{prompt}', [PromptController::class, 'update']);

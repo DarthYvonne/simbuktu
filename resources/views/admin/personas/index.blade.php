@@ -104,9 +104,9 @@
         <div style="display:flex; gap:10px; align-items:center; padding:12px 14px; background:#fef9e7; border:1px solid #fde68a; border-radius:8px; font-size:13px; color:#92400e; line-height:1.5;">
           <i class="fa-solid fa-circle-exclamation" style="font-size:16px;"></i>
           <div>
-            Vælg først en personlighed under
-            <a href="{{ url("$base") }}" style="color:#92400e; font-weight:700; text-decoration:underline;">Konfiguration</a>
-            — så kan du generere personas her.
+            Denne population har ingen personlighed —
+            <a href="{{ url("$base/personlighed") }}" style="color:#92400e; font-weight:700; text-decoration:underline;">opret den her</a>
+            før du genererer personas.
           </div>
         </div>
       @endif

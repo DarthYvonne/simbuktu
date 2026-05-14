@@ -34,4 +34,9 @@ class Blueprint extends Model
     {
         return $this->hasMany(Course::class);
     }
+
+    public function population(): BelongsTo
+    {
+        return $this->belongsTo(Population::class);
+    }
 }

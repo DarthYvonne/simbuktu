@@ -45,7 +45,7 @@ class PersonaController extends Controller
             'population'     => $population,
             'allPopulations' => Population::withCount('personas')->orderBy('name')->get(),
             'course'         => $course,
-            'courseBlueprint'=> $course?->blueprint,
+            'courseBlueprint'=> $population->blueprint,
             'activityCount'  => $activityCount,
             'personas'       => $personas,
             'count'          => $personas->count(),
@@ -217,9 +217,9 @@ class PersonaController extends Controller
             return back()->with('error', 'GEMINI_API_KEY ikke sat i .env');
         }
 
-        $blueprintId = \Illuminate\Support\Facades\Auth::user()?->currentCourse()?->blueprint_id;
+        $blueprintId = $population->blueprint?->id;
         if (!$blueprintId) {
-            return back()->with('error', 'Vælg en personlighed for kurset, før du kan generere personas.');
+            return back()->with('error', 'Denne population har ingen personlighed endnu.');
         }
 
         $prefix = "personas:gen:{$population->id}";

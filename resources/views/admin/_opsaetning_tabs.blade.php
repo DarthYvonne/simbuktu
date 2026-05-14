@@ -1,11 +1,10 @@
 @php
 $tabs = [
-  ['Simulation', url('/simulation/admin/algorithm'), 'simulation/admin/algorithm'],
-  ['Prompts', url('/simulation/admin/prompts'), 'simulation/admin/prompts'],
-  ['Test AI model', url('/simulation/admin/personas/tester'), 'simulation/admin/personas/tester'],
-  ['Aktuel kontekst', url('/simulation/admin/context'), 'simulation/admin/context'],
-  ['API-tjek', url('/simulation/admin/api-check'), 'simulation/admin/api-check'],
-  ['Forbrug', url('/simulation/admin/usage'), 'simulation/admin/usage'],
+  ['Simulation',                url('/simulation/admin/algorithm'),                  'simulation/admin/algorithm'],
+  ['Prompts',                   url('/simulation/admin/prompts'),                    'simulation/admin/prompts'],
+  ['Personlighedskomponenter',  url('/simulation/admin/personlighedskomponenter'),   'simulation/admin/personlighedskomponenter'],
+  ['API-tjek',                  url('/simulation/admin/api-check'),                  'simulation/admin/api-check'],
+  ['Forbrug',                   url('/simulation/admin/usage'),                      'simulation/admin/usage'],
 ];
 @endphp
 <div style="display: flex; gap: 2px; border-bottom: 1px solid #dadde1; margin-bottom: 14px;">

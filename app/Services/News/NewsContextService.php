@@ -6,18 +6,14 @@ use App\Models\Course;
 
 class NewsContextService
 {
-    public function __construct(private NewsDigester $digester)
-    {
-    }
-
+    /**
+     * The active "current context" injected into persona prompts.
+     * Owned per-population: each population is one simulation project and carries
+     * its own backdrop text. Empty by default; the user fills it in on the population's
+     * Kontekst tab.
+     */
     public function current(?Course $course): string
     {
-        if (!$course) return '';
-        if (($course->context_mode ?? 'auto') === 'manual') {
-            return trim((string) ($course->manual_context ?? ''));
-        }
-        $digest = $this->digester->current();
-        if (!$digest) return '';
-        return NewsDigester::formatForPrompt($digest);
+        return trim((string) ($course?->population?->manual_context ?? ''));
     }
 }

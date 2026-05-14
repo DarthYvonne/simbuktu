@@ -6,7 +6,7 @@
   <h1><a href="{{ url("$base/personas") }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Personas</a></h1>
   <div style="display: flex; gap: 8px;">
     <a href="{{ url("$base/personas/".$p['id']."/edit") }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Rediger</a>
-    <a href="{{ url('/simulation/admin/personas/tester?persona='.$p['id']) }}" class="btn btn-secondary"><i class="fa-solid fa-flask"></i> Test denne persona</a>
+    <a href="{{ url("$base/personlighed/test?persona=".$p['id']) }}" class="btn btn-secondary"><i class="fa-solid fa-flask"></i> Test denne persona</a>
     <form method="POST" action="{{ url("$base/personas/".$p['id']) }}" onsubmit="return confirm('Slet {{ $p['name'] ?? 'persona' }}?')">
       @csrf
       @method('DELETE')

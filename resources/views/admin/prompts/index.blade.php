@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="view-header">
-  <h1>Opsætning</h1>
+  <h1>System</h1>
 </div>
 
 @include('admin._opsaetning_tabs')

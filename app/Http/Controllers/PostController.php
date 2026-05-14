@@ -257,7 +257,7 @@ class PostController extends Controller
             $data['image_description'] = $this->imageDescriber->describe(
                 Storage::disk('public')->path($path),
                 $course?->id,
-                $course?->blueprint_id,
+                $course?->blueprint?->id,
             );
         } else {
             // Only fetch link preview if no image was uploaded

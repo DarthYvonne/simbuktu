@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="view-header">
-  <h1>Opsætning @if ($course)<span style="font-weight: 400; color: #65676b; font-size: 14px;">· {{ $course->name }}</span>@endif</h1>
+  <h1>System @if ($course)<span style="font-weight: 400; color: #65676b; font-size: 14px;">· {{ $course->name }}</span>@endif</h1>
   <div style="display: flex; gap: 8px;">
     <a href="{{ url('/simulation/admin/usage') }}" class="btn {{ $scope === 'course' ? 'btn-primary' : 'btn-secondary' }}">Dette kursus</a>
     <a href="{{ url('/simulation/admin/usage?scope=all') }}" class="btn {{ $scope === 'all' ? 'btn-primary' : 'btn-secondary' }}">Alle kurser</a>

@@ -1,12 +1,10 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="view-header">
-  <h1>Opsætning</h1>
-  <div style="color: #65676b; font-size: 13px;">Vælg en persona og et opslag, kør samme prompt mod flere modeller — sammenlign svar.</div>
-</div>
+@include('admin.populations.personlighed._header', ['urlBase' => $urlBase, 'population' => $population])
 
-@include('admin._opsaetning_tabs')
+@component('admin.blueprints._subtabs', ['urlBase' => $urlBase])
+@endcomponent
 
 @if (!$population || count($personas) === 0)
   <div class="card" style="text-align: center; padding: 30px;">
@@ -72,7 +70,7 @@
 .modal-box .attr-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
 </style>
 
-<form method="POST" action="{{ url('/simulation/admin/personas/tester') }}" id="testForm">
+<form method="POST" action="{{ url($urlBase.'/test') }}" id="testForm">
   @csrf
   <input type="hidden" name="persona_id" id="personaId" value="{{ $selectedPersonaId }}">
   <input type="hidden" name="post_id" id="postId" value="{{ $selectedPostId }}">
@@ -326,7 +324,7 @@ updateRunState();
 
 // --- Results polling ---
 @if ($batchId)
-const STATUS_URL = '{{ url('/simulation/admin/personas/tester/status') }}';
+const STATUS_URL = '{{ url($urlBase.'/test/status') }}';
 const renderedModels = new Set();
 
 function fillReplyCard(card, r) {

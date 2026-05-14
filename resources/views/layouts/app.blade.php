@@ -121,10 +121,11 @@
       @auth @if (auth()->user()->is_admin)
       <div class="nav-section">Admin</div>
       <a href="{{ url('/simulation/admin/populations') }}" data-nav="admin-populations" class="{{ request()->is('simulation/admin/populations*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-dna"></i></span> Populationer</a>
-      @php $personlighederActive = request()->is('simulation/admin/blueprints*') || request()->is('simulation/admin/blueprint-library*'); @endphp
-      <a href="{{ url('/simulation/admin/blueprints') }}" data-nav="admin-personligheder" class="{{ $personlighederActive ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-id-card"></i></span> Personligheder</a>
-      <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-algo" class="{{ request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/context*') || request()->is('simulation/admin/api-check*') || request()->is('simulation/admin/usage*') || request()->is('simulation/admin/personas/tester*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> Opsætning</a>
-      <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Kursusmanager</a>
+      @php $systemActive = request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/prompts*') || request()->is('simulation/admin/api-check*') || request()->is('simulation/admin/usage*') || request()->is('simulation/admin/personlighedskomponenter*'); @endphp
+      <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-system" class="{{ $systemActive ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> System</a>
+      <div style="margin-top: 18px; border-top: 1px solid #f0f2f5; padding-top: 8px;">
+        <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}" style="color:#65676b;"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Projekthåndtering</a>
+      </div>
       @endif @endauth
     </nav>
     @auth

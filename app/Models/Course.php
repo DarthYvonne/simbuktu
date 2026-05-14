@@ -47,9 +47,14 @@ class Course extends Model
         return $this->belongsTo(Population::class);
     }
 
-    public function blueprint(): BelongsTo
+    /**
+     * The course's personlighed is owned by its population (1:1). Exposed as an
+     * accessor so call sites can keep using $course->blueprint without knowing
+     * about the indirection.
+     */
+    public function getBlueprintAttribute(): ?Blueprint
     {
-        return $this->belongsTo(Blueprint::class);
+        return $this->population?->blueprint;
     }
 
     public function inviteUrl(): string

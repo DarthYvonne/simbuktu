@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Population extends Model
 {
@@ -24,6 +25,11 @@ class Population extends Model
     public function personas(): HasMany
     {
         return $this->hasMany(Persona::class);
+    }
+
+    public function blueprint(): HasOne
+    {
+        return $this->hasOne(Blueprint::class);
     }
 
     public function resolvedConfig(): array

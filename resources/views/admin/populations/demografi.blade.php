@@ -32,7 +32,6 @@ $isOverridden = fn($dim) => isset($overrides[$dim]);
 </div>
 
 @include('admin.populations._tabs', ['population' => $population])
-@include('admin.populations._konfig_subtabs', ['population' => $population])
 
 @if (session('success'))
   <div class="alert alert-success">{{ session('success') }}</div>

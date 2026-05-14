@@ -21,7 +21,7 @@ class BlueprintLibraryController extends Controller
     {
         $data = $this->validatePayload($request);
         $parameter = LibraryParameter::create($data);
-        return redirect("/simulation/admin/blueprint-library/{$parameter->id}")->with('success', 'Dimension oprettet.');
+        return redirect("/simulation/admin/personlighedskomponenter/{$parameter->id}")->with('success', 'Dimension oprettet.');
     }
 
     public function edit(LibraryParameter $parameter)
@@ -39,7 +39,7 @@ class BlueprintLibraryController extends Controller
     public function destroy(LibraryParameter $parameter)
     {
         $parameter->delete();
-        return redirect('/simulation/admin/blueprint-library')->with('success', 'Dimension slettet.');
+        return redirect('/simulation/admin/personlighedskomponenter')->with('success', 'Dimension slettet.');
     }
 
     private function validatePayload(Request $request, ?int $ignoreId = null): array
