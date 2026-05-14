@@ -43,12 +43,13 @@ class PromptController extends Controller
             'blueprint.dimension_chat',
             'coherence.check',
             'image.profile',
-            'news.digest',
             'image.describe_post',
-            'reaction.batch',
-            'comment.interpret',
             'comment.compose',
+            'comment.interpret',
+            'reaction.batch',
+            'persona.dm',
             'sentiment.analyse',
+            'news.digest',
         ]);
         $prompts = Prompt::get()->sortBy(fn ($p) => $menuOrder[$p->key] ?? 999)->values();
         $current = $key ? Prompt::where('key', $key)->first() : $prompts->first();
