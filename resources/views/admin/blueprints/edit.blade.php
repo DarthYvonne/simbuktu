@@ -265,6 +265,23 @@
   </div>
 </div>
 
+<button id="sok-toggle" class="sok-toggle" title="Spar med Lille Sokrates"><i class="fa-regular fa-comments"></i></button>
+
+<aside id="sok-panel" class="sok-panel">
+  <div class="sok-head">
+    <div style="flex:1;">
+      <h2><i class="fa-solid fa-brain" style="color:#1877f2; margin-right:6px;"></i> Lille Sokrates</h2>
+      <div class="sub">Samtalepartner — hjælper med at omsætte intuition til prompt-tekst</div>
+    </div>
+    <button type="button" class="close" id="sok-close" title="Luk (Esc)">×</button>
+  </div>
+  <div class="sok-messages" id="sok-messages"></div>
+  <form class="sok-input" id="sok-form">
+    <textarea id="sok-input" placeholder="Skriv til Sokrates… (Enter for at sende, Shift+Enter for ny linje)" rows="1"></textarea>
+    <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+  </form>
+</aside>
+
 <script>
 const BP_URL = @json(url('/simulation/admin/blueprints/'.$blueprint->id));
 const CSRF   = @json(csrf_token());
@@ -969,22 +986,5 @@ document.getElementById('sok-input').addEventListener('input', (e) => {
 });
 sokRender();
 </script>
-
-<button id="sok-toggle" class="sok-toggle" title="Spar med Lille Sokrates"><i class="fa-regular fa-comments"></i></button>
-
-<aside id="sok-panel" class="sok-panel">
-  <div class="sok-head">
-    <div style="flex:1;">
-      <h2><i class="fa-solid fa-brain" style="color:#1877f2; margin-right:6px;"></i> Lille Sokrates</h2>
-      <div class="sub">Samtalepartner — hjælper med at omsætte intuition til prompt-tekst</div>
-    </div>
-    <button type="button" class="close" id="sok-close" title="Luk (Esc)">×</button>
-  </div>
-  <div class="sok-messages" id="sok-messages"></div>
-  <form class="sok-input" id="sok-form">
-    <textarea id="sok-input" placeholder="Skriv til Sokrates… (Enter for at sende, Shift+Enter for ny linje)" rows="1"></textarea>
-    <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
-  </form>
-</aside>
 
 @endsection
