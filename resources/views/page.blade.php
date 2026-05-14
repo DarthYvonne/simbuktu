@@ -3,6 +3,17 @@
 @section('title', $page->title.' | Simbuktu')
 
 @section('styles')
+    .page-hero {
+        width: 100%; max-height: 420px;
+        margin-bottom: 28px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f4f6f8;
+    }
+    .page-hero img {
+        width: 100%; height: 100%; object-fit: cover;
+        display: block; max-height: 420px;
+    }
     .page-layout {
         display: grid;
         grid-template-columns: 220px 1fr;
@@ -14,12 +25,6 @@
         padding-right: 24px;
         position: sticky;
         top: 24px;
-    }
-    .page-sidebar h4 {
-        font-size: 11px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.8px;
-        color: #95a5a6;
-        margin-bottom: 12px;
     }
     .page-sidebar ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
     .page-sidebar a {
@@ -44,31 +49,35 @@
             position: static;
         }
         .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+        .page-hero { max-height: 260px; border-radius: 8px; margin-bottom: 20px; }
+        .page-hero img { max-height: 260px; }
     }
 @endsection
 
 @section('content')
     <main class="container">
+        @if($page->hero_image)
+            <div class="page-hero">
+                <img src="{{ asset($page->hero_image) }}" alt="">
+            </div>
+        @endif
+
         @php
             // Sidebar lists siblings (so the user can move around the section).
             // If this page is a top-level page with children, show its own children.
             // If it's a subpage, show its siblings (its parent's visible children).
             // Otherwise no sidebar — content uses full width.
             $sidebarPages = collect();
-            $sectionLabel = '';
             if ($page->parent_id && $page->parent) {
                 $sidebarPages = $page->parent->children->where('is_visible', true);
-                $sectionLabel = $page->parent->title;
             } elseif ($page->children->isNotEmpty()) {
                 $sidebarPages = $page->children->where('is_visible', true);
-                $sectionLabel = $page->title;
             }
         @endphp
 
         @if($sidebarPages->count() > 0)
             <div class="page-layout">
                 <aside class="page-sidebar" aria-label="Undersider">
-                    <h4>{{ $sectionLabel }}</h4>
                     <ul>
                         @foreach($sidebarPages as $sibling)
                             <li><a href="{{ $sibling->url() }}" class="{{ $sibling->id === $page->id ? 'active' : '' }}">{{ $sibling->title }}</a></li>

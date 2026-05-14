@@ -116,6 +116,7 @@ class CmsController extends Controller
     {
         $data = $this->validated($request);
         $page = CmsPage::create($data);
+        $this->handleHeroImage($request, $page);
         return $this->afterSave($request, $page, 'Side oprettet.');
     }
 
@@ -133,7 +134,43 @@ class CmsController extends Controller
     public function update(Request $request, CmsPage $page)
     {
         $page->update($this->validated($request, $page->id));
+        $this->handleHeroImage($request, $page);
         return $this->afterSave($request, $page, 'Side opdateret.');
+    }
+
+    /**
+     * Upload (or remove) the page's hero image. Stored under public/img/uploads/cms-pages.
+     * The remove_hero flag, when set, deletes the current file without expecting an upload.
+     */
+    private function handleHeroImage(Request $request, CmsPage $page): void
+    {
+        $request->validate([
+            'hero_image'  => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:8192',
+            'remove_hero' => 'nullable|boolean',
+        ]);
+
+        if ($request->boolean('remove_hero')) {
+            $this->deleteHeroFile($page->hero_image);
+            $page->update(['hero_image' => null]);
+            return;
+        }
+
+        if ($request->hasFile('hero_image')) {
+            $this->deleteHeroFile($page->hero_image);
+            $file = $request->file('hero_image');
+            $name = 'page-'.$page->id.'-'.now()->format('YmdHis').'.'.$file->getClientOriginalExtension();
+            $dest = public_path('img/uploads/cms-pages');
+            if (!is_dir($dest)) mkdir($dest, 0755, true);
+            $file->move($dest, $name);
+            $page->update(['hero_image' => 'img/uploads/cms-pages/'.$name]);
+        }
+    }
+
+    private function deleteHeroFile(?string $path): void
+    {
+        if (!$path || !str_starts_with($path, 'img/uploads/cms-pages/')) return;
+        $abs = public_path($path);
+        if (is_file($abs)) @unlink($abs);
     }
 
     private function afterSave(Request $request, CmsPage $page, string $msg)
@@ -146,6 +183,9 @@ class CmsController extends Controller
 
     public function destroy(CmsPage $page)
     {
+        // Clean up any uploaded hero images (own + cascaded children's).
+        foreach ($page->children as $child) $this->deleteHeroFile($child->hero_image);
+        $this->deleteHeroFile($page->hero_image);
         $page->delete();
         return redirect('/cms')->with('status', 'Side slettet.');
     }

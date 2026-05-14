@@ -6,7 +6,7 @@
     <div class="card">
         <h2 style="font-size:18px;margin-bottom:16px;">{{ $page->exists ? 'Rediger side' : 'Ny side' }}</h2>
 
-        <form method="POST" action="{{ $page->exists ? '/cms/'.$page->id : '/cms' }}">
+        <form method="POST" action="{{ $page->exists ? '/cms/'.$page->id : '/cms' }}" enctype="multipart/form-data">
             @csrf
             @if($page->exists) @method('PATCH') @endif
 
@@ -44,6 +44,24 @@
                     <input type="checkbox" name="is_visible" value="1" {{ old('is_visible', $page->is_visible) ? 'checked' : '' }}>
                     Synlig i menu
                 </label>
+            </div>
+
+            <div class="form-row">
+                <label>Hero-billede</label>
+                @if($page->hero_image)
+                    <div style="margin-bottom:10px;display:flex;gap:14px;align-items:center;background:var(--line-soft);padding:10px;border-radius:8px;">
+                        <img src="{{ asset($page->hero_image) }}" alt="Hero" style="width:120px;height:72px;object-fit:cover;border-radius:6px;display:block;">
+                        <div style="flex:1;font-size:13px;color:var(--ink-soft);">
+                            Nuværende billede. Upload nyt for at erstatte, eller fjern det:
+                            <label class="checkbox" style="margin-top:8px;">
+                                <input type="checkbox" name="remove_hero" value="1">
+                                <span>Fjern hero-billedet</span>
+                            </label>
+                        </div>
+                    </div>
+                @endif
+                <input type="file" name="hero_image" accept="image/jpeg,image/png,image/webp,image/gif">
+                <div style="font-size:12px;color:var(--ink-mute);margin-top:6px;">Vises øverst på siden. JPG, PNG, WebP eller GIF. Maks 8 MB.</div>
             </div>
 
             <div class="form-row">

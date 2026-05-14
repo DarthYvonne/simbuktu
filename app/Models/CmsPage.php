@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CmsPage extends Model
 {
-    protected $fillable = ['parent_id', 'title', 'slug', 'content', 'sort_order', 'is_visible'];
+    protected $fillable = ['parent_id', 'title', 'slug', 'content', 'hero_image', 'sort_order', 'is_visible'];
 
     protected $casts = [
         'is_visible' => 'boolean',
