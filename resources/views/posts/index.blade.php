@@ -23,7 +23,8 @@
 #whyBubble::after { content: ''; position: absolute; bottom: -6px; left: 16px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #1c1e21; }
 #whyBubble.via_friend { border-left: 3px solid #22c55e; }
 #whyBubble.discovery { border-left: 3px solid #9ca3af; }
-.pc-action { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; text-decoration: none; color: #65676b; font-size: 14px; cursor: pointer; border: none; background: transparent; padding: 0; }
+.pc-actions { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; }
+.pc-action { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; text-decoration: none; color: #65676b; font-size: 14px; cursor: pointer; border: none; background: transparent; padding: 0; }
 .pc-action:hover { background: #f0f2f5; }
 .pc-action.feedback:hover { color: #1877f2; background: #e7f3ff; }
 .pc-action.rerun:hover { color: #1877f2; background: #e7f3ff; }
@@ -128,14 +129,16 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
           <small>{{ $post->created_at->diffForHumans() }} · Runde {{ $post->round }}</small>
         </div>
         @php $isOwner = $post->user_id === auth()->id() || auth()->user()->is_admin; @endphp
-        @if ($isOwner)
-          <a href="#" class="pc-action rerun" title="Kør igen — slet reaktioner og kør simuleringen igen" onclick="event.preventDefault(); openRerun({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})"><i class="fa-solid fa-rotate-right"></i></a>
-          <a href="{{ url('/simulation/posts/'.$post->id.'/edit') }}" class="pc-action edit" title="Rediger opslag"><i class="fa-solid fa-pencil"></i></a>
-        @endif
-        <a href="{{ url('/simulation/posts/'.$post->id.'/feedback') }}" class="pc-action feedback" title="Feedback"><i class="fa-solid fa-comment-dots"></i></a>
-        @if ($isOwner)
-          <a href="#" class="pc-action delete" title="Slet opslag" onclick="event.preventDefault(); openDelete({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})"><i class="fa-solid fa-trash"></i></a>
-        @endif
+        <div class="pc-actions">
+          @if ($isOwner)
+            <a href="#" class="pc-action rerun" title="Kør igen — slet reaktioner og kør simuleringen igen" onclick="event.preventDefault(); openRerun({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})"><i class="fa-solid fa-rotate-right"></i></a>
+            <a href="{{ url('/simulation/posts/'.$post->id.'/edit') }}" class="pc-action edit" title="Rediger opslag"><i class="fa-solid fa-pencil"></i></a>
+          @endif
+          <a href="{{ url('/simulation/posts/'.$post->id.'/feedback') }}" class="pc-action feedback" title="Feedback"><i class="fa-regular fa-comment"></i></a>
+          @if ($isOwner)
+            <a href="#" class="pc-action delete" title="Slet opslag" onclick="event.preventDefault(); openDelete({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})"><i class="fa-solid fa-trash"></i></a>
+          @endif
+        </div>
       </div>
 
       <div class="pc-body">{!! preg_replace('#(https?://[^\s<>"\']+)#i', '<span style="color:#1877f2;">$1</span>', e(\Illuminate\Support\Str::limit($post->body, 280))) !!}</div>
