@@ -38,7 +38,6 @@
 .modal-box p { font-size: 13px; color: #65676b; line-height: 1.5; margin-bottom: 6px; }
 .modal-box .snippet-box { background: #f0f2f5; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-style: italic; color: #1c1e21; margin: 10px 0; }
 .modal-box .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-.post-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .pc-head { display: flex; gap: 10px; align-items: center; padding: 12px 16px 0; }
 .pc-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a1c4fd, #c2e9fb); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
 .pc-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
