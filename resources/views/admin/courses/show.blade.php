@@ -3,20 +3,20 @@
 
 @php $isActive = auth()->user()->currentCourse()?->id === $course->id; @endphp
 <div class="view-header">
-  <h1><a href="{{ url('/simulation/admin/courses') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Kurser</a> <span style="font-weight: 400; color: #1c1e21;">· {{ $course->name }}</span></h1>
+  <h1><a href="{{ url('/simulation/admin/courses') }}" style="color: #1877f2;"><i class="fa-solid fa-arrow-left"></i> Simulationer</a> <span style="font-weight: 400; color: #1c1e21;">· {{ $course->name }}</span></h1>
   <div style="display: flex; gap: 8px; align-items: center;">
     @if ($isActive)
-      <span style="background: #dcfce7; color: #166534; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 14px;">Aktivt kursus</span>
+      <span style="background: #dcfce7; color: #166534; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 14px;">Aktiv simulation</span>
     @else
       <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id.'/switch') }}">
         @csrf
-        <button class="btn btn-primary"><i class="fa-solid fa-right-left"></i> Skift til dette kursus</button>
+        <button class="btn btn-primary"><i class="fa-solid fa-right-left"></i> Skift til denne simulation</button>
       </form>
     @endif
-    <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id) }}" onsubmit="return confirm('Slet kurset? ALLE opslag og tilmeldinger slettes.')">
+    <form method="POST" action="{{ url('/simulation/admin/courses/'.$course->id) }}" onsubmit="return confirm('Slet simulationen? ALLE opslag og tilmeldinger slettes.')">
       @csrf
       @method('DELETE')
-      <button class="btn btn-danger">Slet kursus</button>
+      <button class="btn btn-danger">Slet simulation</button>
     </form>
   </div>
 </div>
@@ -66,7 +66,7 @@
     <input type="hidden" name="_tab" value="info">
     <h3>Grundlæggende info</h3>
     <div class="form-field">
-      <label>Kursusnavn</label>
+      <label>Simulationsnavn</label>
       <input type="text" name="name" value="{{ $course->name }}" required>
     </div>
     <div class="form-field">
@@ -74,8 +74,8 @@
       <input type="text" name="description" value="{{ $course->description }}" placeholder="Kort beskrivelse">
     </div>
 
-    <h3 style="margin-top: 18px;">Kursus-manager</h3>
-    <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Kontaktoplysninger til underviser / ansvarlig. Vises for deltagerne.</p>
+    <h3 style="margin-top: 18px;">Simulationsleder</h3>
+    <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Kontaktoplysninger til ansvarlig. Vises for deltagerne.</p>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
       <div class="form-field">
         <label>Navn</label>
@@ -104,7 +104,7 @@
     @method('PATCH')
     <input type="hidden" name="_tab" value="branding">
     <h3>Platform-navn</h3>
-    <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Navnet kursets deltagere ser. Som standard: "Simbuktu".</p>
+    <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Navnet simulationens deltagere ser. Som standard: "Simbuktu".</p>
     <div class="form-field">
       <label>Navn</label>
       <input type="text" name="platform_name" value="{{ $course->platform_name }}" placeholder="Simbuktu" maxlength="60">
@@ -184,7 +184,7 @@
 <div class="tab-pane" data-pane="deltagere">
   <div class="km-invite">
     <h3>Invitationslink</h3>
-    <div class="hint">Del dette link med deltagerne. De opretter konto og får automatisk adgang til kurset.</div>
+    <div class="hint">Del dette link med deltagerne. De opretter konto og får automatisk adgang til simulationen.</div>
     <div class="row">
       <input type="text" readonly value="{{ $course->inviteUrl() }}" id="inviteUrl">
       <button class="btn btn-primary" type="button" onclick="copyInvite()"><i class="fa-solid fa-copy"></i> Kopiér</button>

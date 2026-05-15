@@ -2,16 +2,16 @@
 @section('content')
 
 <div class="view-header">
-  <h1>Kursusmanager</h1>
-  <button type="button" class="btn btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> Opret kursus</button>
+  <h1>Simulationer</h1>
+  <button type="button" class="btn btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> Opret simulation</button>
 </div>
 
 @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 
 @if ($courses->isEmpty())
   <div class="card" style="text-align: center; padding: 50px; color: #65676b;">
-    <p style="margin-bottom: 14px;">Ingen kurser endnu.</p>
-    <button type="button" class="btn btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> Opret dit første kursus</button>
+    <p style="margin-bottom: 14px;">Ingen simulationer endnu.</p>
+    <button type="button" class="btn btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> Opret din første simulation</button>
   </div>
 @else
   @php $activeId = auth()->user()->currentCourse()?->id; @endphp
@@ -104,11 +104,11 @@
 <div class="modal-backdrop" id="createModal" onclick="if(event.target===this) closeCreate()">
   <form method="POST" action="{{ url('/simulation/admin/courses') }}" class="modal-box">
     @csrf
-    <h3>Opret kursus</h3>
-    <label>Kursusnavn</label>
+    <h3>Opret simulation</h3>
+    <label>Simulationsnavn</label>
     <input type="text" name="name" placeholder="F.eks. Krisekom F26" required autofocus>
     <label>Beskrivelse (valgfri)</label>
-    <input type="text" name="description" placeholder="Kort beskrivelse af kurset">
+    <input type="text" name="description" placeholder="Kort beskrivelse af simulationen">
     <div class="actions">
       <button type="button" class="btn btn-secondary" onclick="closeCreate()">Annuller</button>
       <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Opret</button>

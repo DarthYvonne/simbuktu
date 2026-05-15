@@ -124,7 +124,7 @@
       @php $systemActive = request()->is('simulation/admin/algorithm*') || request()->is('simulation/admin/prompts*') || request()->is('simulation/admin/api-check*') || request()->is('simulation/admin/usage*') || request()->is('simulation/admin/personlighedskomponenter*'); @endphp
       <a href="{{ url('/simulation/admin/algorithm') }}" data-nav="admin-system" class="{{ $systemActive ? 'active' : '' }}"><span class="ico"><i class="fa-solid fa-sliders"></i></span> System</a>
       <div style="margin-top: 18px; border-top: 1px solid #f0f2f5; padding-top: 8px;">
-        <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}" style="color:#65676b;"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Projekthåndtering</a>
+        <a href="{{ url('/simulation/admin/courses') }}" data-nav="admin-courses" class="{{ request()->is('simulation/admin/courses*') ? 'active' : '' }}" style="color:#65676b;"><span class="ico"><i class="fa-solid fa-chalkboard-user"></i></span> Simulationer</a>
       </div>
       @endif @endauth
     </nav>

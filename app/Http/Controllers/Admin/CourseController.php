@@ -35,7 +35,7 @@ class CourseController extends Controller
         $user = Auth::user();
         $user->active_course_id = $course->id;
         $user->save();
-        return redirect('/simulation/admin/courses/'.$course->id)->with('success', 'Kursus oprettet.');
+        return redirect('/simulation/admin/courses/'.$course->id)->with('success', 'Simulation oprettet.');
     }
 
     public function show(Course $course)
@@ -114,13 +114,13 @@ class CourseController extends Controller
         $course->update($data);
         $tab = $request->input('_tab');
         $anchor = $tab ? '#'.$tab : '';
-        return redirect('/simulation/admin/courses/'.$course->id.$anchor)->with('success', 'Kursus opdateret.');
+        return redirect('/simulation/admin/courses/'.$course->id.$anchor)->with('success', 'Simulation opdateret.');
     }
 
     public function destroy(Course $course)
     {
         $course->delete();
-        return redirect('/simulation/admin/courses')->with('success', 'Kursus slettet.');
+        return redirect('/simulation/admin/courses')->with('success', 'Simulation slettet.');
     }
 
     public function setPopulation(Request $request, Course $course)
@@ -134,7 +134,7 @@ class CourseController extends Controller
         $activityCount = $commentCount + $exposureCount;
 
         if ($activityCount > 0 && !$request->boolean('force')) {
-            return back()->withErrors(['population' => "Kurset har {$activityCount} reaktioner/kommentarer. Brug 'Skift og ryd' for at fortsætte."]);
+            return back()->withErrors(['population' => "Simulationen har {$activityCount} reaktioner/kommentarer. Brug 'Skift og ryd' for at fortsætte."]);
         }
 
         if ($activityCount > 0) {
