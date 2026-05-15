@@ -68,15 +68,18 @@
     .kontakt-ok strong { color: #14532d; }
 
     @media (max-width: 768px) {
-        .page-layout { grid-template-columns: 1fr; gap: 24px; }
-        .page-sidebar {
-            border-right: 0;
-            border-bottom: 1px solid #e0e0e0;
-            padding-right: 0; padding-bottom: 16px;
-            position: static;
+        .page-layout { grid-template-columns: 1fr; gap: 0; }
+        /* Submenu lives in the burger on mobile — sidebar + breadcrumb are redundant. */
+        .page-sidebar { display: none; }
+        .breadcrumb { display: none; }
+        /* Hero breaks out of the container's side padding to go edge-to-edge. */
+        .container > .page-hero {
+            width: 100vw;
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+            margin-top: -60px;
+            margin-bottom: 24px;
         }
-        .page-sidebar ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-        .container > .page-hero { margin: -60px 0 24px; }
     }
 @endsection
 

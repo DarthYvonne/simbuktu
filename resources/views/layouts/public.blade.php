@@ -66,6 +66,9 @@
         nav ul li a:hover { color: #3498db; }
         nav ul li a.active { background: #3498db; color: #fff; }
 
+        /* Submenus only render in the mobile burger — never on desktop. */
+        nav ul ul { display: none; }
+
         .container {
             max-width: 1320px;
             margin: 0 auto;
@@ -229,6 +232,23 @@
                 border-bottom: 1px solid #f0f0f0;
                 font-size: 16px;
             }
+
+            /* Submenus shown inside the burger as indented items. */
+            nav ul ul {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+                background: #f7f8fa;
+                border-top: 1px solid #f0f0f0;
+            }
+            nav ul ul li a {
+                font-size: 14px;
+                padding: 12px 5%;
+                color: #54637a;
+                text-transform: none;
+                letter-spacing: 0.3px;
+                font-weight: 400;
+            }
         }
 
         @yield('styles')
@@ -267,7 +287,16 @@
                             }
                         }
                     @endphp
-                    <li><a href="{{ $item->url() }}" class="{{ $sectionActive ? 'active' : '' }}">{{ $item->title }}</a></li>
+                    <li>
+                        <a href="{{ $item->url() }}" class="{{ $sectionActive ? 'active' : '' }}">{{ $item->title }}</a>
+                        @if($item->children->isNotEmpty())
+                            <ul>
+                                @foreach($item->children as $sub)
+                                    <li><a href="{{ $sub->url() }}" class="{{ request()->is(ltrim($sub->url(), '/')) ? 'active' : '' }}">{{ $sub->title }}</a></li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
                 @endforeach
             </ul>
         </nav>
