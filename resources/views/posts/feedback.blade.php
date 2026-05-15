@@ -19,7 +19,7 @@
 </div>
 
 <style>
-.fb-layout { display: grid; grid-template-columns: minmax(320px, 480px) 1fr; gap: 20px; align-items: start; }
+.fb-layout { display: grid; grid-template-columns: minmax(320px, 450px) 1fr; gap: 20px; align-items: start; }
 @media (max-width: 960px) { .fb-layout { grid-template-columns: 1fr; } }
 .fb-post { background: #fff; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); overflow: hidden; }
 .fb-post .pc-head { display: flex; gap: 10px; align-items: center; padding: 12px 16px 0; }
@@ -36,9 +36,11 @@
 .fb-post .pc-link .title { font-weight: 600; font-size: 15px; margin: 2px 0; line-height: 1.3; }
 .fb-post .pc-link .desc { font-size: 13px; color: #65676b; line-height: 1.35; }
 
-.fb-panel { background: #fff; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
-.fb-panel-head { padding: 12px 16px; border-bottom: 1px solid #dadde1; font-weight: 700; font-size: 15px; color: #1c1e21; }
+.fb-panel { background: #fff; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.fb-panel-head { padding: 12px 16px; border-bottom: 1px solid #dadde1; font-weight: 700; font-size: 15px; color: #1c1e21; padding-right: 44px; }
 .fb-panel-head small { display: block; font-weight: 400; font-size: 12px; color: #65676b; margin-top: 2px; }
+.fb-panel-close { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #65676b; text-decoration: none; font-size: 14px; }
+.fb-panel-close:hover { background: #f0f2f5; color: #1c1e21; }
 .fb-comments { padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 12px; }
 .fb-comment { display: flex; gap: 10px; align-items: flex-start; }
 .fb-comment .av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: #e4e6eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #65676b; overflow: hidden; }
@@ -87,6 +89,7 @@
   </div>
 
   <div class="fb-panel">
+    <a href="{{ url($_isOwn ? '/simulation/posts' : '/simulation/posts/all') }}" class="fb-panel-close" title="Luk feedback"><i class="fa-solid fa-xmark"></i></a>
     <div class="fb-panel-head">
       Feedback
       <small>Kursister og underviser kommenterer dette opslag</small>
