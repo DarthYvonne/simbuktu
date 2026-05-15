@@ -50,6 +50,7 @@ class PromptController extends Controller
             'persona.dm',
             'sentiment.analyse',
             'news.digest',
+            'cms.spellcheck',
         ]);
         $allPrompts = Prompt::get()->sortBy(fn ($p) => $menuOrder[$p->key] ?? 999)->values();
 

@@ -6,7 +6,7 @@
     <div class="card">
         <h2 style="font-size:18px;margin-bottom:16px;">{{ $page->exists ? 'Rediger side' : 'Ny side' }}</h2>
 
-        <form method="POST" action="{{ $page->exists ? '/cms/'.$page->id : '/cms' }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ $page->exists ? '/cms/'.$page->id : '/cms' }}" enctype="multipart/form-data" id="page-form">
             @csrf
             @if($page->exists) @method('PATCH') @endif
 
@@ -107,6 +107,73 @@
         @endif
     </div>
 
+    {{-- Spellcheck modal --}}
+    <div id="sc-overlay" style="display:none;">
+        <div id="sc-modal" role="dialog" aria-labelledby="sc-title">
+            <header>
+                <h3 id="sc-title">Stave- og grammatiktjek</h3>
+                <button type="button" class="iconbtn" onclick="scClose()" aria-label="Luk">×</button>
+            </header>
+            <div id="sc-body">
+                <div id="sc-loading" style="padding:24px;text-align:center;color:var(--ink-mute);">Tjekker teksten…</div>
+                <div id="sc-empty" style="display:none;padding:24px;text-align:center;color:var(--success);">Ingen stavefejl fundet ✓</div>
+                <div id="sc-error" style="display:none;padding:24px;text-align:center;color:var(--danger);"></div>
+                <div id="sc-list" style="display:none;"></div>
+            </div>
+            <footer>
+                <label class="checkbox" style="margin-right:auto;font-size:13px;">
+                    <input type="checkbox" id="sc-toggle-all" checked>
+                    <span>Vælg alle</span>
+                </label>
+                <button type="button" class="btn btn--ghost" onclick="scSkip()">Gem uden rettelser</button>
+                <button type="button" class="btn" id="sc-apply-btn" onclick="scApplyAndSave()">Ret valgte og gem</button>
+            </footer>
+        </div>
+    </div>
+    <style>
+        #sc-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
+        }
+        #sc-modal {
+            background: var(--surface); border-radius: 14px;
+            box-shadow: 0 20px 60px -20px rgba(0,0,0,0.4);
+            width: 100%; max-width: 720px; max-height: 85vh;
+            display: flex; flex-direction: column;
+        }
+        #sc-modal header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 22px; border-bottom: 1px solid var(--line);
+        }
+        #sc-modal header h3 { font-size: 16px; font-weight: 700; margin: 0; }
+        #sc-body { flex: 1; overflow-y: auto; }
+        #sc-modal footer {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 22px; border-top: 1px solid var(--line);
+            background: var(--line-soft); border-radius: 0 0 14px 14px;
+        }
+        .sc-item {
+            display: flex; gap: 12px; align-items: flex-start;
+            padding: 14px 22px; border-bottom: 1px solid var(--line-soft);
+        }
+        .sc-item:last-child { border-bottom: 0; }
+        .sc-item input[type=checkbox] { margin-top: 4px; flex-shrink: 0; }
+        .sc-item .sc-text { flex: 1; min-width: 0; }
+        .sc-diff { font-size: 14px; line-height: 1.5; word-break: break-word; }
+        .sc-diff del {
+            background: var(--danger-soft); color: var(--danger);
+            text-decoration: line-through; padding: 1px 4px; border-radius: 3px;
+        }
+        .sc-diff ins {
+            background: var(--success-soft); color: #166534;
+            text-decoration: none; padding: 1px 4px; border-radius: 3px;
+            margin-left: 4px;
+        }
+        .sc-explain { font-size: 12px; color: var(--ink-mute); margin-top: 4px; text-transform: lowercase; }
+    </style>
+
     <style>
         .snippet {
             background: var(--line-soft);
@@ -182,10 +249,112 @@
             quill.clipboard.dangerouslyPasteHTML(html);
         }
 
-        document.querySelectorAll('form').forEach(f => {
-            f.addEventListener('submit', () => {
-                hidden.value = quill.root.innerHTML;
-            });
+        // Spellcheck-aware submit. Intercepts the page form, runs the LLM check,
+        // shows the modal, then submits (optionally after applying selected fixes).
+        const pageForm = document.getElementById('page-form');
+        let scSkipCheck = false;
+
+        pageForm.addEventListener('submit', (ev) => {
+            hidden.value = quill.root.innerHTML;
+            if (scSkipCheck) return; // already approved via the modal
+            ev.preventDefault();
+            scOpen();
+            scRun();
         });
+
+        // ---- Modal state + helpers ----
+        let scErrors = [];
+        const scOverlay = document.getElementById('sc-overlay');
+        const scLoading = document.getElementById('sc-loading');
+        const scEmpty   = document.getElementById('sc-empty');
+        const scErrBox  = document.getElementById('sc-error');
+        const scList    = document.getElementById('sc-list');
+        const scApplyBtn= document.getElementById('sc-apply-btn');
+        const scToggleAll = document.getElementById('sc-toggle-all');
+
+        scOverlay.addEventListener('click', (e) => { if (e.target === scOverlay) scClose(); });
+        scToggleAll.addEventListener('change', (e) => {
+            document.querySelectorAll('#sc-list input[type=checkbox]').forEach(cb => cb.checked = e.target.checked);
+        });
+
+        function scOpen() {
+            scOverlay.style.display = 'flex';
+            scLoading.style.display = 'block';
+            scEmpty.style.display = 'none';
+            scErrBox.style.display = 'none';
+            scList.style.display = 'none';
+            scList.innerHTML = '';
+            scApplyBtn.disabled = true;
+        }
+        function scClose() { scOverlay.style.display = 'none'; }
+        function scSkip() {
+            scSkipCheck = true;
+            scClose();
+            pageForm.requestSubmit();
+        }
+
+        function scEscape(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        async function scRun() {
+            const csrf = pageForm.querySelector('input[name=_token]').value;
+            try {
+                const resp = await fetch('/cms/spellcheck', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    body: JSON.stringify({ content: hidden.value }),
+                });
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const json = await resp.json();
+                scLoading.style.display = 'none';
+                scErrors = json.errors || [];
+                if (scErrors.length === 0) {
+                    scEmpty.style.display = 'block';
+                    if (json.note) {
+                        scErrBox.textContent = json.note;
+                        scErrBox.style.display = 'block';
+                    }
+                    setTimeout(() => { scSkip(); }, 700);
+                    return;
+                }
+                scList.innerHTML = scErrors.map(e => `
+                    <label class="sc-item">
+                        <input type="checkbox" data-err-id="${scEscape(e.id)}" checked>
+                        <div class="sc-text">
+                            <div class="sc-diff"><del>${scEscape(e.original)}</del><ins>${scEscape(e.suggestion)}</ins></div>
+                            ${e.explanation ? `<div class="sc-explain">${scEscape(e.explanation)}</div>` : ''}
+                        </div>
+                    </label>
+                `).join('');
+                scList.style.display = 'block';
+                scApplyBtn.disabled = false;
+            } catch (err) {
+                scLoading.style.display = 'none';
+                scErrBox.textContent = 'Tjek kunne ikke gennemføres. Prøver at gemme alligevel…';
+                scErrBox.style.display = 'block';
+                setTimeout(() => { scSkip(); }, 1200);
+            }
+        }
+
+        function scApplyAndSave() {
+            const selected = new Set(
+                Array.from(document.querySelectorAll('#sc-list input[type=checkbox]:checked'))
+                    .map(cb => cb.dataset.errId)
+            );
+            let html = quill.root.innerHTML;
+            for (const e of scErrors) {
+                if (!selected.has(e.id)) continue;
+                // Replace first occurrence only — the LLM was told to keep substrings unique.
+                const idx = html.indexOf(e.original);
+                if (idx !== -1) {
+                    html = html.slice(0, idx) + e.suggestion + html.slice(idx + e.original.length);
+                }
+            }
+            quill.clipboard.dangerouslyPasteHTML(html);
+            hidden.value = quill.root.innerHTML;
+            source.value = hidden.value;
+            scSkip();
+        }
     </script>
 @endsection

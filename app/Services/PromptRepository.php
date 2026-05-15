@@ -368,6 +368,31 @@ Returnér KUN ren JSON i præcis dette format, intet andet:
 Hvis alle sekundære træk er plausible, returnér: {"flags": []}
 PROMPT,
             ],
+
+            'cms.spellcheck' => [
+                'name' => 'Stave- og grammatiktjek (CMS)',
+                'description' => 'Finder stave-, grammatik- og tegnsætningsfejl i CMS-tekst. Returnerer en liste af fejl med præcis original-tekst og forslag til rettelse.',
+                'placeholders' => ['content'],
+                'body' => <<<PROMPT
+Du er en dansk korrekturlæser. Find stave-, grammatik- og tegnsætningsfejl i teksten nedenfor.
+
+TEKSTEN:
+"""
+{{content}}
+"""
+
+REGLER:
+1. Find KUN reelle fejl: stavefejl, grammatikfejl, forkert tegnsætning, manglende store bogstaver, åbenlyse typografiske fejl.
+2. Marker IKKE stilistiske valg, valgfri kommaer, eller "kunne formuleres bedre"-ting. Kun ting der er objektivt forkerte.
+3. `original` skal være EN PRÆCIS substring af teksten ovenfor (kopiér ord-for-ord, samme tegnsætning, samme store/små bogstaver). Hold den så kort som muligt — typisk det forkerte ord eller den forkerte sætning. Substring'en skal være unik nok til at kunne genfindes.
+4. `suggestion` er den rettede version af samme tekststykke.
+5. `explanation` er en meget kort dansk forklaring (3-8 ord), fx "stavefejl", "manglende komma før ledsætning", "der/de forveksling".
+6. Hvis der ingen fejl er, returnér `{"errors": []}`.
+
+SVAR ALTID I REN JSON, intet andet, intet ```-fence:
+{"errors": [{"original": "...", "suggestion": "...", "explanation": "..."}]}
+PROMPT,
+            ],
         ];
     }
 }

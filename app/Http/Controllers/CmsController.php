@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\CmsPage;
 use App\Models\CmsSetting;
+use App\Services\Llm\LlmRouter;
+use App\Services\PromptRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -279,5 +281,64 @@ class CmsController extends Controller
         $ids = [$page->id];
         foreach ($page->children as $c) $ids[] = $c->id;
         return $ids;
+    }
+
+    /**
+     * Spell- and grammar-check the supplied content via Gemini Flash Lite.
+     * Returns errors as plain-text substring → suggestion pairs that the
+     * frontend can apply as direct string replacements in the HTML.
+     */
+    public function spellcheck(Request $request, PromptRepository $prompts, LlmRouter $llm)
+    {
+        $data = $request->validate([
+            'content' => 'required|string|max:60000',
+        ]);
+
+        // Strip HTML so the LLM only sees the actual prose. Whitespace
+        // collapsed to keep substring matches stable.
+        $text = trim(preg_replace('/\s+/u', ' ', strip_tags($data['content'])));
+        if ($text === '') {
+            return response()->json(['errors' => []]);
+        }
+
+        $prompt = $prompts->render('cms.spellcheck', ['content' => $text]);
+
+        try {
+            $raw = $llm->generateText($prompt, 'gemini-2.5-flash-lite', ['prompt_key' => 'cms.spellcheck']);
+        } catch (\Throwable $e) {
+            return response()->json(['errors' => [], 'note' => 'Stavetjek kunne ikke gennemføres: '.$e->getMessage()], 200);
+        }
+
+        $errors = $this->parseSpellcheckResponse($raw, $data['content']);
+        return response()->json(['errors' => $errors]);
+    }
+
+    private function parseSpellcheckResponse(string $raw, string $haystack): array
+    {
+        $raw = trim($raw);
+        $raw = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $raw);
+        $start = strpos($raw, '{');
+        $end   = strrpos($raw, '}');
+        if ($start === false || $end === false || $end <= $start) return [];
+        $decoded = json_decode(substr($raw, $start, $end - $start + 1), true);
+        if (!is_array($decoded) || !isset($decoded['errors']) || !is_array($decoded['errors'])) return [];
+
+        $out = [];
+        $i = 0;
+        foreach ($decoded['errors'] as $e) {
+            $original   = trim((string) ($e['original']   ?? ''));
+            $suggestion = trim((string) ($e['suggestion'] ?? ''));
+            $explanation= trim((string) ($e['explanation']?? ''));
+            if ($original === '' || $suggestion === '' || $original === $suggestion) continue;
+            // Only keep errors where the original substring actually exists in the saved content.
+            if (mb_stripos($haystack, $original) === false) continue;
+            $out[] = [
+                'id'          => 'err_'.$i++,
+                'original'    => $original,
+                'suggestion'  => $suggestion,
+                'explanation' => $explanation,
+            ];
+        }
+        return $out;
     }
 }
