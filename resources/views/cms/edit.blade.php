@@ -91,7 +91,8 @@
             </div>
 
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                <button class="btn" type="submit" name="save_and_preview" value="1">Gem</button>
+                <button class="btn btn--secondary" type="submit" name="save_and_preview" value="1" data-skip-spellcheck="1">Gem</button>
+                <button class="btn" type="submit" name="save_and_preview" value="1">Gem og tjek stavning</button>
                 @if($page->exists)
                     <span style="flex:1;"></span>
                     <button type="button" class="btn btn--danger" onclick="document.getElementById('deletePageForm').requestSubmit()">Slet siden</button>
@@ -270,6 +271,8 @@
         pageForm.addEventListener('submit', (ev) => {
             hidden.value = quill.root.innerHTML;
             if (scSkipCheck) return; // already approved via the modal
+            // The plain "Gem" button bypasses the spellcheck entirely.
+            if (ev.submitter && ev.submitter.dataset.skipSpellcheck === '1') return;
             ev.preventDefault();
             scSubmitter = ev.submitter || pageForm.querySelector('button[type=submit]');
             scOpen();
