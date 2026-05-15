@@ -138,6 +138,9 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     Route::get('/mig', [MigController::class, 'edit']);
     Route::post('/mig', [MigController::class, 'update']);
 
+    Route::get('/konto', [\App\Http\Controllers\KontoController::class, 'edit']);
+    Route::post('/konto', [\App\Http\Controllers\KontoController::class, 'update']);
+
     Route::get('/analyse', [AnalyseController::class, 'index']);
     Route::get('/analyse/{post}/spread', [AnalyseController::class, 'spreadGraph']);
     Route::post('/analyse/{post}/sentiment', [AnalyseController::class, 'sentiment'])

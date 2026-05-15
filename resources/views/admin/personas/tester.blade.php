@@ -3,9 +3,6 @@
 
 @include('admin.populations.personlighed._header', ['urlBase' => $urlBase, 'population' => $population])
 
-@component('admin.blueprints._subtabs', ['urlBase' => $urlBase])
-@endcomponent
-
 @if (!$population || count($personas) === 0)
   <div class="card" style="text-align: center; padding: 30px;">
     Ingen personas at teste mod. Vælg et kursus med population, eller generér personas først.

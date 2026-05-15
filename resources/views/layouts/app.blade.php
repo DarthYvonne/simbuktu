@@ -129,7 +129,12 @@
       @endif @endauth
     </nav>
     @auth
-      <form method="POST" action="{{ url('/simulation/logout') }}" style="margin-top: 8px; border-top: 1px solid #f0f2f5; padding-top: 8px;">
+      <div style="margin-top: 8px; border-top: 1px solid #f0f2f5; padding-top: 8px;">
+        <a href="{{ url('/simulation/konto') }}" data-nav="konto" class="{{ request()->is('simulation/konto*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: #65676b; font-weight: 600; font-size: 14px;">
+          <span class="ico"><i class="fa-solid fa-gear"></i></span> Konto
+        </a>
+      </div>
+      <form method="POST" action="{{ url('/simulation/logout') }}" style="margin-top: 0;">
         @csrf
         <button type="submit" class="logout-btn" style="width: 100%; padding: 10px 12px; background: none; border: none; color: #65676b; cursor: pointer; font-weight: 600; font-size: 14px; text-align: left; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
           <span class="ico"><i class="fa-solid fa-right-from-bracket"></i></span> Log ud

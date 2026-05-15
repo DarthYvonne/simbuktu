@@ -3,14 +3,12 @@ $bpBase = $urlBase;
 $bpPath = request()->path();
 $onOm       = str_ends_with($bpPath, '/personlighed/om');
 $onPrompts  = str_ends_with($bpPath, '/personlighed/prompts');
-$onTest     = str_ends_with($bpPath, '/personlighed/test') || str_contains($bpPath, '/personlighed/test');
-$onDim      = !$onOm && !$onPrompts && !$onTest;
+$onDim      = !$onOm && !$onPrompts;
 
 $bpSubtabs = [
   ['Om',          url("$bpBase/om"),      $onOm],
   ['Dimensioner', url("$bpBase"),         $onDim],
   ['Prompts',     url("$bpBase/prompts"), $onPrompts],
-  ['Test AI',     url("$bpBase/test"),    $onTest],
 ];
 @endphp
 <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px;">
