@@ -386,8 +386,14 @@ class PopulationController extends Controller
         Cache::put("tester:done:{$batchId}", 0, 3600);
         Cache::put("tester:results:{$batchId}", [], 3600);
 
+        $linkPreview = $post->link_url ? [
+            'title' => $post->link_title,
+            'description' => $post->link_description,
+            'site_name' => $post->link_site_name,
+        ] : null;
+
         foreach ($picked as $modelId) {
-            TestReactionJob::dispatch($batchId, $persona, $post->body, null, null, $modelId);
+            TestReactionJob::dispatch($batchId, $persona, $post->body, $post->image_description, $linkPreview, $modelId);
         }
 
         session([
