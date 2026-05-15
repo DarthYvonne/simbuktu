@@ -100,7 +100,18 @@ function pchatRenderMessages(messages) {
     return;
   }
   body.innerHTML = '';
-  for (const m of messages) pchatAppendMessage(m);
+  let pendingId = null;
+  for (const m of messages) {
+    if (m.role === 'persona' && m.status === 'pending') {
+      pendingId = m.id;
+      continue;
+    }
+    pchatAppendMessage(m);
+  }
+  if (pendingId) {
+    pchatShowTyping();
+    pchatPollPending(window.__pchatState.conversationId, pendingId);
+  }
   body.scrollTop = body.scrollHeight;
 }
 
@@ -151,13 +162,15 @@ async function pchatSend(ev) {
       headers: { 'X-CSRF-TOKEN': pchatCsrf(), 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ body }),
     });
-    pchatHideTyping();
     if (!res.ok) {
+      pchatHideTyping();
       const err = await res.json().catch(() => ({}));
       pchatAppendMessage({ role: 'persona', body: '(kunne ikke sende: ' + (err.error || 'fejl') + ')' });
     } else {
       const data = await res.json();
-      pchatAppendMessage(data.persona_message);
+      // Server returned a 'pending' placeholder. Keep the typing bubble showing
+      // until the queued job updates the message to 'complete' or 'failed'.
+      pchatPollPending(state.conversationId, data.persona_message.id);
     }
   } catch (e) {
     pchatHideTyping();
@@ -168,6 +181,38 @@ async function pchatSend(ev) {
     input.focus();
   }
   return false;
+}
+
+const pchatPollingFor = new Set();
+async function pchatPollPending(conversationId, messageId) {
+  if (pchatPollingFor.has(messageId)) return;
+  pchatPollingFor.add(messageId);
+  const url = '{{ url('/simulation/beskeder') }}/' + conversationId + '/messages/' + messageId;
+  let attempts = 0;
+  const maxAttempts = 95; // ~190s, matches GenerateChatReplyJob timeout
+  while (attempts++ < maxAttempts) {
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.status === 'complete') {
+        pchatHideTyping();
+        pchatAppendMessage({ role: 'persona', body: data.body });
+        pchatPollingFor.delete(messageId);
+        return;
+      }
+      if (data.status === 'failed') {
+        pchatHideTyping();
+        pchatAppendMessage({ role: 'persona', body: data.error_message || 'Beskeden kunne ikke genereres.' });
+        pchatPollingFor.delete(messageId);
+        return;
+      }
+    } catch {}
+  }
+  pchatHideTyping();
+  pchatAppendMessage({ role: 'persona', body: '(beskeden tog for lang tid — prøv igen)' });
+  pchatPollingFor.delete(messageId);
 }
 
 function pchatToggleCollapse(ev) {

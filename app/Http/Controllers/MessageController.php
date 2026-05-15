@@ -88,6 +88,7 @@ class MessageController extends Controller
                 'id' => $m->id,
                 'role' => $m->role,
                 'body' => $m->body,
+                'status' => $m->status,
                 'created_at' => $m->created_at->toIso8601String(),
             ]);
 
