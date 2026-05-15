@@ -316,7 +316,25 @@ class PopulationController extends Controller
 
     // ------------------------- Test AI (under Personlighed) -------------------------
 
-    public function personlighedTest(Request $request, Population $population)
+    public function testAiSystem(Request $request)
+    {
+        $course = Auth::user()?->currentCourse();
+        $population = $course?->population;
+        if (!$population) {
+            return view('admin.test-ai.empty', ['course' => $course]);
+        }
+        return $this->personlighedTest($request, $population, 'system');
+    }
+
+    public function runTestAiSystem(Request $request)
+    {
+        $course = Auth::user()?->currentCourse();
+        $population = $course?->population;
+        if (!$population) return back()->with('error', 'Intet kursus eller population valgt.');
+        return $this->runPersonlighedTest($request, $population, 'system');
+    }
+
+    public function personlighedTest(Request $request, Population $population, string $context = 'population')
     {
         $repo     = app(PersonaRepository::class);
         $personas = $repo->forPopulation($population)->all();
@@ -338,6 +356,13 @@ class PopulationController extends Controller
         if ($batchId) Cache::forget("tester:unread:{$batchId}");
 
         $urlBase = $this->personlighedBase($population);
+        if ($context === 'system') {
+            $runUrl    = url('/simulation/admin/test-ai');
+            $statusUrl = url('/simulation/admin/test-ai/status');
+        } else {
+            $runUrl    = url("$urlBase/test");
+            $statusUrl = url("$urlBase/test/status");
+        }
 
         return view('admin.personas.tester', [
             'course'            => $course,
@@ -355,10 +380,13 @@ class PopulationController extends Controller
             'queued'            => $queued,
             'done'              => $done,
             'urlBase'           => $urlBase,
+            'context'           => $context,
+            'runUrl'            => $runUrl,
+            'statusUrl'         => $statusUrl,
         ]);
     }
 
-    public function runPersonlighedTest(Request $request, Population $population)
+    public function runPersonlighedTest(Request $request, Population $population, string $context = 'population')
     {
         $request->validate([
             'persona_id' => 'required|string',
@@ -403,10 +431,23 @@ class PopulationController extends Controller
             'tester_models'     => $picked,
         ]);
 
-        return redirect("{$this->personlighedBase($population)}/test?persona={$persona['id']}&post={$post->id}");
+        $base = $context === 'system'
+            ? '/simulation/admin/test-ai'
+            : "{$this->personlighedBase($population)}/test";
+        return redirect("$base?persona={$persona['id']}&post={$post->id}");
+    }
+
+    public function testAiSystemStatus()
+    {
+        return $this->statusPersonlighedTestRaw();
     }
 
     public function statusPersonlighedTest(Population $population)
+    {
+        return $this->statusPersonlighedTestRaw();
+    }
+
+    private function statusPersonlighedTestRaw()
     {
         $batchId = session('tester_batch_id');
         if (!$batchId) return response()->json(['queued' => 0, 'done' => 0, 'results' => []]);

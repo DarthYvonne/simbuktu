@@ -230,6 +230,10 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
 
         Route::get('/usage', [\App\Http\Controllers\Admin\UsageController::class, 'index']);
 
+        Route::get('/test-ai',        [PopulationController::class, 'testAiSystem']);
+        Route::post('/test-ai',       [PopulationController::class, 'runTestAiSystem']);
+        Route::get('/test-ai/status', [PopulationController::class, 'testAiSystemStatus']);
+
         Route::get('/algorithm', [AlgorithmController::class, 'index']);
         Route::post('/algorithm', [AlgorithmController::class, 'update']);
         Route::post('/algorithm/reset', [AlgorithmController::class, 'reset']);

@@ -5,8 +5,7 @@ $path = request()->path();
 $onPersonas = (str_starts_with($path, ltrim("$base/personas", '/'))
     && !str_starts_with($path, ltrim("$base/personas/graph", '/')));
 $onGraph    = str_starts_with($path, ltrim("$base/personas/graph", '/'));
-$onTestAI = str_starts_with($path, ltrim("$base/personlighed/test", '/'));
-$onPersonlighed = str_starts_with($path, ltrim("$base/personlighed", '/')) && !$onTestAI;
+$onPersonlighed = str_starts_with($path, ltrim("$base/personlighed", '/'));
 $onKontekst = str_starts_with($path, ltrim("$base/kontekst", '/'));
 $onIndstillinger = $path === ltrim($base, '/')
     || str_starts_with($path, ltrim("$base/demografi", '/'));
@@ -16,7 +15,6 @@ $tabs = [
   ['Social graf',    url("$base/personas/graph/view"), $onGraph],
   ['Personlighed',   url("$base/personlighed"),        $onPersonlighed],
   ['Kontekst',       url("$base/kontekst"),            $onKontekst],
-  ['Test AI',        url("$base/personlighed/test"),   $onTestAI],
   ['Indstillinger',  url($base),                       $onIndstillinger],
 ];
 @endphp

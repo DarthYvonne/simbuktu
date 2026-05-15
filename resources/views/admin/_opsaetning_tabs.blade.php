@@ -5,6 +5,7 @@ $tabs = [
   ['Personlighedskomponenter',  url('/simulation/admin/personlighedskomponenter'),   'simulation/admin/personlighedskomponenter'],
   ['API-tjek',                  url('/simulation/admin/api-check'),                  'simulation/admin/api-check'],
   ['Forbrug',                   url('/simulation/admin/usage'),                      'simulation/admin/usage'],
+  ['Test AI',                   url('/simulation/admin/test-ai'),                    'simulation/admin/test-ai'],
 ];
 @endphp
 <div style="display: flex; gap: 2px; border-bottom: 1px solid #dadde1; margin-bottom: 14px;">
