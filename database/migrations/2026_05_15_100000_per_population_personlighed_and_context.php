@@ -76,9 +76,11 @@ return new class extends Migration
         $driver = DB::getDriverName();
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = OFF');
-        } else {
+        } elseif ($driver === 'mysql' || $driver === 'mariadb') {
             DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         }
+        // pgsql: no session-level FK toggle needed; the deletes below run in
+        // dependency-safe order or on tables with no inbound FKs.
 
         $tables = [
             'comment_reactions', 'comments',
@@ -97,7 +99,7 @@ return new class extends Migration
 
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = ON');
-        } else {
+        } elseif ($driver === 'mysql' || $driver === 'mariadb') {
             DB::statement('SET FOREIGN_KEY_CHECKS = 1');
         }
     }
