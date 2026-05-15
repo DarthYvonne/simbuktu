@@ -431,4 +431,97 @@ class PostController extends Controller
         $post->delete();
         return redirect('/simulation/posts')->with('success', 'Opslag slettet.');
     }
+
+    public function rerun(Post $post)
+    {
+        $this->authorizeOwnerOrAdmin($post);
+
+        $post->comments()->delete();
+        $post->exposures()->delete();
+
+        $post->update([
+            'round'          => 0,
+            'reactions'      => null,
+            'reach'          => 0,
+            'shares'         => 0,
+            'intelligence'   => null,
+            'status'         => 'active',
+            'started_at'     => now(),
+            'last_ticked_at' => now(),
+            'finished_at'    => null,
+        ]);
+
+        return back()->with('success', 'Reaktioner slettet — simulering kører igen ved næste tick.');
+    }
+
+    public function edit(Post $post)
+    {
+        $this->authorizeOwnerOrAdmin($post);
+        return view('posts.edit', ['post' => $post]);
+    }
+
+    public function update(Request $request, Post $post)
+    {
+        $this->authorizeOwnerOrAdmin($post);
+
+        $request->validate([
+            'body'         => 'required|string|min:3|max:2000',
+            'author_name'  => 'nullable|string|max:80',
+            'image'        => 'nullable|image|max:5120',
+            'remove_image' => 'nullable|boolean',
+        ]);
+
+        $post->body = $request->input('body');
+        if ($request->filled('author_name')) {
+            $post->author_name = $request->input('author_name');
+        }
+
+        $imageChanged = false;
+        if ($request->boolean('remove_image') && $post->image_path) {
+            Storage::disk('public')->delete($post->image_path);
+            $post->image_path = null;
+            $post->image_description = null;
+            $imageChanged = true;
+        }
+        if ($request->hasFile('image')) {
+            if ($post->image_path) {
+                Storage::disk('public')->delete($post->image_path);
+            }
+            $post->image_path = $request->file('image')->store('posts', 'public');
+            $post->image_description = null;
+            $imageChanged = true;
+        }
+
+        if (!$post->image_path) {
+            $url = $this->linkPreview->extractFirstUrl($post->body);
+            if ($url && $url !== $post->link_url) {
+                $preview = $this->linkPreview->fetch($url);
+                $post->link_url         = $preview['url']         ?? null;
+                $post->link_title       = $preview['title']       ?? null;
+                $post->link_description = $preview['description'] ?? null;
+                $post->link_image       = $preview['image']       ?? null;
+                $post->link_site_name   = $preview['site_name']   ?? null;
+            } elseif (!$url) {
+                $post->link_url = $post->link_title = $post->link_description = $post->link_image = $post->link_site_name = null;
+            }
+        } else {
+            $post->link_url = $post->link_title = $post->link_description = $post->link_image = $post->link_site_name = null;
+        }
+
+        $post->save();
+
+        if ($imageChanged && $post->image_path) {
+            \App\Jobs\DescribeImageJob::dispatch($post->id);
+        }
+
+        return redirect('/simulation/posts')->with('success', 'Opslag opdateret.');
+    }
+
+    private function authorizeOwnerOrAdmin(Post $post): void
+    {
+        $user = Auth::user();
+        if ($post->user_id !== $user->id && !$user->is_admin) {
+            abort(403, 'Du kan kun ændre egne opslag.');
+        }
+    }
 }

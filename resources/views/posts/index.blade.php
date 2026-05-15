@@ -23,10 +23,13 @@
 #whyBubble::after { content: ''; position: absolute; bottom: -6px; left: 16px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #1c1e21; }
 #whyBubble.via_friend { border-left: 3px solid #22c55e; }
 #whyBubble.discovery { border-left: 3px solid #9ca3af; }
-.slet-link { color: #b91c1c; font-size: 12px; font-weight: 600; text-decoration: none; padding: 4px 8px; border-radius: 4px; }
-.slet-link:hover { background: #fee2e2; }
-.feedback-link { color: #1877f2; font-size: 12px; font-weight: 600; text-decoration: none; padding: 4px 8px; border-radius: 4px; }
-.feedback-link:hover { background: #e7f3ff; }
+.pc-action { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; text-decoration: none; color: #65676b; font-size: 14px; cursor: pointer; border: none; background: transparent; padding: 0; }
+.pc-action:hover { background: #f0f2f5; }
+.pc-action.feedback:hover { color: #1877f2; background: #e7f3ff; }
+.pc-action.rerun:hover { color: #1877f2; background: #e7f3ff; }
+.pc-action.edit:hover { color: #1c1e21; background: #f0f2f5; }
+.pc-action.delete { color: #b91c1c; }
+.pc-action.delete:hover { background: #fee2e2; }
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-backdrop.open { display: flex; }
 .modal-box { background: #fff; border-radius: 12px; max-width: 400px; width: 100%; padding: 20px 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
@@ -124,9 +127,14 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
           {{ $_name }}
           <small>{{ $post->created_at->diffForHumans() }} · Runde {{ $post->round }}</small>
         </div>
-        <a href="{{ url('/simulation/posts/'.$post->id.'/feedback') }}" class="feedback-link">Feedback</a>
-        @if ($post->user_id === auth()->id() || auth()->user()->is_admin)
-          <a href="#" class="slet-link" onclick="event.preventDefault(); openDelete({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})">Slet</a>
+        @php $isOwner = $post->user_id === auth()->id() || auth()->user()->is_admin; @endphp
+        @if ($isOwner)
+          <a href="#" class="pc-action rerun" title="Kør igen — slet reaktioner og kør simuleringen igen" onclick="event.preventDefault(); openRerun({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})"><i class="fa-solid fa-rotate-right"></i></a>
+          <a href="{{ url('/simulation/posts/'.$post->id.'/edit') }}" class="pc-action edit" title="Rediger opslag"><i class="fa-solid fa-pencil"></i></a>
+        @endif
+        <a href="{{ url('/simulation/posts/'.$post->id.'/feedback') }}" class="pc-action feedback" title="Feedback"><i class="fa-solid fa-comment-dots"></i></a>
+        @if ($isOwner)
+          <a href="#" class="pc-action delete" title="Slet opslag" onclick="event.preventDefault(); openDelete({{ $post->id }}, {{ json_encode(\Illuminate\Support\Str::limit($post->body, 60)) }})"><i class="fa-solid fa-trash"></i></a>
         @endif
       </div>
 
@@ -224,6 +232,22 @@ $reactionBg = ['like'=>'#1877f2','love'=>'#e0245e','haha'=>'#f7b928','wow'=>'#f7
   </div>
 </div>
 
+<div class="modal-backdrop" id="rerunModal" onclick="if(event.target===this) closeRerun()">
+  <div class="modal-box">
+    <h3>Kør opslag igen?</h3>
+    <p>Er du sikker på at du vil slette alle reaktioner og køre dette opslag igen?</p>
+    <div class="snippet-box" id="rerunSnippet"></div>
+    <p>Alle kommentarer, reaktioner og eksponeringer slettes — derefter starter simuleringen forfra ved næste tick.</p>
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" onclick="closeRerun()">Annuller</button>
+      <form id="rerunForm" method="POST" action="" style="display: inline;">
+        @csrf
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-rotate-right"></i> Kør igen</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <style>
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
 .lightbox.open { display: flex; }
@@ -289,8 +313,15 @@ function openDelete(postId, snippet) {
 }
 function closeDelete() { document.getElementById('deleteModal').classList.remove('open'); }
 
+function openRerun(postId, snippet) {
+  document.getElementById('rerunSnippet').textContent = snippet;
+  document.getElementById('rerunForm').action = '/simulation/posts/' + postId + '/rerun';
+  document.getElementById('rerunModal').classList.add('open');
+}
+function closeRerun() { document.getElementById('rerunModal').classList.remove('open'); }
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeLightbox(); closeDelete(); closeReactions(); }
+  if (e.key === 'Escape') { closeLightbox(); closeDelete(); closeRerun(); closeReactions(); }
 });
 
 const whyBubble = document.getElementById('whyBubble');

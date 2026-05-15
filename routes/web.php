@@ -128,6 +128,9 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     Route::get('/posts/{post}/feedback/data', [\App\Http\Controllers\PostFeedbackController::class, 'fetch']);
     Route::post('/posts/{post}/feedback', [\App\Http\Controllers\PostFeedbackController::class, 'send'])
         ->middleware('throttle:15,1'); // triggers LLM coaching reply — cap per user
+    Route::get('/posts/{post}/edit', [PostController::class, 'edit']);
+    Route::patch('/posts/{post}', [PostController::class, 'update']);
+    Route::post('/posts/{post}/rerun', [PostController::class, 'rerun']);
     Route::get('/posts/{post}', [PostController::class, 'show']);
     Route::get('/posts/{post}/feed', [PostController::class, 'feed']);
     Route::post('/posts/{post}/comments', [\App\Http\Controllers\CommentController::class, 'store']);
