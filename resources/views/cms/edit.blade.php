@@ -171,6 +171,18 @@
             text-decoration: none; padding: 1px 4px; border-radius: 3px;
             margin-left: 4px;
         }
+        .sc-suggestion {
+            display: inline-block;
+            width: auto; min-width: 120px;
+            background: var(--success-soft); color: #166534;
+            border: 1px solid #bbf7d0; border-radius: 3px;
+            padding: 2px 6px; margin-left: 6px;
+            font-size: 14px; font-family: inherit;
+        }
+        .sc-suggestion:focus {
+            outline: none; border-color: var(--success);
+            box-shadow: 0 0 0 2px rgba(22,163,74,0.15);
+        }
         .sc-explain { font-size: 12px; color: var(--ink-mute); margin-top: 4px; text-transform: lowercase; }
     </style>
 
@@ -253,11 +265,13 @@
         // shows the modal, then submits (optionally after applying selected fixes).
         const pageForm = document.getElementById('page-form');
         let scSkipCheck = false;
+        let scSubmitter = null; // remember which button was clicked, so the redirect target is preserved
 
         pageForm.addEventListener('submit', (ev) => {
             hidden.value = quill.root.innerHTML;
             if (scSkipCheck) return; // already approved via the modal
             ev.preventDefault();
+            scSubmitter = ev.submitter || pageForm.querySelector('button[type=submit]');
             scOpen();
             scRun();
         });
@@ -290,7 +304,12 @@
         function scSkip() {
             scSkipCheck = true;
             scClose();
-            pageForm.requestSubmit();
+            // Replay the original submitter so save_and_preview etc. carry through.
+            if (scSubmitter && pageForm.contains(scSubmitter)) {
+                pageForm.requestSubmit(scSubmitter);
+            } else {
+                pageForm.requestSubmit();
+            }
         }
 
         function scEscape(s) {
@@ -319,13 +338,16 @@
                     return;
                 }
                 scList.innerHTML = scErrors.map(e => `
-                    <label class="sc-item">
+                    <div class="sc-item">
                         <input type="checkbox" data-err-id="${scEscape(e.id)}" checked>
                         <div class="sc-text">
-                            <div class="sc-diff"><del>${scEscape(e.original)}</del><ins>${scEscape(e.suggestion)}</ins></div>
+                            <div class="sc-diff">
+                                <del>${scEscape(e.original)}</del>
+                                <input type="text" class="sc-suggestion" data-err-id="${scEscape(e.id)}" value="${scEscape(e.suggestion)}">
+                            </div>
                             ${e.explanation ? `<div class="sc-explain">${scEscape(e.explanation)}</div>` : ''}
                         </div>
-                    </label>
+                    </div>
                 `).join('');
                 scList.style.display = 'block';
                 scApplyBtn.disabled = false;
@@ -342,19 +364,36 @@
                 Array.from(document.querySelectorAll('#sc-list input[type=checkbox]:checked'))
                     .map(cb => cb.dataset.errId)
             );
+            // Read possibly-edited suggestions back from the inputs.
+            const overrides = {};
+            document.querySelectorAll('#sc-list .sc-suggestion').forEach(inp => {
+                overrides[inp.dataset.errId] = inp.value;
+            });
+
             let html = quill.root.innerHTML;
             for (const e of scErrors) {
                 if (!selected.has(e.id)) continue;
-                // Replace first occurrence only — the LLM was told to keep substrings unique.
-                const idx = html.indexOf(e.original);
-                if (idx !== -1) {
-                    html = html.slice(0, idx) + e.suggestion + html.slice(idx + e.original.length);
+                const replacement = overrides[e.id] ?? e.suggestion;
+                if (replacement === e.original) continue;
+                // Try the original substring; if not present (HTML entities, whitespace),
+                // try an entity-encoded variant before giving up.
+                const variants = [e.original, scHtmlEntities(e.original)];
+                for (const needle of variants) {
+                    const idx = html.indexOf(needle);
+                    if (idx !== -1) {
+                        html = html.slice(0, idx) + replacement + html.slice(idx + needle.length);
+                        break;
+                    }
                 }
             }
             quill.clipboard.dangerouslyPasteHTML(html);
             hidden.value = quill.root.innerHTML;
             source.value = hidden.value;
             scSkip();
+        }
+
+        function scHtmlEntities(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         }
     </script>
 @endsection
