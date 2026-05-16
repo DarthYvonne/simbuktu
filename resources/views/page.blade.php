@@ -58,6 +58,38 @@
     .page-sidebar a.active { background: #3498db; color: #fff; font-weight: 500; }
     .page-content > *:first-child { margin-top: 0; }
 
+    /* Tables and aligned images inserted via the CMS editor. */
+    .page-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 18px 0;
+        font-size: 15px;
+    }
+    .page-content table td, .page-content table th {
+        border: 1px solid #d0d4dc;
+        padding: 10px 12px;
+        vertical-align: top;
+    }
+    .page-content table th {
+        background: #f4f6fa;
+        font-weight: 600;
+        text-align: left;
+    }
+    .page-content table tr:nth-child(even) td { background: #fafbfd; }
+    .page-content img.img-left   { float: left;  margin: 4px 18px 10px 0; max-width: 50%; }
+    .page-content img.img-right  { float: right; margin: 4px 0 10px 18px; max-width: 50%; }
+    .page-content img.img-center { display: block; margin: 16px auto; float: none; }
+    .page-content img { max-width: 100%; height: auto; }
+    .page-content p::after { content: ""; display: table; clear: both; }
+    @media (max-width: 768px) {
+        .page-content img.img-left,
+        .page-content img.img-right {
+            float: none; max-width: 100%; margin: 12px 0;
+        }
+        .page-content table { font-size: 14px; }
+        .page-content table td, .page-content table th { padding: 8px; }
+    }
+
     .kontakt-ok {
         background: #dcfce7; color: #166534;
         border: 1px solid #86efac; border-radius: 8px;

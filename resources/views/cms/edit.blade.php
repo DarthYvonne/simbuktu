@@ -226,30 +226,135 @@
         .ql-toolbar.ql-snow, .ql-container.ql-snow { border-color: #ccc; }
         .ql-toolbar.ql-snow { border-radius: 4px 4px 0 0; background: #fafafa; }
         .ql-editor { min-height: 320px; font-size: 15px; line-height: 1.6; }
+
+        /* Tables inside the editor and on rendered pages. */
+        .ql-editor table, .page-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        .ql-editor table td, .ql-editor table th,
+        .page-content table td, .page-content table th {
+            border: 1px solid #d0d4dc;
+            padding: 8px 10px;
+            vertical-align: top;
+            min-width: 40px;
+        }
+        .ql-editor table th, .page-content table th {
+            background: #f4f6fa;
+            font-weight: 600;
+            text-align: left;
+        }
+        .ql-editor table tr:nth-child(even) td,
+        .page-content table tr:nth-child(even) td { background: #fafbfd; }
+
+        /* Custom toolbar buttons (table + helpers). */
+        .ql-toolbar .ql-table-insert::before,
+        .ql-toolbar .ql-table-row::before,
+        .ql-toolbar .ql-table-col::before,
+        .ql-toolbar .ql-table-del-row::before,
+        .ql-toolbar .ql-table-del-col::before {
+            font-family: inherit; font-size: 12px; font-weight: 600;
+            color: #444; line-height: 1; display: inline-block;
+        }
+        .ql-toolbar .ql-table-insert::before     { content: 'Tabel'; }
+        .ql-toolbar .ql-table-row::before        { content: '+Række'; }
+        .ql-toolbar .ql-table-col::before        { content: '+Kolonne'; }
+        .ql-toolbar .ql-table-del-row::before    { content: '−Række'; color: #b91c1c; }
+        .ql-toolbar .ql-table-del-col::before    { content: '−Kolonne'; color: #b91c1c; }
+        .ql-toolbar button.ql-table-insert,
+        .ql-toolbar button.ql-table-row,
+        .ql-toolbar button.ql-table-col,
+        .ql-toolbar button.ql-table-del-row,
+        .ql-toolbar button.ql-table-del-col {
+            width: auto !important; padding: 0 8px !important;
+        }
+
+        /* Image alignment (output classes used on rendered pages too). */
+        .ql-editor img.img-left,   .page-content img.img-left   { float: left;  margin: 4px 16px 8px 0; }
+        .ql-editor img.img-right,  .page-content img.img-right  { float: right; margin: 4px 0 8px 16px; }
+        .ql-editor img.img-center, .page-content img.img-center { display: block; margin: 12px auto; float: none; }
+        .ql-editor img { cursor: pointer; }
+        .ql-editor img.cms-selected { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+        /* Floating image toolbar. */
+        #img-tools {
+            position: absolute; display: none; z-index: 100;
+            background: #1f2937; color: #fff; border-radius: 8px;
+            padding: 6px; gap: 4px; align-items: center;
+            box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4);
+            font-size: 12px;
+        }
+        #img-tools button {
+            background: transparent; color: #fff; border: 0;
+            padding: 5px 9px; border-radius: 4px; cursor: pointer; font-size: 12px;
+        }
+        #img-tools button:hover { background: #374151; }
+        #img-tools .sep { width: 1px; height: 18px; background: #4b5563; margin: 0 2px; }
+        #img-tools input[type=number] {
+            width: 60px; background: #111827; color: #fff;
+            border: 1px solid #4b5563; border-radius: 4px;
+            padding: 3px 5px; font-size: 12px;
+        }
+        #img-tools label { font-size: 11px; color: #9ca3af; }
     </style>
+
+    <div id="img-tools">
+        <button type="button" data-act="align-left"   title="Venstrejusteret">⇤</button>
+        <button type="button" data-act="align-center" title="Centreret">↔</button>
+        <button type="button" data-act="align-right"  title="Højrejusteret">⇥</button>
+        <button type="button" data-act="align-none"   title="Ingen justering">∅</button>
+        <span class="sep"></span>
+        <label>Bredde</label>
+        <input type="number" id="img-width" min="40" max="2000" step="10">
+        <span style="color:#9ca3af;">px</span>
+        <span class="sep"></span>
+        <button type="button" data-act="alt" title="Rediger alt-tekst">Alt</button>
+        <button type="button" data-act="delete" title="Slet billede" style="color:#fca5a5;">Slet</button>
+    </div>
+
     <script>
         const quill = new Quill('#editor', {
             theme: 'snow',
             placeholder: 'Skriv indhold her...',
             modules: {
-                toolbar: [
-                    [{ header: [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ color: [] }, { background: [] }],
-                    [{ list: 'ordered' }, { list: 'bullet' }],
-                    [{ align: [] }],
-                    ['blockquote', 'code-block'],
-                    ['link', 'image', 'video'],
-                    ['clean'],
-                ],
+                toolbar: {
+                    container: [
+                        [{ header: [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ color: [] }, { background: [] }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        [{ align: [] }],
+                        ['blockquote', 'code-block'],
+                        ['link', 'image', 'video'],
+                        ['table-insert', 'table-row', 'table-col', 'table-del-row', 'table-del-col'],
+                        ['clean'],
+                    ],
+                    handlers: {
+                        image: imageUploadHandler,
+                        'table-insert':  insertTable,
+                        'table-row':     () => modifyTable('add-row'),
+                        'table-col':     () => modifyTable('add-col'),
+                        'table-del-row': () => modifyTable('del-row'),
+                        'table-del-col': () => modifyTable('del-col'),
+                    },
+                },
             },
         });
 
-        const initial = document.getElementById('content-input').value;
-        if (initial) quill.clipboard.dangerouslyPasteHTML(initial);
-
         const hidden = document.getElementById('content-input');
         const source = document.getElementById('html-source');
+        const csrf   = document.querySelector('input[name=_token]').value;
+
+        // Load content directly into the editor DOM. Quill's clipboard
+        // matchers would normalize/strip tables, so we bypass them and let
+        // Quill pick up the structure via its MutationObserver + quill.update().
+        const initial = hidden.value;
+        if (initial) {
+            quill.root.innerHTML = initial;
+            quill.update('silent');
+        }
 
         quill.on('text-change', () => {
             const html = quill.root.innerHTML;
@@ -257,9 +362,227 @@
             source.value = html;
         });
 
+        function setEditorHTML(html) {
+            quill.root.innerHTML = html || '<p><br></p>';
+            quill.update('user');
+            hidden.value = quill.root.innerHTML;
+            source.value = hidden.value;
+        }
+
+        // ---- Image upload (replaces base64 default with disk upload + alt text) ----
+        function imageUploadHandler() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/jpeg,image/png,image/webp,image/gif';
+            input.onchange = async () => {
+                const file = input.files && input.files[0];
+                if (!file) return;
+                const fd = new FormData();
+                fd.append('image', file);
+                fd.append('_token', csrf);
+
+                let url;
+                try {
+                    const resp = await fetch('/cms/upload-image', { method: 'POST', body: fd });
+                    if (!resp.ok) {
+                        const err = await resp.json().catch(() => ({}));
+                        alert(err.error || ('Upload mislykkedes (HTTP '+resp.status+').'));
+                        return;
+                    }
+                    const json = await resp.json();
+                    url = json.url;
+                } catch (e) {
+                    alert('Upload mislykkedes: ' + e.message);
+                    return;
+                }
+
+                const alt = prompt('Alt-tekst (beskriv billedet for skærmlæsere — lad stå tom for dekorativt):', '') || '';
+                const range = quill.getSelection(true) || { index: quill.getLength() };
+                quill.insertEmbed(range.index, 'image', url, 'user');
+                quill.setSelection(range.index + 1, 0, 'silent');
+                if (alt) {
+                    // Quill inserts the <img> on the next tick; tag it then.
+                    setTimeout(() => {
+                        const img = quill.root.querySelector('img[src="'+CSS.escape(url)+'"]:not([data-alt-set])');
+                        if (img) { img.alt = alt; img.setAttribute('data-alt-set', '1'); hidden.value = quill.root.innerHTML; source.value = hidden.value; }
+                    }, 30);
+                }
+            };
+            input.click();
+        }
+
+        // ---- Tables: insert + add/remove row/col operating on cursor's table ----
+        function insertTable() {
+            const spec = prompt('Antal rækker × kolonner (fx 3x4):', '3x3');
+            if (!spec) return;
+            const m = spec.match(/^\s*(\d+)\s*[x×*]\s*(\d+)\s*$/i);
+            if (!m) { alert('Skriv fx "3x4".'); return; }
+            const rows = Math.min(40, Math.max(1, parseInt(m[1], 10)));
+            const cols = Math.min(20, Math.max(1, parseInt(m[2], 10)));
+            let html = '<table><thead><tr>';
+            for (let c = 0; c < cols; c++) html += '<th>Overskrift '+(c+1)+'</th>';
+            html += '</tr></thead><tbody>';
+            for (let r = 0; r < rows - 1; r++) {
+                html += '<tr>';
+                for (let c = 0; c < cols; c++) html += '<td>&nbsp;</td>';
+                html += '</tr>';
+            }
+            html += '</tbody></table><p><br></p>';
+
+            // Insert the table directly into the editor DOM so its structure
+            // is not normalized away by Quill's clipboard matchers.
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            const nodes = Array.from(wrapper.childNodes);
+
+            // Find which top-level block currently contains the cursor.
+            const sel = window.getSelection();
+            let anchor = sel && sel.rangeCount ? sel.getRangeAt(0).startContainer : null;
+            while (anchor && anchor.parentNode !== quill.root) anchor = anchor.parentNode;
+
+            if (anchor && anchor.parentNode === quill.root) {
+                for (const n of nodes) quill.root.insertBefore(n, anchor.nextSibling);
+            } else {
+                for (const n of nodes) quill.root.appendChild(n);
+            }
+            quill.update('user');
+            hidden.value = quill.root.innerHTML;
+            source.value = hidden.value;
+        }
+
+        function cellAtCursor() {
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return null;
+            let node = sel.getRangeAt(0).startContainer;
+            while (node && node !== quill.root) {
+                if (node.nodeType === 1 && (node.tagName === 'TD' || node.tagName === 'TH')) return node;
+                node = node.parentNode;
+            }
+            return null;
+        }
+
+        function modifyTable(action) {
+            const cell = cellAtCursor();
+            if (!cell) { alert('Placér markøren i en celle først.'); return; }
+            const row = cell.parentElement;
+            const table = cell.closest('table');
+            const cellIdx = Array.from(row.children).indexOf(cell);
+
+            if (action === 'add-row') {
+                const newRow = document.createElement('tr');
+                for (let i = 0; i < row.children.length; i++) {
+                    const td = document.createElement('td');
+                    td.innerHTML = '&nbsp;';
+                    newRow.appendChild(td);
+                }
+                row.parentNode.insertBefore(newRow, row.nextSibling);
+            } else if (action === 'del-row') {
+                if (table.querySelectorAll('tr').length <= 1) { alert('Kan ikke slette sidste række.'); return; }
+                row.remove();
+            } else if (action === 'add-col') {
+                table.querySelectorAll('tr').forEach(tr => {
+                    const isHead = tr.parentElement && tr.parentElement.tagName === 'THEAD';
+                    const newCell = document.createElement(isHead ? 'th' : 'td');
+                    newCell.innerHTML = isHead ? 'Overskrift' : '&nbsp;';
+                    const ref = tr.children[cellIdx];
+                    tr.insertBefore(newCell, ref ? ref.nextSibling : null);
+                });
+            } else if (action === 'del-col') {
+                const colCount = row.children.length;
+                if (colCount <= 1) { alert('Kan ikke slette sidste kolonne.'); return; }
+                table.querySelectorAll('tr').forEach(tr => {
+                    if (tr.children[cellIdx]) tr.children[cellIdx].remove();
+                });
+            }
+            hidden.value = quill.root.innerHTML;
+            source.value = hidden.value;
+        }
+
+        // ---- Image floating toolbar: click an image to resize/align/alt/delete ----
+        const imgTools  = document.getElementById('img-tools');
+        const imgWidth  = document.getElementById('img-width');
+        let selectedImg = null;
+
+        quill.root.addEventListener('click', (e) => {
+            if (e.target.tagName === 'IMG') {
+                selectImage(e.target);
+            } else {
+                deselectImage();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!selectedImg) return;
+            if (e.target === selectedImg) return;
+            if (imgTools.contains(e.target)) return;
+            if (e.target.closest('.ql-toolbar')) return;
+            deselectImage();
+        });
+
+        function selectImage(img) {
+            if (selectedImg) selectedImg.classList.remove('cms-selected');
+            selectedImg = img;
+            img.classList.add('cms-selected');
+            positionImgTools();
+            imgWidth.value = img.getBoundingClientRect().width|0;
+        }
+        function deselectImage() {
+            if (!selectedImg) return;
+            selectedImg.classList.remove('cms-selected');
+            selectedImg = null;
+            imgTools.style.display = 'none';
+        }
+        function positionImgTools() {
+            if (!selectedImg) return;
+            const r = selectedImg.getBoundingClientRect();
+            imgTools.style.display = 'flex';
+            imgTools.style.top  = (window.scrollY + r.top - imgTools.offsetHeight - 8) + 'px';
+            imgTools.style.left = (window.scrollX + r.left) + 'px';
+        }
+        window.addEventListener('scroll', positionImgTools, true);
+        window.addEventListener('resize', positionImgTools);
+
+        imgTools.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn || !selectedImg) return;
+            const act = btn.dataset.act;
+            if (act === 'align-left')   setImgAlign('img-left');
+            if (act === 'align-center') setImgAlign('img-center');
+            if (act === 'align-right')  setImgAlign('img-right');
+            if (act === 'align-none')   setImgAlign(null);
+            if (act === 'alt') {
+                const cur = selectedImg.alt || '';
+                const next = prompt('Alt-tekst:', cur);
+                if (next !== null) selectedImg.alt = next;
+            }
+            if (act === 'delete') {
+                const img = selectedImg;
+                deselectImage();
+                img.remove();
+            }
+            hidden.value = quill.root.innerHTML;
+            source.value = hidden.value;
+            if (selectedImg) positionImgTools();
+        });
+
+        function setImgAlign(cls) {
+            if (!selectedImg) return;
+            selectedImg.classList.remove('img-left', 'img-center', 'img-right');
+            if (cls) selectedImg.classList.add(cls);
+        }
+
+        imgWidth.addEventListener('input', () => {
+            if (!selectedImg) return;
+            const w = Math.max(40, Math.min(2000, parseInt(imgWidth.value || '0', 10) || 0));
+            selectedImg.style.width  = w + 'px';
+            selectedImg.style.height = 'auto';
+            hidden.value = quill.root.innerHTML;
+            source.value = hidden.value;
+            positionImgTools();
+        });
+
         function syncFromSource(html) {
-            hidden.value = html;
-            quill.clipboard.dangerouslyPasteHTML(html);
+            setEditorHTML(html);
         }
 
         // Spellcheck-aware submit. Intercepts the page form, runs the LLM check,
@@ -389,9 +712,7 @@
                     }
                 }
             }
-            quill.clipboard.dangerouslyPasteHTML(html);
-            hidden.value = quill.root.innerHTML;
-            source.value = hidden.value;
+            setEditorHTML(html);
             scSkip();
         }
 

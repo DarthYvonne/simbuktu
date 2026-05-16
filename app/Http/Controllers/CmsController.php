@@ -284,6 +284,39 @@ class CmsController extends Controller
     }
 
     /**
+     * Upload an inline image used inside page content. Stored under
+     * public/img/uploads/cms-content. Returns the relative URL so the editor
+     * can insert it as a normal <img src="...">, instead of bloating
+     * cms_pages.content with base64 data URIs.
+     */
+    public function uploadImage(Request $request)
+    {
+        if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_OK && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $msg = match ($_FILES['image']['error']) {
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Billedet er for stort. Brug et mindre billede.',
+                UPLOAD_ERR_PARTIAL    => 'Upload blev afbrudt midt i. Prøv igen.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Server-fejl: ingen midlertidig mappe.',
+                UPLOAD_ERR_CANT_WRITE => 'Server-fejl: kan ikke skrive billedet.',
+                default               => 'Upload-fejl (kode '.$_FILES['image']['error'].').',
+            };
+            return response()->json(['error' => $msg], 422);
+        }
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp,gif|max:8192',
+        ]);
+
+        $file = $request->file('image');
+        $ext  = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $name = 'img-'.now()->format('YmdHis').'-'.Str::random(6).'.'.$ext;
+        $dest = public_path('img/uploads/cms-content');
+        if (!is_dir($dest)) mkdir($dest, 0755, true);
+        $file->move($dest, $name);
+
+        return response()->json(['url' => '/img/uploads/cms-content/'.$name]);
+    }
+
+    /**
      * Spell- and grammar-check the supplied content via Gemini Flash Lite.
      * Returns errors as plain-text substring → suggestion pairs that the
      * frontend can apply as direct string replacements in the HTML.
