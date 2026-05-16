@@ -54,6 +54,8 @@
 .dp-modal.open { display: flex; }
 .dp-modal .panel { background: #fff; border-radius: 12px; padding: 22px; width: 100%; max-width: 520px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); max-height: 80vh; display: flex; flex-direction: column; }
 .dp-modal h2 { font-size: 17px; margin: 0 0 14px; }
+.dp-modal .search { padding: 9px 12px; border: 1px solid #dadde1; border-radius: 6px; font-size: 14px; font-family: inherit; margin-bottom: 10px; }
+.dp-modal .search:focus { outline: none; border-color: #1877f2; box-shadow: 0 0 0 2px #e7f3ff; }
 .dp-modal .list { overflow-y: auto; flex: 1; min-height: 0; max-height: 55vh; }
 .dp-modal .cat-h { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; padding: 8px 4px 6px; }
 .dp-modal .item { padding: 10px 12px; border: 1px solid #dadde1; border-radius: 6px; margin-bottom: 6px; cursor: pointer; background: #fff; }
@@ -131,6 +133,8 @@
 <div class="dp-modal" id="dim-picker">
   <div class="panel">
     <h2>Tilføj dimension</h2>
+    <input type="text" class="search" id="dim-picker-search" placeholder="Søg dimensioner..."
+           oninput="renderDimPickerList()" autocomplete="off">
     <div class="list" id="dim-picker-list"></div>
     <div class="actions">
       <button type="button" class="btn btn-secondary" onclick="closeDimPicker()">Luk</button>
@@ -232,29 +236,41 @@ function removeDim(id) {
   renderDimRows();
 }
 
-function openDimPicker() {
+function renderDimPickerList() {
   const list = document.getElementById('dim-picker-list');
   if (!ALL_DIMS.length) {
     list.innerHTML = '<div class="empty">Personligheden har ingen dimensioner endnu.</div>';
-  } else {
-    let html = '';
-    // Show every dimension; already-added ones are marked, not hidden.
-    for (const type of ['personality', 'demographic']) {
-      const items = ALL_DIMS.filter(d => (d.type || 'personality') === type);
-      if (!items.length) continue;
-      html += `<div class="cat-h">${DIM_TYPE_LABEL[type] || type}</div>`;
-      html += items.map(d => {
-        const added = d.id in picked;
-        return `
+    return;
+  }
+  const q = (document.getElementById('dim-picker-search').value || '').toLowerCase().trim();
+  const matched = ALL_DIMS.filter(d => !q || (d.name || '').toLowerCase().includes(q));
+  if (!matched.length) {
+    list.innerHTML = '<div class="empty">Ingen dimensioner matcher søgningen.</div>';
+    return;
+  }
+  let html = '';
+  // Show every matching dimension; already-added ones are marked, not hidden.
+  for (const type of ['personality', 'demographic']) {
+    const items = matched.filter(d => (d.type || 'personality') === type);
+    if (!items.length) continue;
+    html += `<div class="cat-h">${DIM_TYPE_LABEL[type] || type}</div>`;
+    html += items.map(d => {
+      const added = d.id in picked;
+      return `
         <div class="item ${added ? 'added' : ''}" ${added ? '' : `onclick="addDim('${escapeHtml(d.id)}')"`}>
           <div class="n">${escapeHtml(d.name)}${added ? '<span class="added-tag">✓ tilføjet</span>' : ''}</div>
           <div class="c">${d.facets} facetter</div>
         </div>`;
-      }).join('');
-    }
-    list.innerHTML = html;
+    }).join('');
   }
+  list.innerHTML = html;
+}
+
+function openDimPicker() {
+  document.getElementById('dim-picker-search').value = '';
+  renderDimPickerList();
   document.getElementById('dim-picker').classList.add('open');
+  setTimeout(() => document.getElementById('dim-picker-search').focus(), 50);
 }
 
 function closeDimPicker() {
@@ -264,7 +280,7 @@ function closeDimPicker() {
 function addDim(id) {
   if (!(id in picked)) picked[id] = DEFAULT_WEIGHT;
   renderDimRows();
-  openDimPicker(); // keep modal open + refresh "✓ tilføjet" marks so several can be added
+  renderDimPickerList(); // refresh "✓ tilføjet" marks, keep modal + search query
 }
 
 document.getElementById('dim-picker').addEventListener('click', e => {
