@@ -26,26 +26,44 @@ class SocialGraphController extends Controller
         $progress     = $runId ? Cache::get("graph:run:{$runId}") : null;
         $stats        = $runId ? Cache::get("graph:stats:{$runId}") : null;
 
+        // Blueprint dimensions feed the dimension picker on the page.
+        $dimensions = collect(optional($population->blueprint)->parameters ?? [])
+            ->filter(fn ($p) => !empty($p['id']))
+            ->map(fn ($p) => [
+                'id'     => $p['id'],
+                'name'   => $p['name'] ?? 'Unavngivet',
+                'type'   => $p['type'] ?? 'personality',
+                'tier'   => $p['tier'] ?? 'primary',
+                'facets' => count($p['facets'] ?? []),
+            ])->values()->all();
+        $graphSettings = $population->graph_settings ?? [];
+
         return view('admin.personas.graph_generate', compact(
-            'population', 'edgeCount', 'personaCount', 'progress', 'stats'
+            'population', 'edgeCount', 'personaCount', 'progress', 'stats',
+            'dimensions', 'graphSettings'
         ));
     }
 
     public function build(Request $request, Population $population)
     {
+        // dimension_weights[<dimension_id>] = relative weight; drop unchecked/zero rows.
+        $weights = collect($request->input('dimension_weights', []))
+            ->map(fn ($w) => (float) $w)
+            ->filter(fn ($w) => $w > 0)
+            ->all();
+
         $params = [
             'base_friend_count'  => (int)   $request->input('base_friend_count', 80),
             'min_friends'        => (int)   $request->input('min_friends', 15),
             'max_friends'        => (int)   $request->input('max_friends', 200),
             'bridge_percentage'  => (float) $request->input('bridge_percentage', 3),
-            'political_weight'   => (float) $request->input('political_weight', 0.08),
-            'subculture_weight'  => (float) $request->input('subculture_weight', 0.25),
-            'personality_weight' => (float) $request->input('personality_weight', 0.25),
-            'demographics_weight'=> (float) $request->input('demographics_weight', 0.30),
-            'heritage_weight'    => (float) $request->input('heritage_weight', 0.07),
             'bridge_bonus'       => (float) $request->input('bridge_bonus', 0.10),
             'noise_percentage'   => (float) $request->input('noise_percentage', 7),
+            'dimension_weights'  => $weights,
         ];
+
+        // Persist so a rebuild — and addPersonaToGraph() for new personas — reuse it.
+        $population->update(['graph_settings' => $params]);
 
         $runId = (string) Str::uuid();
         session(['graph_run_id' => $runId]);

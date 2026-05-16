@@ -1,7 +1,10 @@
 @extends('layouts.app')
 @section('content')
 
-@php $base = '/simulation/admin/populations/'.$population->id; @endphp
+@php
+  $base = '/simulation/admin/populations/'.$population->id;
+  $gs = $graphSettings ?? [];
+@endphp
 <div class="view-header">
   <h1>
     <a href="{{ url('/simulation/admin/populations') }}" style="color:#1877f2;"><i class="fa-solid fa-arrow-left"></i></a>
@@ -28,65 +31,87 @@
   </div>
 </div>
 
+<style>
+.dim-row { display: grid; grid-template-columns: 280px 1fr 60px 32px; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f2f5; }
+.dim-row:last-child { border-bottom: none; }
+.dim-row .dim-meta { min-width: 0; }
+.dim-row .dim-name { font-size: 13px; font-weight: 600; color: #1c1e21; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dim-badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; padding: 1px 6px; border-radius: 4px; margin-right: 4px; }
+.dim-badge.personality { background: #e7f3ff; color: #1877f2; }
+.dim-badge.demographic { background: #fef3c7; color: #92400e; }
+.dim-wval { font-family: monospace; color: #1877f2; font-weight: 600; text-align: right; }
+.dim-remove { background: none; border: 1px solid #dadde1; border-radius: 6px; color: #65676b; cursor: pointer; padding: 4px 7px; }
+.dim-remove:hover { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.dim-empty { font-size: 13px; color: #65676b; font-style: italic; padding: 14px 0; }
+.dim-warn { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 13px; padding: 10px 12px; border-radius: 8px; margin-top: 10px; }
+.dp-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+.dp-modal.open { display: flex; }
+.dp-modal .panel { background: #fff; border-radius: 12px; padding: 22px; width: 100%; max-width: 520px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); max-height: 80vh; display: flex; flex-direction: column; }
+.dp-modal h2 { font-size: 17px; margin: 0 0 14px; }
+.dp-modal .list { overflow-y: auto; flex: 1; min-height: 0; max-height: 55vh; }
+.dp-modal .cat-h { font-size: 11px; font-weight: 700; color: #65676b; text-transform: uppercase; letter-spacing: 0.4px; padding: 8px 4px 6px; }
+.dp-modal .item { padding: 10px 12px; border: 1px solid #dadde1; border-radius: 6px; margin-bottom: 6px; cursor: pointer; background: #fff; }
+.dp-modal .item:hover { background: #f0f7ff; border-color: #1877f2; }
+.dp-modal .item .n { font-weight: 600; font-size: 13px; color: #1c1e21; }
+.dp-modal .item .c { font-size: 11px; color: #65676b; margin-top: 2px; }
+.dp-modal .empty { text-align: center; padding: 30px; color: #65676b; font-size: 13px; }
+.dp-modal .actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+</style>
+
 <form method="POST" action="{{ url("$base/personas/graph") }}">
   @csrf
 
   <div class="card">
-    <h3 style="margin-bottom: 8px;">Vægte i similaritets-funktionen</h3>
-    <p style="color: #65676b; font-size: 13px; margin-bottom: 10px;">Summen bør give ~1.0. Disse vægte bestemmer hvor meget hver faktor betyder for om to personer bliver venner.</p>
-    @php
-    $sliders = [
-      ['demographics_weight', 'Demografi (alder, uddannelse, region)', 0, 1, 0.01, 0.30],
-      ['subculture_weight', 'Subkultur-overlap', 0, 1, 0.01, 0.25],
-      ['personality_weight', 'Personlighed (A, E, O-homofili)', 0, 1, 0.01, 0.25],
-      ['heritage_weight', 'Herkomst', 0, 1, 0.01, 0.07],
-      ['political_weight', 'Politisk enighed (bevidst svag)', 0, 1, 0.01, 0.08],
-    ];
-    @endphp
-    @foreach ($sliders as [$key, $label, $min, $max, $step, $default])
-      <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f2f5;">
-        <label style="font-size: 13px;"><strong>{{ $label }}</strong></label>
-        <input type="range" name="{{ $key }}" min="{{ $min }}" max="{{ $max }}" step="{{ $step }}" value="{{ $default }}" oninput="this.nextElementSibling.textContent = (+this.value).toFixed(2)">
-        <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ number_format($default, 2) }}</span>
-      </div>
-    @endforeach
+    <h3 style="margin-bottom: 8px;">Dimensioner i netværks-matchningen</h3>
+    <p style="color: #65676b; font-size: 13px; margin-bottom: 12px;">
+      Vælg hvilke dimensioner fra personligheden der afgør hvem der bliver venner. Sliderne er
+      <strong>relative vægte</strong> — kun forholdet mellem dem betyder noget. Demografi-dimensioner med
+      tal-værdier (fx alder) matches på afstand; resten matches på om samme facet er valgt.
+    </p>
+    <div id="dim-rows"></div>
+    <div id="dim-warn" class="dim-warn" style="display:none;">
+      Ingen dimensioner valgt — grafen bygges uden homofili (kun broer og støj).
+    </div>
+    <button type="button" class="btn btn-secondary" style="margin-top: 12px;" onclick="openDimPicker()">
+      <i class="fa-solid fa-plus"></i> Tilføj dimension
+    </button>
   </div>
 
   <div class="card">
     <h3 style="margin-bottom: 8px;">Broer og støj</h3>
     <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0;">
       <label style="font-size: 13px;"><strong>Bro-personas (%)</strong><br><small style="color:#65676b;">% af personerne der er "broer" mellem klynger</small></label>
-      <input type="range" name="bridge_percentage" min="0" max="10" step="0.5" value="3" oninput="this.nextElementSibling.textContent = this.value + '%'">
-      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">3%</span>
+      <input type="range" name="bridge_percentage" min="0" max="10" step="0.5" value="{{ $gs['bridge_percentage'] ?? 3 }}" oninput="this.nextElementSibling.textContent = this.value + '%'">
+      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ ($gs['bridge_percentage'] ?? 3) }}%</span>
     </div>
     <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0;">
       <label style="font-size: 13px;"><strong>Bro-bonus</strong><br><small style="color:#65676b;">ekstra similaritet hvis en af parterne er bro</small></label>
-      <input type="range" name="bridge_bonus" min="0" max="0.3" step="0.01" value="0.10" oninput="this.nextElementSibling.textContent = (+this.value).toFixed(2)">
-      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">0.10</span>
+      <input type="range" name="bridge_bonus" min="0" max="0.3" step="0.01" value="{{ $gs['bridge_bonus'] ?? 0.10 }}" oninput="this.nextElementSibling.textContent = (+this.value).toFixed(2)">
+      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ number_format($gs['bridge_bonus'] ?? 0.10, 2) }}</span>
     </div>
     <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0;">
       <label style="font-size: 13px;"><strong>Støj (%)</strong><br><small style="color:#65676b;">andel tilfældige venskaber (fjerne bekendtskaber)</small></label>
-      <input type="range" name="noise_percentage" min="0" max="20" step="1" value="7" oninput="this.nextElementSibling.textContent = this.value + '%'">
-      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">7%</span>
+      <input type="range" name="noise_percentage" min="0" max="20" step="1" value="{{ $gs['noise_percentage'] ?? 7 }}" oninput="this.nextElementSibling.textContent = this.value + '%'">
+      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ ($gs['noise_percentage'] ?? 7) }}%</span>
     </div>
   </div>
 
   <div class="card">
     <h3 style="margin-bottom: 8px;">Antal venner per persona</h3>
     <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0;">
-      <label style="font-size: 13px;"><strong>Basis-antal</strong><br><small style="color:#65676b;">gennemsnittet (Big Five justerer op/ned)</small></label>
-      <input type="range" name="base_friend_count" min="30" max="200" step="5" value="80" oninput="this.nextElementSibling.textContent = this.value">
-      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">80</span>
+      <label style="font-size: 13px;"><strong>Basis-antal</strong><br><small style="color:#65676b;">gennemsnittet (±15 tilfældig variation per persona)</small></label>
+      <input type="range" name="base_friend_count" min="30" max="200" step="5" value="{{ $gs['base_friend_count'] ?? 80 }}" oninput="this.nextElementSibling.textContent = this.value">
+      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ $gs['base_friend_count'] ?? 80 }}</span>
     </div>
     <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0;">
       <label style="font-size: 13px;"><strong>Min</strong></label>
-      <input type="range" name="min_friends" min="5" max="50" step="1" value="15" oninput="this.nextElementSibling.textContent = this.value">
-      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">15</span>
+      <input type="range" name="min_friends" min="5" max="50" step="1" value="{{ $gs['min_friends'] ?? 15 }}" oninput="this.nextElementSibling.textContent = this.value">
+      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ $gs['min_friends'] ?? 15 }}</span>
     </div>
     <div style="display: grid; grid-template-columns: 280px 1fr 70px; gap: 14px; align-items: center; padding: 6px 0;">
       <label style="font-size: 13px;"><strong>Max</strong></label>
-      <input type="range" name="max_friends" min="50" max="500" step="10" value="200" oninput="this.nextElementSibling.textContent = this.value">
-      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">200</span>
+      <input type="range" name="max_friends" min="50" max="500" step="10" value="{{ $gs['max_friends'] ?? 200 }}" oninput="this.nextElementSibling.textContent = this.value">
+      <span style="font-family: monospace; color: #1877f2; font-weight: 600; text-align: right;">{{ $gs['max_friends'] ?? 200 }}</span>
     </div>
   </div>
 
@@ -94,6 +119,17 @@
     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-play"></i> Byg graf i baggrunden</button>
   </div>
 </form>
+
+{{-- Dimension picker modal --}}
+<div class="dp-modal" id="dim-picker">
+  <div class="panel">
+    <h2>Tilføj dimension</h2>
+    <div class="list" id="dim-picker-list"></div>
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" onclick="closeDimPicker()">Luk</button>
+    </div>
+  </div>
+</div>
 
 @if ($progress)
 <div class="card" id="progressCard" style="background: #e7f3ff; border: 1px solid #b6d8fb;">
@@ -116,6 +152,106 @@
 @endif
 
 <script>
+// ---- Dimension picker -------------------------------------------------------
+const ALL_DIMS = @json($dimensions);
+const SAVED_WEIGHTS = @json((object) ($gs['dimension_weights'] ?? []));
+const DIM_TYPE_LABEL = { personality: 'Personlighed', demographic: 'Demografi' };
+
+// picked: id -> weight. Restore saved selection, else default to all personality dims.
+let picked = {};
+const savedIds = Object.keys(SAVED_WEIGHTS);
+if (savedIds.length) {
+  for (const id of savedIds) {
+    if (ALL_DIMS.some(d => d.id === id)) picked[id] = Number(SAVED_WEIGHTS[id]) || 0;
+  }
+} else {
+  ALL_DIMS.filter(d => d.type === 'personality').forEach(d => { picked[d.id] = 50; });
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderDimRows() {
+  const wrap = document.getElementById('dim-rows');
+  const ids = Object.keys(picked);
+  document.getElementById('dim-warn').style.display = ids.length ? 'none' : 'block';
+  if (!ids.length) {
+    wrap.innerHTML = '<div class="dim-empty">Ingen dimensioner valgt endnu. Klik "Tilføj dimension".</div>';
+    return;
+  }
+  wrap.innerHTML = ids.map(id => {
+    const dim = ALL_DIMS.find(d => d.id === id);
+    if (!dim) return '';
+    const w = picked[id];
+    const type = dim.type || 'personality';
+    return `
+      <div class="dim-row" data-id="${escapeHtml(id)}">
+        <div class="dim-meta">
+          <div class="dim-name" title="${escapeHtml(dim.name)}">${escapeHtml(dim.name)}</div>
+          <span class="dim-badge ${type}">${DIM_TYPE_LABEL[type] || type}</span>
+          <span style="font-size:11px;color:#65676b;">${dim.facets} facetter</span>
+        </div>
+        <input type="range" name="dimension_weights[${escapeHtml(id)}]" min="0" max="100" step="1" value="${w}"
+               oninput="onWeightInput('${escapeHtml(id)}', this.value)">
+        <span class="dim-wval">${w}</span>
+        <button type="button" class="dim-remove" title="Fjern" onclick="removeDim('${escapeHtml(id)}')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>`;
+  }).join('');
+}
+
+function onWeightInput(id, value) {
+  picked[id] = Number(value) || 0;
+  const row = document.querySelector(`.dim-row[data-id="${CSS.escape(id)}"] .dim-wval`);
+  if (row) row.textContent = picked[id];
+}
+
+function removeDim(id) {
+  delete picked[id];
+  renderDimRows();
+}
+
+function openDimPicker() {
+  const list = document.getElementById('dim-picker-list');
+  const available = ALL_DIMS.filter(d => !(d.id in picked));
+  if (!available.length) {
+    list.innerHTML = '<div class="empty">Alle dimensioner er allerede tilføjet.</div>';
+  } else {
+    let html = '';
+    for (const type of ['personality', 'demographic']) {
+      const items = available.filter(d => (d.type || 'personality') === type);
+      if (!items.length) continue;
+      html += `<div class="cat-h">${DIM_TYPE_LABEL[type] || type}</div>`;
+      html += items.map(d => `
+        <div class="item" onclick="addDim('${escapeHtml(d.id)}')">
+          <div class="n">${escapeHtml(d.name)}</div>
+          <div class="c">${d.facets} facetter</div>
+        </div>`).join('');
+    }
+    list.innerHTML = html;
+  }
+  document.getElementById('dim-picker').classList.add('open');
+}
+
+function closeDimPicker() {
+  document.getElementById('dim-picker').classList.remove('open');
+}
+
+function addDim(id) {
+  if (!(id in picked)) picked[id] = 50;
+  closeDimPicker();
+  renderDimRows();
+}
+
+document.getElementById('dim-picker').addEventListener('click', e => {
+  if (e.target.id === 'dim-picker') closeDimPicker();
+});
+
+renderDimRows();
+
+// ---- Build progress polling -------------------------------------------------
 let sawActiveBuild = false; // only reload if we actually watched a build progress
 async function pollGraph() {
   try {

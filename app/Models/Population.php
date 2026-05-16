@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Population extends Model
 {
     protected $guarded = [];
-    protected $casts = ['config_overrides' => 'array'];
+    protected $casts = [
+        'config_overrides' => 'array',
+        'graph_settings'   => 'array',
+    ];
 
     public function creator(): BelongsTo
     {

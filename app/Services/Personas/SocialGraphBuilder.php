@@ -19,21 +19,24 @@ class SocialGraphBuilder
     {
         $params = array_merge([
             'base_friend_count' => 80,
-            'min_friends' => 15,
-            'max_friends' => 200,
+            'min_friends'       => 15,
+            'max_friends'       => 200,
             'bridge_percentage' => 3,       // % of personas tagged as bridges
-            'political_weight' => 0.08,     // weak
-            'subculture_weight' => 0.25,
-            'personality_weight' => 0.25,
-            'demographics_weight' => 0.30,
-            'heritage_weight' => 0.07,
-            'bridge_bonus' => 0.10,         // added to similarity if either end is a bridge
-            'noise_percentage' => 7,        // % of edges that are random
+            'bridge_bonus'      => 0.10,    // added to similarity if either end is a bridge
+            'noise_percentage'  => 7,       // % of edges that are random
+            'dimension_weights' => [],      // [blueprint dimension_id => relative weight]
         ], $params);
 
         $personas = $this->repo->all();
         $n = count($personas);
         if ($n < 2) return ['error' => 'Need at least 2 personas', 'edges' => 0];
+
+        // No dimensions picked → fall back to equal weight across every personality
+        // dimension, so a graph still forms instead of every pair scoring 0.
+        if (empty($params['dimension_weights'])) {
+            $params['dimension_weights'] = $this->defaultWeights($personas);
+        }
+        $dimContext = $this->buildDimContext($personas, $params['dimension_weights']);
 
         $setProgress = fn (string $phase, int $done, int $total) => $progressKey
             ? Cache::put($progressKey, ['phase' => $phase, 'done' => $done, 'total' => $total], 3600)
@@ -70,7 +73,7 @@ class SocialGraphBuilder
         for ($i = 0; $i < $n; $i++) {
             for ($j = $i + 1; $j < $n; $j++) {
                 $a = $personas[$i]; $b = $personas[$j];
-                $sim = $this->similarity($a, $b, $params);
+                $sim = $this->similarity($a, $b, $dimContext);
                 if ($bridges[$a['id']] || $bridges[$b['id']]) $sim += $params['bridge_bonus'];
                 $pairs[] = [$a['id'], $b['id'], min(1.0, $sim)];
                 $computed++;
@@ -149,19 +152,22 @@ class SocialGraphBuilder
         ];
     }
 
-    public function addPersonaToGraph(array $persona): int
+    public function addPersonaToGraph(array $persona, array $params = []): int
     {
-        $params = [
+        $params = array_merge([
             'base_friend_count' => 80, 'min_friends' => 15, 'max_friends' => 200,
-            'bridge_percentage' => 3,
-            'political_weight' => 0.08, 'subculture_weight' => 0.25,
-            'personality_weight' => 0.25, 'demographics_weight' => 0.30,
-            'heritage_weight' => 0.07, 'bridge_bonus' => 0.10,
-        ];
+            'bridge_percentage' => 3, 'bridge_bonus' => 0.10,
+            'dimension_weights' => [],
+        ], $params);
         // Single load — reused for both the candidate pool and the bridge threshold calc.
         $allPersonas = $this->repo->all();
         $others = array_filter($allPersonas, fn ($p) => $p['id'] !== $persona['id']);
         if (empty($others)) return 0;
+
+        if (empty($params['dimension_weights'])) {
+            $params['dimension_weights'] = $this->defaultWeights($allPersonas);
+        }
+        $dimContext = $this->buildDimContext($allPersonas, $params['dimension_weights']);
 
         $target = $this->targetFriendCount($persona, $params);
         $bridgeThreshold = $this->bridgeThreshold($allPersonas, $params['bridge_percentage']);
@@ -169,7 +175,7 @@ class SocialGraphBuilder
 
         $scored = [];
         foreach ($others as $o) {
-            $sim = $this->similarity($persona, $o, $params);
+            $sim = $this->similarity($persona, $o, $dimContext);
             if ($isBridge || $this->isBridge($o, $bridgeThreshold)) $sim += $params['bridge_bonus'];
             $scored[] = [$o, min(1.0, $sim)];
         }
@@ -222,46 +228,101 @@ class SocialGraphBuilder
         return $this->bridgeScore($p) >= $threshold;
     }
 
-    private function similarity(array $a, array $b, array $params): float
+    /**
+     * Weighted-average similarity over the picked blueprint dimensions.
+     *
+     * Each dimension contributes a 0..1 score, multiplied by its relative
+     * weight; the sum is normalised by the total weight, so only the ratio
+     * between weights matters. Per dimension:
+     *   - numeric (demographic with numeric sampled values) → distance on the
+     *     population's observed range, so adjacent values count as close;
+     *   - everything else → exact facet match (1 if same facet, else 0).
+     */
+    private function similarity(array $a, array $b, array $dimContext): float
     {
-        // Demographics
-        $ageA = (int) ($a['demographics']['age'] ?? 0);
-        $ageB = (int) ($b['demographics']['age'] ?? 0);
-        $ageSim = 1 - min(abs($ageA - $ageB) / 30, 1);
-        $eduMap = ['folkeskole' => 1, 'gymnasial' => 2, 'erhvervsuddannelse' => 2, 'kort videregående' => 3, 'mellemlang videregående' => 4, 'lang videregående' => 5];
-        $eA = $eduMap[$a['demographics']['education'] ?? ''] ?? 2;
-        $eB = $eduMap[$b['demographics']['education'] ?? ''] ?? 2;
-        $eduSim = 1 - abs($eA - $eB) / 4;
-        $regionSim = ($a['demographics']['region'] ?? null) === ($b['demographics']['region'] ?? null) ? 1 : 0;
-        $demographics = ($ageSim * 0.5 + $eduSim * 0.3 + $regionSim * 0.2);
-
-        // Personality similarity — share of dimensions where the same facet was sampled.
         $aDims = $this->dimMap($a);
         $bDims = $this->dimMap($b);
-        $shared = 0; $compared = 0;
-        foreach ($aDims as $name => $facet) {
-            if (isset($bDims[$name])) {
-                $compared++;
-                if ($facet === $bDims[$name]) $shared++;
+        $sum = 0.0; $total = 0.0;
+        foreach ($dimContext as $dimId => $ctx) {
+            $da = $aDims[$dimId] ?? null;
+            $db = $bDims[$dimId] ?? null;
+            if ($da === null || $db === null) continue;
+
+            if ($ctx['numeric']) {
+                $range = $ctx['max'] - $ctx['min'];
+                $score = $range > 0
+                    ? 1 - min(abs((float) $da['value'] - (float) $db['value']) / $range, 1)
+                    : 1.0;
+            } else {
+                $fa = $da['facet_id'] ?? ($da['facet'] ?? '');
+                $fb = $db['facet_id'] ?? ($db['facet'] ?? '');
+                $score = ($fa !== '' && $fa === $fb) ? 1.0 : 0.0;
             }
+            $sum   += $score * $ctx['weight'];
+            $total += $ctx['weight'];
         }
-        $personalitySim = $compared > 0 ? $shared / $compared : 0.5;
-
-        // Heritage
-        $heritageSim = ($a['demographics']['heritage'] ?? null) === ($b['demographics']['heritage'] ?? null) ? 1 : 0.3;
-
-        return $demographics * $params['demographics_weight']
-            + $personalitySim * ($params['personality_weight'] + ($params['subculture_weight'] ?? 0) + ($params['political_weight'] ?? 0))
-            + $heritageSim * $params['heritage_weight'];
+        return $total > 0 ? $sum / $total : 0.0;
     }
 
+    /** Resolved dimensions of a persona, keyed by blueprint dimension id. */
     private function dimMap(array $p): array
     {
         $out = [];
         foreach ($p['dimensions'] ?? [] as $d) {
-            if (!empty($d['dimension'])) $out[$d['dimension']] = $d['facet'] ?? '';
+            $key = $d['dimension_id'] ?? ($d['dimension'] ?? null);
+            if ($key !== null) $out[(string) $key] = $d;
         }
         return $out;
+    }
+
+    /**
+     * Per-dimension scoring context for the picked weights: resolves whether a
+     * dimension's sampled values are numeric and, if so, the population's range.
+     *
+     * @param  array  $weights  [dimension_id => relative weight]
+     */
+    private function buildDimContext(array $personas, array $weights): array
+    {
+        $ctx = [];
+        foreach ($weights as $dimId => $weight) {
+            $weight = (float) $weight;
+            if ($weight <= 0) continue;
+            $dimId  = (string) $dimId;
+
+            $values = [];
+            $seen   = 0;
+            foreach ($personas as $p) {
+                $d = $this->dimMap($p)[$dimId] ?? null;
+                if ($d === null) continue;
+                $seen++;
+                if (isset($d['value']) && is_numeric($d['value'])) {
+                    $values[] = (float) $d['value'];
+                }
+            }
+            // Numeric only if every persona that has the dimension sampled a number.
+            $numeric = $seen > 0 && count($values) === $seen;
+            $ctx[$dimId] = [
+                'weight'  => $weight,
+                'numeric' => $numeric,
+                'min'     => $numeric ? min($values) : 0.0,
+                'max'     => $numeric ? max($values) : 0.0,
+            ];
+        }
+        return $ctx;
+    }
+
+    /** Equal weight on every personality-typed dimension — used when nothing is picked. */
+    private function defaultWeights(array $personas): array
+    {
+        $weights = [];
+        foreach ($personas as $p) {
+            foreach ($p['dimensions'] ?? [] as $d) {
+                if (($d['type'] ?? 'personality') !== 'personality') continue;
+                $id = $d['dimension_id'] ?? ($d['dimension'] ?? null);
+                if ($id !== null) $weights[(string) $id] = 1.0;
+            }
+        }
+        return $weights;
     }
 
     private function acceptsRequest(array $self, array $other, float $similarity, int $remaining, int $target): bool
