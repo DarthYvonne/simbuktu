@@ -43,7 +43,6 @@
 .dim-remove { background: none; border: 1px solid #dadde1; border-radius: 6px; color: #65676b; cursor: pointer; padding: 4px 7px; }
 .dim-remove:hover { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
 .dim-empty { font-size: 13px; color: #65676b; font-style: italic; padding: 14px 0; }
-.dim-warn { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 13px; padding: 10px 12px; border-radius: 8px; margin-top: 10px; }
 .dim-sum { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 10px 12px; background: #f7f8fa; border-radius: 8px; font-size: 13px; color: #65676b; }
 .dim-sum strong { color: #1c1e21; font-family: monospace; font-size: 14px; }
 .dim-sum .note { font-weight: 400; color: #65676b; }
@@ -80,9 +79,6 @@
     </p>
     <div id="dim-rows"></div>
     <div id="dim-sum" class="dim-sum"></div>
-    <div id="dim-warn" class="dim-warn" style="display:none;">
-      Ingen dimensioner valgt — grafen bygges uden homofili (kun broer og støj).
-    </div>
     <button type="button" class="btn btn-secondary" style="margin-top: 12px;" onclick="openDimPicker()">
       <i class="fa-solid fa-plus"></i> Tilføj dimension
     </button>
@@ -196,7 +192,6 @@ function updateSum() {
 function renderDimRows() {
   const wrap = document.getElementById('dim-rows');
   const ids = Object.keys(picked);
-  document.getElementById('dim-warn').style.display = ids.length ? 'none' : 'block';
   if (!ids.length) {
     wrap.innerHTML = '<div class="dim-empty">Ingen dimensioner valgt endnu. Klik "Tilføj dimension".</div>';
     updateSum();
