@@ -243,23 +243,20 @@ function removeDim(id) {
 
 function openDimPicker() {
   const list = document.getElementById('dim-picker-list');
-  if (!ALL_DIMS.length) {
-    list.innerHTML = '<div class="empty">Personligheden har ingen dimensioner endnu.</div>';
+  const available = ALL_DIMS.filter(d => !(d.id in picked));
+  if (!available.length) {
+    list.innerHTML = '<div class="empty">Alle dimensioner er allerede tilføjet.</div>';
   } else {
     let html = '';
-    // Show every dimension; already-added ones are marked, not hidden.
     for (const type of ['personality', 'demographic']) {
-      const items = ALL_DIMS.filter(d => (d.type || 'personality') === type);
+      const items = available.filter(d => (d.type || 'personality') === type);
       if (!items.length) continue;
       html += `<div class="cat-h">${DIM_TYPE_LABEL[type] || type}</div>`;
-      html += items.map(d => {
-        const added = d.id in picked;
-        return `
-        <div class="item ${added ? 'added' : ''}" ${added ? '' : `onclick="addDim('${escapeHtml(d.id)}')"`}>
-          <div class="n">${escapeHtml(d.name)}${added ? '<span class="added-tag">✓ tilføjet</span>' : ''}</div>
+      html += items.map(d => `
+        <div class="item" onclick="addDim('${escapeHtml(d.id)}')">
+          <div class="n">${escapeHtml(d.name)}</div>
           <div class="c">${d.facets} facetter</div>
-        </div>`;
-      }).join('');
+        </div>`).join('');
     }
     list.innerHTML = html;
   }
@@ -271,9 +268,9 @@ function closeDimPicker() {
 }
 
 function addDim(id) {
-  if (!(id in picked)) picked[id] = DEFAULT_WEIGHT;
+  if (!(id in picked)) picked[id] = 50;
+  closeDimPicker();
   renderDimRows();
-  openDimPicker(); // keep modal open + refresh "✓ tilføjet" marks so several can be added
 }
 
 document.getElementById('dim-picker').addEventListener('click', e => {
