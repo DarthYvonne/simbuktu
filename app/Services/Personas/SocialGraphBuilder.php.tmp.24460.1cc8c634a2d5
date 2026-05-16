@@ -161,6 +161,9 @@ class SocialGraphBuilder
         $others = array_filter($allPersonas, fn ($p) => $p['id'] !== $persona['id']);
         if (empty($others)) return 0;
 
+        if (empty($params['dimension_weights'])) {
+            $params['dimension_weights'] = $this->defaultWeights($allPersonas);
+        }
         $dimContext = $this->buildDimContext($allPersonas, $params['dimension_weights']);
 
         $target = $this->targetFriendCount($persona, $params);
@@ -303,6 +306,20 @@ class SocialGraphBuilder
             ];
         }
         return $ctx;
+    }
+
+    /** Equal weight on every personality-typed dimension — used when nothing is picked. */
+    private function defaultWeights(array $personas): array
+    {
+        $weights = [];
+        foreach ($personas as $p) {
+            foreach ($p['dimensions'] ?? [] as $d) {
+                if (($d['type'] ?? 'personality') !== 'personality') continue;
+                $id = $d['dimension_id'] ?? ($d['dimension'] ?? null);
+                if ($id !== null) $weights[(string) $id] = 1.0;
+            }
+        }
+        return $weights;
     }
 
     private function acceptsRequest(array $self, array $other, float $similarity, int $remaining, int $target): bool
