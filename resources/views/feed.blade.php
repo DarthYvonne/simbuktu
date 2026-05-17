@@ -16,7 +16,7 @@
 .pc-comment .bubble a.mention { color: #1877f2; font-weight: 600; text-decoration: none; }
 .pc-comment .bubble a.mention:hover { text-decoration: underline; }
 .pc-comment .cm-meta { font-size: 11px; color: #65676b; padding: 2px 12px; }
-.pc-comment.thread { margin-left: 28px; border-left: 2px solid #e4e6eb; padding-left: 10px; }
+.pc-comment.thread { margin-left: 16px; border-left: 2px solid #e4e6eb; padding-left: 14px; }
 .pc-comment.student .bubble { background: #e7f3ff; }
 .student-badge { display: inline-block; margin-left: 6px; padding: 1px 6px; background: #1877f2; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; border-radius: 8px; vertical-align: middle; }
 .reply-link { display: inline-block; margin-left: 8px; font-size: 11px; color: #1877f2; cursor: pointer; font-weight: 600; }
