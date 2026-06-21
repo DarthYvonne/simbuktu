@@ -10,31 +10,18 @@ use App\Http\Controllers\Admin\SocialGraphController;
 use App\Http\Controllers\AnalyseController;
 use App\Http\Controllers\Auth\InviteController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\CmsController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MigController;
-use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfilerController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 
-Route::get('/', [PageController::class, 'home']);
 Route::get('/lovestormlab', fn () => view('lovestormlab'));
 
-// Simple CMS (admin-only)
-Route::prefix('cms')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/',                [CmsController::class, 'index']);
-    Route::get('/settings',        [CmsController::class, 'settings']);
-    Route::post('/settings',       [CmsController::class, 'saveSettings']);
-    Route::get('/create',          [CmsController::class, 'create']);
-    Route::post('/spellcheck',     [CmsController::class, 'spellcheck']);
-    Route::post('/upload-image',   [CmsController::class, 'uploadImage']);
-    Route::post('/',               [CmsController::class, 'store']);
-    Route::get('/{page}/edit',     [CmsController::class, 'edit']);
-    Route::patch('/{page}',        [CmsController::class, 'update']);
-    Route::delete('/{page}',       [CmsController::class, 'destroy']);
-});
+// The public site — including the home page (/) and all slug pages — is served
+// by the Webkraft package (webkraft/cms) via a fallback route. /cms is its
+// admin. The legacy "Simple CMS" + bespoke landing/catch-all routes were retired.
 
 Route::post('/booking', function (\Illuminate\Http\Request $request) {
     $data = $request->validate([
@@ -249,7 +236,4 @@ Route::prefix('simulation')->middleware(['auth', 'course'])->group(function () {
     });
 });
 
-// Public CMS-rendered pages — must be last (catch-all by slug)
-Route::get('/{slug}', [PageController::class, 'show'])->where('slug', '[A-Za-z0-9\-_]+');
-Route::get('/{parent}/{child}', [PageController::class, 'showChild'])
-    ->where(['parent' => '[A-Za-z0-9\-_]+', 'child' => '[A-Za-z0-9\-_]+']);
+// Public pages are rendered by Webkraft's fallback route (see webkraft/cms).

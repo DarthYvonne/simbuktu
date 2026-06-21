@@ -51,4 +51,10 @@ return [
         ],
     ],
 
+    // Shared secret for the machine-to-machine Crowd API (used by Situation Room
+    // to push timeline content into a course and poll the persona reactions).
+    'crowd_api' => [
+        'token' => env('CROWD_API_TOKEN'),
+    ],
+
 ];

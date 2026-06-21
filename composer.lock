@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0355d550cc8f0a6c79580d5fd85f1e85",
+    "content-hash": "439d8a4890722e4559934ee5ce6c81f7",
     "packages": [
         {
             "name": "brick/math",
@@ -5941,6 +5941,47 @@
                 }
             ],
             "time": "2024-11-21T01:49:47+00:00"
+        },
+        {
+            "name": "webkraft/cms",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../webkraft",
+                "reference": "904af6576817f2bc90075961b0f4c212cbb3df8e"
+            },
+            "require": {
+                "illuminate/database": "^11.0|^12.0|^13.0",
+                "illuminate/routing": "^11.0|^12.0|^13.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "php": "^8.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Webkraft\\Cms\\WebkraftServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Webkraft\\Cms\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Webkraft — a drop-in section + block CMS for Laravel.",
+            "keywords": [
+                "cms",
+                "laravel",
+                "webkraft"
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         }
     ],
     "packages-dev": [
@@ -8071,12 +8112,14 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "webkraft/cms": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.3"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
