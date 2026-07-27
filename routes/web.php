@@ -19,9 +19,75 @@ use Illuminate\Support\Facades\Mail;
 
 Route::get('/lovestormlab', fn () => view('lovestormlab'));
 
-// The public site — including the home page (/) and all slug pages — is served
-// by the Webkraft package (webkraft/cms) via a fallback route. /cms is its
-// admin. The legacy "Simple CMS" + bespoke landing/catch-all routes were retired.
+/*
+|--------------------------------------------------------------------------
+| Public site — flat Blade pages
+|--------------------------------------------------------------------------
+| Hand-built marketing site in resources/views/site. These explicit routes
+| take precedence over the Webkraft CMS, which only claims what's left via
+| Route::fallback — so / and the pages below are no longer CMS-driven.
+| Styles/scripts live in public/site (no Vite build step).
+*/
+Route::view('/', 'site.forside')->name('site.forside');
+Route::view('/saadan-virker-det', 'site.saadan-virker-det')->name('site.metode');
+Route::view('/loesninger', 'site.loesninger')->name('site.loesninger');
+Route::view('/situationroom', 'site.situationroom')->name('site.situationroom');
+Route::view('/om', 'site.om')->name('site.om');
+Route::view('/kontakt', 'site.kontakt')->name('site.kontakt');
+
+Route::post('/kontakt/send', function (\Illuminate\Http\Request $request) {
+    // Honeypot: a filled hidden field means a bot. Pretend it went fine.
+    if (filled($request->input('firma_www'))) {
+        return redirect('/kontakt')->with('sent', true);
+    }
+
+    // Anything submitted within 3 seconds of page load is not a human typing.
+    $ts = (int) $request->input('ts');
+    if ($ts === 0 || (time() - $ts) < 3) {
+        return redirect('/kontakt')->with('sent', true);
+    }
+
+    $data = $request->validate([
+        'navn'    => 'required|string|max:255',
+        'org'     => 'nullable|string|max:255',
+        'email'   => 'required|email|max:255',
+        'telefon' => 'nullable|string|max:50',
+        'emne'    => 'required|string|in:demo,workshop,platform,andet',
+        'besked'  => 'required|string|max:5000',
+    ], [
+        'navn.required'   => 'Skriv dit navn.',
+        'email.required'  => 'Vi skal bruge en e-mail for at kunne svare.',
+        'email.email'     => 'Tjek lige e-mailadressen.',
+        'besked.required' => 'Skriv et par ord om, hvad I gerne vil.',
+    ]);
+
+    $emner = [
+        'demo'     => 'Vil se en demo',
+        'workshop' => 'Interesseret i en workshop',
+        'platform' => 'Spørgsmål om platform / udviklerkonto',
+        'andet'    => 'Andet',
+    ];
+
+    $body = "Henvendelse fra simbuktu.dk\n\n"
+        ."Navn: {$data['navn']}\n"
+        ."Organisation: ".($data['org'] ?: '—')."\n"
+        ."E-mail: {$data['email']}\n"
+        ."Telefon: ".($data['telefon'] ?: '—')."\n"
+        ."Emne: {$emner[$data['emne']]}\n\n"
+        ."Besked:\n{$data['besked']}\n";
+
+    // TODO: flyt modtageradressen til .env, hvis den skal kunne skiftes.
+    Mail::raw($body, function ($m) use ($data) {
+        $m->to('anders@klinikken.ai')
+          ->replyTo($data['email'], $data['navn'])
+          ->subject('Simbuktu — henvendelse fra '.$data['navn']);
+    });
+
+    return redirect('/kontakt')->with('sent', true);
+})->name('site.kontakt.send');
+
+// Older public pages are still served by the Webkraft package (webkraft/cms)
+// via its fallback route; /cms remains its admin.
 
 Route::post('/booking', function (\Illuminate\Http\Request $request) {
     $data = $request->validate([
