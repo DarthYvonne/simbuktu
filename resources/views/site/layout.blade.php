@@ -15,6 +15,10 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
 
+    @if (config('site.auth.enabled'))
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" href="/favicon.png" sizes="any">
 

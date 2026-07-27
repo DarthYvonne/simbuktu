@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCourseMembership;
+use App\Http\Middleware\EnsureSitePassword;
 use App\Http\Middleware\VerifyCrowdApiToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'course' => EnsureCourseMembership::class,
             'admin' => EnsureAdmin::class,
+            'site.gate' => EnsureSitePassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
